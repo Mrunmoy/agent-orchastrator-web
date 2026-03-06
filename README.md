@@ -20,6 +20,9 @@ make serve
 make test-ui
 make ui-shot
 make verify
+make parallel-init AGENTS="codex-ui claude-orch ollama-data"
+make parallel-status
+make handoff-packs
 ```
 
 ## Documentation
@@ -28,3 +31,7 @@ make verify
 - `docs/IMPLEMENTATION_PLAN_V1.md` - sprint implementation plan
 - `docs/DEV_ENV.md` - environment and autonomous test loop
 - `docs/specs/` - section-by-section implementation contracts
+- `docs/coordination/PARALLEL_AGENT_WORKFLOW.md` - multi-agent parallel development workflow
+- `docs/coordination/task-board.md` - assign/track independent slices per agent
+- `docs/coordination/CROSS_TOOL_HANDOFF.md` - codex-code/claude-code manager protocol
+- `docs/handoff/*/KICKOFF.md` - generated manager handoff packets
