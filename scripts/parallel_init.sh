@@ -10,6 +10,7 @@ fi
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKTREE_ROOT="${WORKTREE_ROOT:-$REPO_ROOT/../agent-orchestrator-worktrees}"
 BASE_BRANCH="${BASE_BRANCH:-master}"
+BRANCH_PREFIX="${BRANCH_PREFIX:-agent}"
 
 mkdir -p "$WORKTREE_ROOT"
 
@@ -23,7 +24,7 @@ for agent in "$@"; do
         echo "[skip] invalid agent name: $agent"
         continue
     fi
-    branch="agent/${safe_name}"
+    branch="${BRANCH_PREFIX}/${safe_name}"
     path="$WORKTREE_ROOT/$safe_name"
 
     if [[ -d "$path/.git" || -f "$path/.git" ]]; then

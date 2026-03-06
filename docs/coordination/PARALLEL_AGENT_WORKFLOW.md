@@ -13,6 +13,10 @@ Enable multiple CLI agents to implement independent parts in parallel while keep
    ```bash
    make parallel-init AGENTS="codex-ui claude-orchestrator ollama-data"
    ```
+   Optional namespace override:
+   ```bash
+   BRANCH_PREFIX=codex ./scripts/parallel_init.sh ui chat storage
+   ```
 2. Assign one task per agent in `docs/coordination/task-board.md`.
 3. Launch each agent CLI in its own worktree path.
 
@@ -49,4 +53,3 @@ Enable multiple CLI agents to implement independent parts in parallel while keep
 - Tests added/updated and passing.
 - Implementation committed in small slices.
 - Task board status moved to `Done`.
-
