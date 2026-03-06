@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Node
+node_modules/
+
+# Artifacts
+artifacts/screenshots/*.png
+artifacts/screenshots/*.jpg
+artifacts/screenshots/*.jpeg
+artifacts/screenshots/*.webp
+
+# Local env
+.env
