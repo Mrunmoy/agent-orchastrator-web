@@ -16,10 +16,18 @@ from agent_orchestrator.api.routes.orchestration import router as orchestration_
 
 def _allowed_origins_from_env() -> list[str]:
     raw = os.getenv("ALLOWED_ORIGINS")
-    if raw is None or not raw.strip():
-        # Permissive in dev: allow any origin so LAN access works.
+    if raw is not None and raw.strip():
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
+    env = os.getenv("ENV", "").lower()
+    dev_mode = os.getenv("DEV_MODE", "").lower() in {"1", "true", "yes"}
+    if env in {"dev", "development"} or dev_mode:
         return ["*"]
-    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+    return [
+        "http://localhost",
+        "http://127.0.0.1",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
 
 
 def create_app() -> FastAPI:

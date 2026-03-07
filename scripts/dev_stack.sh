@@ -126,7 +126,7 @@ start_stack() {
 
   (
     cd "${REPO_ROOT}/backend"
-    python3 -m uvicorn agent_orchestrator.api:app \
+    DEV_MODE=1 python3 -m uvicorn agent_orchestrator.api:app \
       --host "$host" \
       --port "$BACKEND_PORT" \
       --reload

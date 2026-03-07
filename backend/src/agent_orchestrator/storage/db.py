@@ -14,7 +14,17 @@ from pathlib import Path
 _SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 
 # Schema version embedded by this loader.  Bump when schema.sql changes.
-_SCHEMA_VERSION = 1
+_SCHEMA_VERSION = 2
+
+# Migrations keyed by target version.  Each entry is a list of SQL statements
+# that bring the schema from (version - 1) to version.
+_MIGRATIONS: dict[int, list[str]] = {
+    2: [
+        (
+            "ALTER TABLE agent ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"
+        ),
+    ],
+}
 
 
 class DatabaseManager:
@@ -54,7 +64,9 @@ class DatabaseManager:
         # Re-enable foreign keys after executescript (implicit COMMIT resets)
         self._conn.execute("PRAGMA foreign_keys = ON")
 
-        if self._read_user_version() < _SCHEMA_VERSION:
+        current = self._read_user_version()
+        if current < _SCHEMA_VERSION:
+            self._apply_migrations(current)
             self._conn.execute(f"PRAGMA user_version = {_SCHEMA_VERSION}")
 
     # ------------------------------------------------------------------
@@ -97,6 +109,18 @@ class DatabaseManager:
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    def _apply_migrations(self, from_version: int) -> None:
+        """Run incremental migrations from *from_version* to _SCHEMA_VERSION."""
+        for target in range(from_version + 1, _SCHEMA_VERSION + 1):
+            stmts = _MIGRATIONS.get(target, [])
+            for stmt in stmts:
+                try:
+                    self._conn.execute(stmt)
+                except sqlite3.OperationalError:
+                    # Column/table may already exist (idempotent).
+                    pass
+            self._conn.commit()
 
     def _read_user_version(self) -> int:
         cur = self._conn.execute("PRAGMA user_version")

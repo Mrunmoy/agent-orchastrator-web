@@ -14,8 +14,32 @@ def _cors_kwargs(app) -> dict[str, object]:
     raise AssertionError("CORSMiddleware not configured")
 
 
-def test_cors_uses_safe_local_defaults(monkeypatch) -> None:
+def test_cors_uses_restrictive_defaults(monkeypatch) -> None:
     monkeypatch.delenv("ALLOWED_ORIGINS", raising=False)
+    monkeypatch.delenv("ENV", raising=False)
+    monkeypatch.delenv("DEV_MODE", raising=False)
+    app = create_app()
+    cors = _cors_kwargs(app)
+    assert cors["allow_origins"] == [
+        "http://localhost",
+        "http://127.0.0.1",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+
+
+def test_cors_wildcard_in_dev_mode(monkeypatch) -> None:
+    monkeypatch.delenv("ALLOWED_ORIGINS", raising=False)
+    monkeypatch.setenv("DEV_MODE", "1")
+    app = create_app()
+    cors = _cors_kwargs(app)
+    assert cors["allow_origins"] == ["*"]
+
+
+def test_cors_wildcard_with_env_dev(monkeypatch) -> None:
+    monkeypatch.delenv("ALLOWED_ORIGINS", raising=False)
+    monkeypatch.delenv("DEV_MODE", raising=False)
+    monkeypatch.setenv("ENV", "dev")
     app = create_app()
     cors = _cors_kwargs(app)
     assert cors["allow_origins"] == ["*"]

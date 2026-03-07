@@ -44,8 +44,8 @@ def test_initialize_creates_all_tables(mem_db):
 
 
 def test_schema_version_is_one(mem_db):
-    """Schema version should be 1 after initialization."""
-    assert mem_db.schema_version == 1
+    """Schema version should be 2 after initialization."""
+    assert mem_db.schema_version == 2
 
 
 def test_initialize_is_idempotent():
@@ -53,7 +53,7 @@ def test_initialize_is_idempotent():
     mgr = DatabaseManager(":memory:")
     mgr.initialize()
     mgr.initialize()  # second call must not fail
-    assert mgr.schema_version == 1
+    assert mgr.schema_version == 2
     mgr.close()
 
 
@@ -133,7 +133,7 @@ def test_context_manager_closes_on_exit():
     """DatabaseManager can be used as a context manager."""
     with DatabaseManager(":memory:") as mgr:
         mgr.initialize()
-        assert mgr.schema_version == 1
+        assert mgr.schema_version == 2
     with pytest.raises(Exception):
         with mgr.connection() as conn:
             conn.execute("SELECT 1")
@@ -147,7 +147,7 @@ def test_accepts_path_object(tmp_path):
     db_path = tmp_path / "test_path.db"
     mgr = DatabaseManager(db_path)
     mgr.initialize()
-    assert mgr.schema_version == 1
+    assert mgr.schema_version == 2
     mgr.close()
 
 
