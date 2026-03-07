@@ -638,6 +638,19 @@
         "UI-010"
       ],
       "default_owner": "copilot"
+    },
+    {
+      "id": "UI-015",
+      "slug": "slack-theme",
+      "title": "Slack-like retheme \u2014 aubergine sidebar + light content area",
+      "scope": "frontend/src/layout/*.css,frontend/src/features/history/*.css,frontend/src/features/agents/*.css",
+      "epic": "UI",
+      "priority": "P1",
+      "status": "In Progress",
+      "depends_on": [
+        "UI-012"
+      ],
+      "default_owner": "copilot"
     }
   ]
 }
