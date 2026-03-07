@@ -3,7 +3,7 @@ ROOT := $(CURDIR)
 PORT ?= 8080
 AGENTS ?=
 
-.PHONY: help serve ui-shot test-ui verify parallel-init parallel-status handoff-packs
+.PHONY: help serve ui-shot test-ui verify parallel-init parallel-status handoff-packs task-worktree
 
 help:
 	@echo "Targets:"
@@ -14,6 +14,7 @@ help:
 	@echo "  make parallel-init AGENTS=\"codex-ui claude-orch\" - create per-agent worktrees"
 	@echo "  make parallel-status - show worktree and agent branch status"
 	@echo "  make handoff-packs - generate codex-code/claude-code kickoff packs"
+	@echo "  make task-worktree TASK_ID=UI-001 PREFIX=claude - create worktree by task id"
 
 serve:
 	python3 -m http.server $(PORT) --directory $(ROOT)
@@ -39,3 +40,10 @@ parallel-status:
 
 handoff-packs:
 	./scripts/handoff_prepare.sh
+
+task-worktree:
+	@if [ -z "$(TASK_ID)" ]; then \
+		echo "Usage: make task-worktree TASK_ID=UI-001 PREFIX=claude"; \
+		exit 1; \
+	fi
+	./scripts/task_worktree.py "$(TASK_ID)" --branch-prefix "$(if $(PREFIX),$(PREFIX),claude)"

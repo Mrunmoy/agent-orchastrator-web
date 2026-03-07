@@ -1,0 +1,68 @@
+{
+  "tasks": [
+    {
+      "id": "UI-001",
+      "slug": "ui-conversations",
+      "title": "Conversation list component",
+      "scope": "src/ui/conversations/*",
+      "depends_on": [],
+      "default_owner": "claude-ui"
+    },
+    {
+      "id": "UI-002",
+      "slug": "ui-chat-timeline",
+      "title": "Chat timeline component",
+      "scope": "src/ui/chat/*",
+      "depends_on": [],
+      "default_owner": "unassigned"
+    },
+    {
+      "id": "ORCH-001",
+      "slug": "orch-batch-runner",
+      "title": "Batch runner (20-turn window)",
+      "scope": "backend/orchestrator/batch_runner.py",
+      "depends_on": [],
+      "default_owner": "claude-orchestrator"
+    },
+    {
+      "id": "ORCH-002",
+      "slug": "orch-round-robin",
+      "title": "Round-robin scheduler",
+      "scope": "backend/orchestrator/scheduler.py",
+      "depends_on": ["ORCH-001"],
+      "default_owner": "unassigned"
+    },
+    {
+      "id": "DATA-001",
+      "slug": "data-schema-v1",
+      "title": "SQLite schema v1",
+      "scope": "backend/storage/schema.sql",
+      "depends_on": [],
+      "default_owner": "claude-data"
+    },
+    {
+      "id": "DATA-002",
+      "slug": "data-checkpoint-compressor",
+      "title": "Checkpoint compressor",
+      "scope": "backend/storage/checkpoint.py",
+      "depends_on": ["DATA-001"],
+      "default_owner": "unassigned"
+    },
+    {
+      "id": "OPS-001",
+      "slug": "ops-capacity-monitor",
+      "title": "Capacity monitor",
+      "scope": "backend/runtime/capacity.py",
+      "depends_on": [],
+      "default_owner": "unassigned"
+    },
+    {
+      "id": "OPS-002",
+      "slug": "ops-notification-status",
+      "title": "Notification status model",
+      "scope": "backend/runtime/notifications.py",
+      "depends_on": ["OPS-001"],
+      "default_owner": "unassigned"
+    }
+  ]
+}

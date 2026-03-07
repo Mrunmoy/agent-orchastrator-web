@@ -17,8 +17,13 @@ Enable multiple CLI agents to implement independent parts in parallel while keep
    ```bash
    BRANCH_PREFIX=codex ./scripts/parallel_init.sh ui chat storage
    ```
-2. Assign one task per agent in `docs/coordination/task-board.md`.
-3. Launch each agent CLI in its own worktree path.
+2. Preferred: create worktree by task ID:
+   ```bash
+   make task-worktree TASK_ID=UI-001 PREFIX=claude
+   ```
+   This reads task metadata from `config/tasks.json` and creates the right branch/worktree.
+3. Assign one task per agent in `docs/coordination/task-board.md`.
+4. Launch each agent CLI in its own worktree path.
 
 ## Branching Rules
 - Branch naming: `agent/<agent-name>`

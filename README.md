@@ -23,6 +23,7 @@ make verify
 make parallel-init AGENTS="codex-ui claude-orch ollama-data"
 make parallel-status
 make handoff-packs
+make task-worktree TASK_ID=UI-001 PREFIX=claude
 ```
 
 ## Documentation
@@ -35,3 +36,4 @@ make handoff-packs
 - `docs/coordination/task-board.md` - assign/track independent slices per agent
 - `docs/coordination/CROSS_TOOL_HANDOFF.md` - codex-code/claude-code manager protocol
 - `docs/handoff/*/KICKOFF.md` - generated manager handoff packets
+- `config/tasks.json` - machine-readable task registry (ID -> branch slug/scope)
