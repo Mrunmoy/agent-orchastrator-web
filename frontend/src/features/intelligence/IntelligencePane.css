@@ -1,0 +1,39 @@
+.intelligence-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.intelligence-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c7086;
+  font-size: 13px;
+  padding: 24px;
+}
+
+.intelligence-pane-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: #cdd6f4;
+}
+
+.intelligence-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.intelligence-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0;
+  color: #a6adc8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
