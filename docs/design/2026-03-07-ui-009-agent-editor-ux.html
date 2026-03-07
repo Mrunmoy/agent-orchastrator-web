@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: Agent Editor UX Improvements (UI-009)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2f4c; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #5a4728; padding:8px; text-align:left; }
+    th { background:#2a2f4c; color:var(--gold); }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Agent Editor UX Improvements (UI-009)</h1>
+    <div class="meta">Design Codex Entry · 2026-03-07</div>
+
+    <h2>Problem</h2>
+    <p>The "Add Agent" form (rendered as a panel below <code>BottomControls</code>) had three critical UX failures:</p>
+    <ol>
+      <li><strong>Model field was a blank free-text input</strong> — users had no guidance on what to type. There are dozens of valid model identifiers per provider and typos produce silent failures at inference time.</li>
+      <li><strong>No Personality field</strong> — the backend API and <code>personalities.json</code> already supported <code>personality_key</code>, but the form never surfaced it.</li>
+      <li><strong>Save Agent did nothing</strong> — the <code>model</code> field defaulted to an empty string, causing the required-field guard (<code>if (!payload.model)</code>) to fire on every submit. The resulting error was rendered far above the editor panel and invisible without scrolling, so the form appeared silently broken.</li>
+    </ol>
+
+    <h2>Solution Overview</h2>
+    <table>
+      <thead><tr><th>Change</th><th>Location</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Model → dropdown</td><td><code>AppShell.tsx</code></td><td><code>PROVIDER_MODELS</code> constant maps each provider to its curated model list; field is <code>&lt;select&gt;</code> not <code>&lt;input&gt;</code></td></tr>
+        <tr><td>Model auto-resets on provider change</td><td><code>AppShell.tsx</code></td><td>Provider <code>onChange</code> atomically sets <code>model</code> to <code>PROVIDER_MODELS[newProvider][0]</code></td></tr>
+        <tr><td>Custom model preserved in edit</td><td><code>AppShell.tsx</code></td><td>If an existing agent carries a non-standard model, it is injected as an extra <code>&lt;option&gt;</code></td></tr>
+        <tr><td>Personality dropdown added</td><td><code>AppShell.tsx</code></td><td><code>PERSONALITY_OPTIONS</code> array from <code>personalities.json</code>; includes "— none —" sentinel</td></tr>
+        <tr><td><code>personality_key</code> in payload</td><td><code>AppShell.tsx</code> <code>saveAgent</code></td><td>Included only when non-empty to match optional backend field</td></tr>
+        <tr><td>Status tooltip on AgentCard</td><td><code>AgentCard.tsx</code></td><td><code>title</code> + <code>aria-label</code> on the coloured dot for hover tooltip and screen readers</td></tr>
+        <tr><td>Personality badge on AgentCard</td><td><code>AgentCard.tsx</code>, <code>AgentCard.css</code></td><td>Purple badge rendered in meta row when <code>personality_key</code> is set</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Model Catalogue</h2>
+    <table>
+      <thead><tr><th>Provider</th><th>Models (first is default)</th></tr></thead>
+      <tbody>
+        <tr><td>claude</td><td>claude-opus-4-5, claude-3-7-sonnet-20250219, claude-3-5-sonnet-latest, claude-3-5-haiku-latest</td></tr>
+        <tr><td>codex</td><td>codex-mini-latest, gpt-4.1, gpt-4.1-mini, o4-mini</td></tr>
+        <tr><td>ollama</td><td>llama3.2, llama3.1, mistral, codellama, phi3</td></tr>
+        <tr><td>gemini</td><td>gemini-2.5-flash, gemini-1.5-pro, gemini-1.5-flash</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Personality Options</h2>
+    <table>
+      <thead><tr><th>Key</th><th>Label</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td><em>(empty)</em></td><td>— none —</td><td>Sentinel; no <code>personality_key</code> sent in payload</td></tr>
+        <tr><td>software_developer</td><td>Software Developer</td><td><code>config/personalities.json</code></td></tr>
+        <tr><td>code_reviewer</td><td>Code Reviewer</td><td><code>config/personalities.json</code></td></tr>
+        <tr><td>friendly_brainstormer</td><td>Friendly Brainstormer</td><td><code>config/personalities.json</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>State Shape</h2>
+    <p>The <code>AgentEditorState</code> type in <code>AppShell.tsx</code> was extended with a <code>personality_key: string</code> field (empty string for "none"). Both <code>openCreateAgent</code> and <code>openEditAgent</code> populate the field; <code>saveAgent</code> conditionally spreads it into the API payload.</p>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li>Model list is a static frontend constant rather than a live API call to keep the form snappy and avoid a loading state. The list can be extended easily in one place (<code>PROVIDER_MODELS</code>).</li>
+      <li>Personality is optional — sending an empty <code>personality_key</code> would create confusion at the backend. The conditional spread (<code>...(key ? { personality_key: key } : {})</code>) avoids it.</li>
+      <li>Status icon tooltip is implemented via HTML <code>title</code> attribute for zero-cost hover UX; <code>aria-label</code> adds screen-reader coverage.</li>
+      <li>Personality badge uses a distinct purple colour to visually separate it from the provider badge (also purple-family) by shade.</li>
+    </ul>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li>Model list could be fetched from a backend endpoint (e.g. <code>/agents/models?provider=ollama</code>) to stay current with locally installed Ollama models.</li>
+      <li>The agent editor is currently a full-width bottom panel; a modal dialog would provide better focus management and keyboard trap behaviour.</li>
+      <li>Agent status (<code>idle</code> / <code>running</code>) should update in real time via the events stream endpoint (<code>API-005</code>) once the live-update feature is wired into the UI.</li>
+    </ul>
+  </article>
+</body>
+</html>

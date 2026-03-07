@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Agent Editor UX Improvements (UI-009)</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1a2a2e; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+    pre { background:#0f1a1e; padding:16px; border-radius:8px; overflow-x:auto; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Agent Editor UX Improvements</h1>
+    <div class="meta">Playbook Entry &middot; 2026-03-07 &middot; UI-009</div>
+
+    <h2>How to test</h2>
+    <pre><code>nix develop
+cd frontend
+./node_modules/.bin/vitest run src/layout/AppShell.test.tsx
+./node_modules/.bin/vitest run src/features/agents/</code></pre>
+
+    <h2>How to run the UI</h2>
+    <pre><code>nix develop
+make run-backend   # starts FastAPI on :8000
+make run-frontend  # starts Vite dev server on :5173
+
+# Open http://localhost:5173
+# Click "Add Agent" in the left sidebar
+# Provider dropdown + Model dropdown should now be linked
+# Personality dropdown should be present</code></pre>
+
+    <h2>Key files changed</h2>
+    <ul>
+      <li><code>frontend/src/layout/AppShell.tsx</code> — <code>PROVIDER_MODELS</code> constant, <code>PERSONALITY_OPTIONS</code> constant, <code>AgentEditorState.personality_key</code>, model <code>&lt;select&gt;</code>, personality <code>&lt;select&gt;</code>, provider onChange resets model</li>
+      <li><code>frontend/src/features/agents/AgentCard.tsx</code> — <code>title</code>/<code>aria-label</code> on status dot, personality badge</li>
+      <li><code>frontend/src/features/agents/AgentCard.css</code> — <code>.personality-badge</code> style</li>
+      <li><code>frontend/src/layout/AppShell.test.tsx</code> — updated model test, two new tests</li>
+    </ul>
+
+    <h2>Gotcha: model field was empty by default → silent save failure</h2>
+    <p><strong>Symptom:</strong> Clicking "Save Agent" appeared to do nothing. No agent was created.</p>
+    <p><strong>Cause:</strong> <code>openCreateAgent</code> initialised <code>model: ""</code>. The guard <code>if (!payload.model)</code> in <code>saveAgent</code> fired immediately and set an error string — but the error banner is rendered at the top of <code>AppShell</code>, far above the editor panel at the bottom. Users never saw it.</p>
+    <p><strong>Fix:</strong> Model is now a <code>&lt;select&gt;</code> pre-populated with the first entry of <code>PROVIDER_MODELS[provider]</code>. The model value is always non-empty when the form opens, so save succeeds as soon as the user fills in a name.</p>
+
+    <h2>Gotcha: provider and model can get out of sync on edit</h2>
+    <p><strong>Symptom:</strong> If a user changes the provider dropdown, the model dropdown still shows models from the previous provider.</p>
+    <p><strong>Fix:</strong> Provider <code>onChange</code> atomically updates both <code>provider</code> and <code>model</code> in a single <code>setAgentEditor</code> call: <code>model: PROVIDER_MODELS[newProvider][0]</code>.</p>
+    <p><strong>Edge case:</strong> When editing an existing agent whose model string is not in the <code>PROVIDER_MODELS</code> list (e.g. a custom Ollama model), it is injected as an extra <code>&lt;option&gt;</code> so the select renders correctly without losing the value.</p>
+
+    <h2>Gotcha: personality_key "" vs null vs undefined</h2>
+    <p>The backend <code>personality_key</code> column is nullable. Sending an empty string would store <code>""</code> which is technically valid but semantically wrong. The <code>saveAgent</code> function conditionally spreads: <code>...(agentEditor.personality_key ? { personality_key: agentEditor.personality_key } : {})</code>. When "— none —" is selected (empty string), no key is sent and the backend column remains <code>NULL</code>.</p>
+
+    <h2>TDD notes</h2>
+    <ul>
+      <li>Existing test <em>"opens agent editor and creates an agent"</em> used <code>fireEvent.change</code> on a text input labelled "Model". After the change to <code>&lt;select&gt;</code>, the value must be one of the dropdown options — updated to <code>claude-3-5-sonnet-latest</code>.</li>
+      <li>New test <em>"model dropdown resets to first model when provider changes"</em> fires a change on Provider, then asserts the Model select's <code>.value</code> has switched to the first Ollama model.</li>
+      <li>New test <em>"personality dropdown shows all options and can be selected"</em> reads <code>select.options</code> and asserts all four labels are present, then exercises a selection.</li>
+    </ul>
+
+    <h2>Testing</h2>
+    <ul>
+      <li>Frontend suite: 146 tests across 21 test files — all passing.</li>
+      <li>Lint: <code>npm run lint</code> — 0 errors.</li>
+      <li>Format check: <code>npm run format:check</code> — all files clean.</li>
+    </ul>
+  </article>
+</body>
+</html>

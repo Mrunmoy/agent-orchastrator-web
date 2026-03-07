@@ -3,7 +3,7 @@
 This is the source-of-truth backlog for current known scope.
 
 ## Current State Snapshot
-- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex/Ollama adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot, domain models (enums + dataclasses), conversation CRUD endpoints, JSONL event log writer/reader, conversation state machine, round-robin scheduler, 20-turn batch runner, adapter output normalization, checkpoint pack builder, agent config endpoints, events stream endpoint, conversation history pane, chat timeline, agent roster editor, orchestration control endpoints, steering note injection, capacity-aware throttle, intelligence pane, merge coordinator queue, branch/task lock policy, notification pipeline, auth, LAN profile, remaining test/doc tasks, new conversation form (title + working directory).
+- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex/Ollama adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot, domain models (enums + dataclasses), conversation CRUD endpoints, JSONL event log writer/reader, conversation state machine, round-robin scheduler, 20-turn batch runner, adapter output normalization, checkpoint pack builder, agent config endpoints, events stream endpoint, conversation history pane, chat timeline, agent roster editor, orchestration control endpoints, steering note injection, capacity-aware throttle, intelligence pane, merge coordinator queue, branch/task lock policy, notification pipeline, auth, LAN profile, remaining test/doc tasks, new conversation form (title + working directory), agent editor UX improvements (model dropdown, personality field, save fix, status tooltip).
 - Not done: no open items from current tracked scope snapshot.
 
 ## Definition of Done (per task)
@@ -53,6 +53,7 @@ This is the source-of-truth backlog for current known scope.
 - [x] `UI-006` Implement intelligence pane (agreement/disagreement + neutral memo)
 - [x] `UI-007` Implement run-window controls (next 20, continue 20, stop now, steering note)
 - [x] `UI-008` Implement new conversation form (title + working directory, inline creator, focus shift on creation)
+- [x] `UI-009` Agent editor UX improvements (model dropdown per provider, personality field, save fix, status tooltip)
 
 ## Epic COORD - Parallel Delivery and Merge Safety
 - [x] `COORD-001` Implement merge-coordinator queue model and serialized integration flow

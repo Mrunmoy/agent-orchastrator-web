@@ -97,6 +97,14 @@
   color: #a6adc8;
 }
 
+.personality-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(147, 103, 255, 0.15);
+  color: #b4a0ff;
+}
+
 .agent-card-model {
   font-size: 12px;
   color: #a6adc8;
