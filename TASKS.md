@@ -48,7 +48,7 @@ This is the source-of-truth backlog for current known scope.
 - [x] `UI-001` Implement app shell layout (history left, chat center, intelligence right, controls bottom)
 - [ ] `UI-002` Implement conversation history list (scroll, select, delete, clear all, status icon)
 - [ ] `UI-003` Implement chat timeline (avatar, bold name, timestamp, typing/thinking indicator)
-- [ ] `UI-004` Implement composer + target-agent routing + run controls
+- [x] `UI-004` Implement composer + target-agent routing + run controls
 - [ ] `UI-005` Implement agent roster editor (unique name, source, model, personality, order)
 - [ ] `UI-006` Implement intelligence pane (agreement/disagreement + neutral memo)
 - [ ] `UI-007` Implement run-window controls (next 20, continue 20, stop now, steering note)
