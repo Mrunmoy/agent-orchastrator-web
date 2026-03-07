@@ -43,6 +43,10 @@ export const AgentRoster: React.FC<AgentRosterProps> = ({
     const reordered = [...localAgents];
     const fromIdx = reordered.findIndex((a) => a.id === dragId.current);
     const toIdx = reordered.findIndex((a) => a.id === targetId);
+    if (fromIdx < 0 || toIdx < 0) {
+      dragId.current = null;
+      return;
+    }
     const [moved] = reordered.splice(fromIdx, 1);
     reordered.splice(toIdx, 0, moved);
     const withOrder = reordered.map((a, i) => ({ ...a, sort_order: i }));
