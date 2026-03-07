@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saga: The Invisible Door (UI-008)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --rose:#ffa3bf; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#3a1530,#0f0c16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #6a2040; border-radius:16px; background:linear-gradient(180deg,#241228,#140e1e); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--rose); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2e1030; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+    blockquote { border-left:3px solid var(--rose); margin:16px 0; padding:0 0 0 16px; color:var(--muted); font-style:italic; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>The Invisible Door</h1>
+    <div class="meta">Saga Chapter · UI-008 · 2026-03-07</div>
+
+    <blockquote>
+      Every dungeon has a door that looks like a wall. The party had been staring at the "+ New"
+      button for days, clicking it with growing suspicion, watching the Conversations panel remain
+      stubbornly empty. Was it broken? Was it them? Turns out — the door was real. It just opened
+      into a void.
+    </blockquote>
+
+    <h2>The Haunted Button</h2>
+    <p>
+      The user filed their report: <em>"Clicking on the +New button seems like doing nothing."</em>
+      A screenshot arrived. There it was — the purple "+ New" button, gleaming in the sidebar,
+      doing absolutely nothing a user could see. Behind the scenes the button was creating
+      conversations, auto-naming them <em>Conversation 1</em> and inheriting whatever working
+      directory happened to be in <code>localStorage</code>. But without a backend running, it
+      failed silently. And even when it succeeded, there was no way to name the conversation or
+      point it at a project directory.
+    </p>
+    <p>
+      The button had always technically worked. It just hadn't ever been <em>useful</em>.
+    </p>
+
+    <h2>The Fix: A Door with a Knocker</h2>
+    <p>
+      The party's ranger studied the existing <code>AgentEditorState</code> pattern — already
+      used for the Add/Edit Agent workflow — and recognised the shape of the solution. The fix
+      didn't need a new modal system or a separate page. It needed a form, the same kind the
+      party had already built for agents: an inline section that appears below the main grid,
+      pre-filled with sensible defaults, closeable with Cancel if the user changes their mind.
+    </p>
+    <p>
+      Three new pieces of state appeared in <code>AppShell</code>:
+    </p>
+    <ul>
+      <li>A <code>ConversationCreatorState</code> type — just a title and a working directory.</li>
+      <li><code>openConversationCreator()</code> — triggered by "+ New"; opens the form with pre-filled defaults.</li>
+      <li><code>submitConversationCreator()</code> — validates both fields are non-empty before firing the API.</li>
+    </ul>
+    <p>
+      And a helper appeared, quietly solving a subtle duplication that the ranger had noticed:
+      three different places in the code all generated <em>"Conversation N"</em> independently.
+      The <code>generateDefaultTitle(count)</code> function united them.
+    </p>
+
+    <h2>The Per-Conversation Working Directory</h2>
+    <p>
+      The user had also noticed something important: the global Working Directory field in the
+      top bar was useless in practice. Each conversation needs its own project directory. Agents
+      must be spawned in the right folder. Using a global setting silently applied the same
+      directory to every conversation — which only works if you're always working on one project.
+    </p>
+    <p>
+      The new form surfaced the working directory at conversation creation time, letting the user
+      see and change it before any agents are started. The global directory in <code>TopBar</code>
+      now acts as a seed for the default value, not a runtime setting.
+    </p>
+
+    <h2>The Tests Come First</h2>
+    <p>
+      True to the campaign rules, the tests were written before the implementation. Three new
+      assertions captured the intended behaviour:
+    </p>
+    <ul>
+      <li>Clicking "+ New" shows a form — no API call yet.</li>
+      <li>Clicking "Cancel" closes the form — still no API call.</li>
+      <li>Filling the form and clicking "Create" calls the API with the correct title and directory, then dismisses the form.</li>
+    </ul>
+    <p>
+      The gatekeeper (CI) accepted the offering. All 146 tests passed.
+    </p>
+
+    <h2>Loot Gained</h2>
+    <ul>
+      <li><strong><code>ConversationCreatorState</code></strong> — new inline form type in <code>AppShell</code>.</li>
+      <li><strong><code>generateDefaultTitle(count)</code></strong> — helper eliminating title duplication.</li>
+      <li><strong><code>.conversation-creator</code> CSS block</strong> — consistent with the agent editor panel.</li>
+      <li><strong>3 new tests, 2 updated tests</strong> — the suite grows to 146.</li>
+    </ul>
+
+    <blockquote>
+      The door now has a knocker. When you click it, a form appears — modest, focused, ready to
+      receive a name and a path. The party can finally open new conversations with intent.
+    </blockquote>
+  </article>
+</body>
+</html>
