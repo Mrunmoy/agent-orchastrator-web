@@ -90,6 +90,7 @@ export function AppShell() {
   const [conversationCreator, setConversationCreator] = useState<ConversationCreatorState | null>(
     null,
   );
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [runStatus, setRunStatus] = useState("Idle");
   const [gateStatus, setGateStatus] = useState("Open");
   const [memoSummary, setMemoSummary] = useState("No memo available.");
@@ -159,7 +160,7 @@ export function AppShell() {
   };
 
   const submitConversationCreator = async () => {
-    if (!conversationCreator) return;
+    if (!conversationCreator || isCreatingConversation) return;
     const title = conversationCreator.title.trim();
     const workingDirectory = conversationCreator.workingDirectory.trim();
     if (!title) {
@@ -170,7 +171,12 @@ export function AppShell() {
       setErrorText("Working directory is required.");
       return;
     }
-    await createConversation(title, workingDirectory);
+    setIsCreatingConversation(true);
+    try {
+      await createConversation(title, workingDirectory);
+    } finally {
+      setIsCreatingConversation(false);
+    }
   };
 
   const selectConversation = async (conversationId: string) => {
@@ -472,8 +478,8 @@ export function AppShell() {
             </label>
           </div>
           <div className="conversation-creator__actions">
-            <button className="btn btn--primary" onClick={() => void submitConversationCreator()}>
-              Create
+            <button className="btn btn--primary" onClick={() => void submitConversationCreator()} disabled={isCreatingConversation}>
+              {isCreatingConversation ? "Creating…" : "Create"}
             </button>
             <button className="btn btn--subtle" onClick={() => setConversationCreator(null)}>
               Cancel
