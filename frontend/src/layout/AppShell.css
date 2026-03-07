@@ -130,7 +130,7 @@ button {
   margin: 12px auto;
   padding: 0 10px;
   display: grid;
-  grid-template-rows: auto auto 1fr auto auto;
+  grid-template-rows: auto auto 1fr auto auto auto;
   gap: 10px;
   min-height: calc(100vh - 24px);
 }
@@ -188,6 +188,43 @@ button {
   flex-wrap: wrap;
 }
 
+.conversation-creator {
+  border: 1px solid #5b2d5c;
+  border-radius: 10px;
+  background: #3f0e40;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.conversation-creator h3 {
+  margin: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #f0dff0;
+}
+
+.conversation-creator__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.conversation-creator__grid label {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #c6b3c8;
+}
+
+.conversation-creator__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 1280px) {
   .app-shell__main {
     grid-template-columns: 320px 1fr;
@@ -203,7 +240,8 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .agent-editor__grid {
+  .agent-editor__grid,
+  .conversation-creator__grid {
     grid-template-columns: 1fr;
   }
 }
