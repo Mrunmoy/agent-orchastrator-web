@@ -55,10 +55,10 @@ Task details:
 - Branch: {branch}
 
 Worktree setup (required):
-- From repo root `/home/mrumoy/sandbox/agent-orchestrator-web`, create/sync the task worktree:
+- From repo root `<repo-root>`, create/sync the task worktree:
   `make task-worktree TASK_ID={task_id} PREFIX={args.prefix}`
 - Then switch to:
-  `/home/mrumoy/sandbox/agent-orchestrator-worktrees/{slug}`
+  `<worktree-root>/{slug}`
 - Continue all task work from that worktree only.
 
 Execution contract:

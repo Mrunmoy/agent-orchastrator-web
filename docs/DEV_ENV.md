@@ -11,7 +11,7 @@ This project uses **Nix** as the primary dev environment (not Docker).
 
 ## Enter Environment
 ```bash
-cd /home/mrumoy/sandbox/agent-orchestrator-web
+cd <repo-root>
 nix develop
 ```
 

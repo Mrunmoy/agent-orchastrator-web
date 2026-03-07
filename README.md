@@ -4,6 +4,10 @@
 
 LAN-accessible, CLI-native multi-agent orchestration workspace.
 
+## License
+This project is licensed under the custom [Mrunmoy + Claude + Codex Appreciation License v1.0](./LICENSE).
+Usage requires a visible acknowledgment thanking **Mrunmoy**, **Claude**, and **Codex** before using the software.
+
 ## Toolchain
 This project uses **Nix** for reproducible development.
 
@@ -26,7 +30,7 @@ direnv allow
 
 ### 1) Enter dev environment
 ```bash
-cd /home/mrumoy/sandbox/agent-orchestrator-web
+cd <repo-root>
 nix develop
 ```
 
@@ -73,23 +77,23 @@ make task-worktree TASK_ID=ADPT-001 PREFIX=claude
 
 Worktree paths created:
 ```bash
-/home/mrumoy/sandbox/agent-orchestrator-worktrees/setup-backend-layout
-/home/mrumoy/sandbox/agent-orchestrator-worktrees/setup-frontend-shell
-/home/mrumoy/sandbox/agent-orchestrator-worktrees/adpt-claude-cli
+<worktree-root>/setup-backend-layout
+<worktree-root>/setup-frontend-shell
+<worktree-root>/adpt-claude-cli
 ```
 
 ### 5) Start CLI agents in each worktree
 Example (Claude workers):
 ```bash
-cd /home/mrumoy/sandbox/agent-orchestrator-worktrees/ui-conversations && claude
-cd /home/mrumoy/sandbox/agent-orchestrator-worktrees/orch-batch-runner && claude
-cd /home/mrumoy/sandbox/agent-orchestrator-worktrees/data-schema-v1 && claude
+cd <worktree-root>/ui-conversations && claude
+cd <worktree-root>/orch-batch-runner && claude
+cd <worktree-root>/data-schema-v1 && claude
 ```
 
 Example (Codex worker on another task):
 ```bash
 make task-worktree TASK_ID=UI-002 PREFIX=codex
-cd /home/mrumoy/sandbox/agent-orchestrator-worktrees/ui-chat-timeline && codex
+cd <worktree-root>/ui-chat-timeline && codex
 ```
 
 ### 5.1) Generate task-specific prompt text
@@ -120,7 +124,7 @@ claude
 ### 6) Monitor current parallel state
 ```bash
 make parallel-status
-git -C /home/mrumoy/sandbox/agent-orchestrator-web worktree list
+git -C <repo-root> worktree list
 ```
 
 ### 7) Integration policy

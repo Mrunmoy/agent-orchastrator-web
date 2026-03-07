@@ -14,3 +14,7 @@ artifacts/screenshots/*.webp
 
 # Local env
 .env
+
+# Local agent configs/secrets
+.claude/
+.codex/
