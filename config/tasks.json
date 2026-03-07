@@ -7,7 +7,7 @@
     {"id":"SETUP-003","slug":"setup-dev-commands","title":"Shared dev commands","scope":"Makefile,scripts/*","epic":"SETUP","priority":"P1","status":"Done","depends_on":["SETUP-001","SETUP-002"],"default_owner":"unassigned"},
 
     {"id":"DATA-001","slug":"data-sqlite-schema-v1","title":"SQLite schema v1","scope":"backend/storage/schema.sql","epic":"DATA","priority":"P0","status":"Done","depends_on":["SETUP-001"],"default_owner":"claude-data"},
-    {"id":"DATA-002","slug":"data-migration-loader","title":"Schema migration/bootstrap loader","scope":"backend/storage/migrate.py","epic":"DATA","priority":"P1","status":"Todo","depends_on":["DATA-001"],"default_owner":"unassigned"},
+    {"id":"DATA-002","slug":"data-migration-loader","title":"Schema migration/bootstrap loader","scope":"backend/storage/db.py","epic":"DATA","priority":"P1","status":"Done","depends_on":["DATA-001"],"default_owner":"claude-parallel"},
     {"id":"DATA-003","slug":"data-event-log-jsonl","title":"JSONL event log writer/reader","scope":"backend/storage/event_log.py","epic":"DATA","priority":"P1","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
     {"id":"DATA-004","slug":"data-checkpoint-packer","title":"Checkpoint pack builder","scope":"backend/storage/checkpoint.py","epic":"DATA","priority":"P1","status":"Todo","depends_on":["DATA-001","DATA-003"],"default_owner":"unassigned"},
 
@@ -23,7 +23,7 @@
     {"id":"ADPT-003","slug":"adpt-ollama-memo","title":"Ollama memo adapter","scope":"backend/adapters/ollama_adapter.py","epic":"ADPT","priority":"P1","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
     {"id":"ADPT-004","slug":"adpt-output-normalization","title":"Adapter output normalization","scope":"backend/adapters/normalize.py","epic":"ADPT","priority":"P1","status":"Todo","depends_on":["ADPT-001","ADPT-002","ADPT-003"],"default_owner":"unassigned"},
 
-    {"id":"API-001","slug":"api-fastapi-core","title":"FastAPI app and health endpoint","scope":"backend/api/app.py","epic":"API","priority":"P0","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
+    {"id":"API-001","slug":"api-fastapi-core","title":"FastAPI app and health endpoint","scope":"backend/api/","epic":"API","priority":"P0","status":"Done","depends_on":["SETUP-001"],"default_owner":"claude-parallel"},
     {"id":"API-002","slug":"api-conversation-crud","title":"Conversation CRUD endpoints","scope":"backend/api/routes/conversations.py","epic":"API","priority":"P0","status":"Todo","depends_on":["API-001","DATA-001"],"default_owner":"unassigned"},
     {"id":"API-003","slug":"api-orchestration-controls","title":"Run/continue/stop/steer endpoints","scope":"backend/api/routes/orchestration.py","epic":"API","priority":"P0","status":"Todo","depends_on":["API-001","ORCH-004"],"default_owner":"unassigned"},
     {"id":"API-004","slug":"api-agent-config","title":"Agent config endpoints","scope":"backend/api/routes/agents.py","epic":"API","priority":"P1","status":"Todo","depends_on":["API-001","ORCH-001"],"default_owner":"unassigned"},
@@ -48,7 +48,7 @@
 
     {"id":"OPS-001","slug":"ops-auth-request-limits","title":"Local auth token and request limits","scope":"backend/api/security.py","epic":"OPS","priority":"P1","status":"Todo","depends_on":["API-001"],"default_owner":"unassigned"},
     {"id":"OPS-002","slug":"ops-lan-startup-profile","title":"LAN startup/run profile","scope":"scripts/run_lan.sh,docs/DEV_ENV.md","epic":"OPS","priority":"P2","status":"Todo","depends_on":["API-001","UI-001"],"default_owner":"unassigned"},
-    {"id":"OPS-003","slug":"ops-capacity-telemetry","title":"Capacity telemetry snapshot","scope":"backend/runtime/capacity.py","epic":"OPS","priority":"P1","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
+    {"id":"OPS-003","slug":"ops-capacity-telemetry","title":"Capacity telemetry snapshot","scope":"backend/runtime/capacity.py","epic":"OPS","priority":"P1","status":"Done","depends_on":["SETUP-001"],"default_owner":"claude-parallel"},
 
     {"id":"DOC-001","slug":"doc-adr-core-decisions","title":"ADR entries for core decisions","scope":"docs/decisions/*","epic":"DOC","priority":"P2","status":"Todo","depends_on":["ORCH-004"],"default_owner":"unassigned"},
     {"id":"DOC-002","slug":"doc-playbook-recovery","title":"Playbook recovery/debug entries","scope":"docs/playbook/*","epic":"DOC","priority":"P2","status":"Todo","depends_on":["TEST-001"],"default_owner":"unassigned"},

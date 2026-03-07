@@ -3,8 +3,8 @@
 This is the source-of-truth backlog for current known scope.
 
 ## Current State Snapshot
-- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex adapter baselines, shared dev commands (make test/lint/format-check/run-backend/run-frontend).
-- Not done: full orchestrator runtime, API surface completion, persistence features beyond schema, production workflow integration.
+- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot.
+- Not done: full orchestrator runtime, API surface beyond health/state, persistence features beyond schema+bootstrap, production workflow integration.
 
 ## Definition of Done (per task)
 - Design/spec links are updated if behavior changed.
@@ -19,7 +19,7 @@ This is the source-of-truth backlog for current known scope.
 
 ## Epic DATA - Persistence and Context Memory
 - [x] `DATA-001` Implement SQLite schema v1 (conversations, agents, tasks, runs, checkpoints)
-- [ ] `DATA-002` Add migration/bootstrap loader for schema initialization
+- [x] `DATA-002` Add migration/bootstrap loader for schema initialization
 - [ ] `DATA-003` Implement append-only JSONL event log writer/reader
 - [ ] `DATA-004` Implement checkpoint pack builder with token bounds and summary compaction
 
@@ -38,7 +38,7 @@ This is the source-of-truth backlog for current known scope.
 - [ ] `ADPT-004` Normalize adapter output into common message/event schema
 
 ## Epic API - Backend Service
-- [ ] `API-001` Implement FastAPI app with health/config endpoints
+- [x] `API-001` Implement FastAPI app with health/config endpoints
 - [ ] `API-002` Implement conversation CRUD endpoints
 - [ ] `API-003` Implement orchestration control endpoints (`run`, `continue`, `stop`, `steer`)
 - [ ] `API-004` Implement agent config endpoints (name, role, personality, order, working dir)
@@ -67,7 +67,7 @@ This is the source-of-truth backlog for current known scope.
 ## Epic OPS - Local Network and Security
 - [ ] `OPS-001` Add local auth token for control APIs and basic request limits
 - [ ] `OPS-002` Add LAN run profile and startup scripts for phone/tablet/laptop access
-- [ ] `OPS-003` Add capacity telemetry snapshot (CPU/RAM/active agent runs) surfaced to UI
+- [x] `OPS-003` Add capacity telemetry snapshot (CPU/RAM/active agent runs) surfaced to UI
 
 ## Epic DOC - Living Engineering Record
 - [ ] `DOC-001` Add ADR entries for orchestration algorithm and resume strategy
