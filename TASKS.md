@@ -15,7 +15,7 @@ This is the source-of-truth backlog for current known scope.
 ## Epic SETUP - Project Foundations
 - [x] `SETUP-001` Create backend Python package layout (`backend/`, modules, lint/test config)
 - [x] `SETUP-002` Create frontend TypeScript app shell (`frontend/`, build/test/lint)
-- [ ] `SETUP-003` Add shared dev commands (`make lint`, `make test`, `make run-backend`, `make run-frontend`)
+- [x] `SETUP-003` Add shared dev commands (`make lint`, `make test`, `make run-backend`, `make run-frontend`)
 
 ## Epic DATA - Persistence and Context Memory
 - [x] `DATA-001` Implement SQLite schema v1 (conversations, agents, tasks, runs, checkpoints)

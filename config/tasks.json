@@ -4,7 +4,7 @@
   "tasks": [
     {"id":"SETUP-001","slug":"setup-backend-layout","title":"Backend Python package layout","scope":"backend/*","epic":"SETUP","priority":"P0","status":"Done","depends_on":[],"default_owner":"claude-backend"},
     {"id":"SETUP-002","slug":"setup-frontend-shell","title":"Frontend TypeScript app shell","scope":"frontend/*","epic":"SETUP","priority":"P0","status":"Done","depends_on":[],"default_owner":"claude-frontend"},
-    {"id":"SETUP-003","slug":"setup-dev-commands","title":"Shared dev commands","scope":"Makefile,scripts/*","epic":"SETUP","priority":"P1","status":"Todo","depends_on":["SETUP-001","SETUP-002"],"default_owner":"unassigned"},
+    {"id":"SETUP-003","slug":"setup-dev-commands","title":"Shared dev commands","scope":"Makefile,scripts/*","epic":"SETUP","priority":"P1","status":"Done","depends_on":["SETUP-001","SETUP-002"],"default_owner":"unassigned"},
 
     {"id":"DATA-001","slug":"data-sqlite-schema-v1","title":"SQLite schema v1","scope":"backend/storage/schema.sql","epic":"DATA","priority":"P0","status":"Done","depends_on":["SETUP-001"],"default_owner":"claude-data"},
     {"id":"DATA-002","slug":"data-migration-loader","title":"Schema migration/bootstrap loader","scope":"backend/storage/migrate.py","epic":"DATA","priority":"P1","status":"Todo","depends_on":["DATA-001"],"default_owner":"unassigned"},

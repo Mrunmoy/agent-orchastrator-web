@@ -1,5 +1,6 @@
 SHELL := /bin/bash
 ROOT := $(CURDIR)
+PYTHON ?= python3
 PORT ?= 8080
 AGENTS ?=
 
@@ -38,7 +39,7 @@ help:
 test: test-backend test-frontend
 
 test-backend:
-	cd $(ROOT)/backend && python -m pytest -q
+	cd $(ROOT)/backend && $(PYTHON) -m pytest -q
 
 test-frontend:
 	cd $(ROOT)/frontend && npm test
@@ -46,17 +47,17 @@ test-frontend:
 lint: lint-backend lint-frontend
 
 lint-backend:
-	cd $(ROOT)/backend && python -m ruff check src/ tests/
+	cd $(ROOT)/backend && $(PYTHON) -m ruff check src/ tests/
 
 lint-frontend:
 	cd $(ROOT)/frontend && npm run lint
 
 format-check:
-	cd $(ROOT)/backend && python -m black --check src/ tests/
+	cd $(ROOT)/backend && $(PYTHON) -m black --check src/ tests/
 	cd $(ROOT)/frontend && npm run format:check
 
 run-backend:
-	cd $(ROOT)/backend && python -m uvicorn agent_orchestrator.api:app --reload --host 0.0.0.0 --port 8000
+	cd $(ROOT)/backend && $(PYTHON) -m uvicorn agent_orchestrator.api:app --reload --host 0.0.0.0 --port 8000
 
 run-frontend:
 	cd $(ROOT)/frontend && npm run dev

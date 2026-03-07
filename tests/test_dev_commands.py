@@ -1,14 +1,15 @@
 """Tests for SETUP-003: shared dev commands in root Makefile."""
 
 import subprocess
+from pathlib import Path
 
-ROOT = "/home/mrumoy/sandbox/agent-orchestrator-web"
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _run_make(target: str, timeout: int = 120) -> subprocess.CompletedProcess:
     return subprocess.run(
         ["make", "-n", target],
-        cwd=ROOT,
+        cwd=str(ROOT),
         capture_output=True,
         text=True,
         timeout=timeout,
@@ -57,37 +58,24 @@ def test_make_run_frontend_target_exists():
     assert _make_has_target("run-frontend"), "make run-frontend target should exist"
 
 
-def test_make_test_runs_successfully():
-    """Actually run make test and verify exit 0."""
-    result = subprocess.run(
-        ["make", "test"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
-    assert result.returncode == 0, f"make test failed:\n{result.stdout}\n{result.stderr}"
+def test_make_test_wires_backend_and_frontend_commands():
+    result = _run_make("test")
+    assert result.returncode == 0, f"make -n test failed:\n{result.stdout}\n{result.stderr}"
+    assert "pytest -q" in result.stdout
+    assert "npm test" in result.stdout
 
 
-def test_make_lint_runs_successfully():
-    """Actually run make lint and verify exit 0."""
-    result = subprocess.run(
-        ["make", "lint"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
-    assert result.returncode == 0, f"make lint failed:\n{result.stdout}\n{result.stderr}"
+def test_make_lint_wires_backend_and_frontend_commands():
+    result = _run_make("lint")
+    assert result.returncode == 0, f"make -n lint failed:\n{result.stdout}\n{result.stderr}"
+    assert "ruff check src/ tests/" in result.stdout
+    assert "npm run lint" in result.stdout
 
 
-def test_make_format_check_runs_successfully():
-    """Actually run make format-check and verify exit 0."""
-    result = subprocess.run(
-        ["make", "format-check"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
-    assert result.returncode == 0, f"make format-check failed:\n{result.stdout}\n{result.stderr}"
+def test_make_format_check_wires_backend_and_frontend_commands():
+    result = _run_make("format-check")
+    assert (
+        result.returncode == 0
+    ), f"make -n format-check failed:\n{result.stdout}\n{result.stderr}"
+    assert "black --check src/ tests/" in result.stdout
+    assert "npm run format:check" in result.stdout

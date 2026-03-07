@@ -31,9 +31,9 @@
 - Integration: a test script that verifies each make target exits 0 on the current codebase.
 
 ## Acceptance Criteria
-- [ ] `make test` runs backend + frontend tests and exits 0
-- [ ] `make lint` runs ruff + eslint and exits 0
-- [ ] `make format-check` runs black --check + prettier --check and exits 0
-- [ ] `make run-backend` starts uvicorn
-- [ ] `make run-frontend` starts vite dev server
-- [ ] Help target updated with new commands
+- [x] `make test` runs backend + frontend tests and exits 0
+- [x] `make lint` runs ruff + eslint and exits 0
+- [x] `make format-check` runs black --check + prettier --check and exits 0
+- [x] `make run-backend` starts uvicorn
+- [x] `make run-frontend` starts vite dev server
+- [x] Help target updated with new commands
