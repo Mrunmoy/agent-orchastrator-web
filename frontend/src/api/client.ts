@@ -33,9 +33,23 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       ...(init?.headers ?? {}),
     },
   });
+
+  if (!response.ok) {
+    let errorMessage = `Request failed: ${response.status}`;
+    try {
+      const errorBody = (await response.json()) as Partial<ApiEnvelope<T>>;
+      if (typeof errorBody.error === "string" && errorBody.error.trim().length > 0) {
+        errorMessage = errorBody.error;
+      }
+    } catch {
+      // Non-JSON error body; keep status-based message.
+    }
+    throw new Error(errorMessage);
+  }
+
   const body = (await response.json()) as ApiEnvelope<T>;
-  if (!response.ok || !body.ok) {
-    throw new Error(body.error ?? `Request failed: ${response.status}`);
+  if (!body.ok) {
+    throw new Error(body.error ?? "Request failed");
   }
   return body.data;
 }

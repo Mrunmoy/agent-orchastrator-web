@@ -117,9 +117,12 @@ describe("AppShell", () => {
     expect(screen.getByTestId("agent-editor")).toBeInTheDocument();
 
     const editor = screen.getByTestId("agent-editor");
-    const inputs = within(editor).getAllByRole("textbox");
-    fireEvent.change(inputs[0], { target: { value: "Codex Worker" } });
-    fireEvent.change(inputs[1], { target: { value: "codex-1" } });
+    fireEvent.change(within(editor).getByLabelText("Name"), {
+      target: { value: "Codex Worker" },
+    });
+    fireEvent.change(within(editor).getByLabelText("Model"), {
+      target: { value: "codex-1" },
+    });
     fireEvent.click(within(editor).getByRole("button", { name: /save agent/i }));
 
     await waitFor(() => expect(api.createAgent).toHaveBeenCalledOnce());

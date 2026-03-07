@@ -160,16 +160,17 @@ export function AppShell() {
     if (!selectedConversationId) return;
     try {
       await deleteConversationApi(selectedConversationId);
-      const nextConversations = conversations.filter(
-        (conversation) => conversation.id !== selectedConversationId,
-      );
-      setConversations(nextConversations);
+      let fallbackId: string | null = null;
+      setConversations((prev) => {
+        const next = prev.filter((conversation) => conversation.id !== selectedConversationId);
+        fallbackId = next[0]?.id ?? null;
+        return next;
+      });
       setMessagesByConversation((prev) => {
         const next = { ...prev };
         delete next[selectedConversationId];
         return next;
       });
-      const fallbackId = nextConversations[0]?.id ?? null;
       setSelectedConversationId(fallbackId);
       if (fallbackId) {
         await selectConversationApi(fallbackId);
