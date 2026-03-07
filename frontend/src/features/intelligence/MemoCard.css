@@ -1,56 +1,60 @@
 .memo-card {
-  background: #1e1e2e;
-  border: 1px solid #313244;
-  border-radius: 8px;
-  padding: 16px;
-  color: #cdd6f4;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px;
+  color: var(--ink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .memo-empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6c7086;
+  color: var(--muted);
   font-size: 13px;
   padding: 24px;
 }
 
 .memo-card-heading {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  margin: 0 0 12px 0;
-  color: #cdd6f4;
+  margin: 0 0 10px 0;
+  color: var(--ink);
 }
 
 .memo-card-subheading {
   font-size: 12px;
   font-weight: 600;
-  margin: 12px 0 6px 0;
-  color: #a6adc8;
+  margin: 10px 0 6px 0;
+  color: var(--muted);
 }
 
 .memo-card-summary {
   font-size: 13px;
   margin: 0;
   line-height: 1.5;
+  color: var(--ink);
 }
 
 .memo-card-points {
   margin: 0;
-  padding-left: 20px;
+  padding-left: 18px;
   font-size: 13px;
   line-height: 1.6;
+  color: var(--ink);
 }
 
 .memo-card-recommendation {
   font-size: 13px;
   margin: 0;
   line-height: 1.5;
+  color: var(--ink);
 }
 
 .memo-card-timestamp {
   display: block;
-  margin-top: 12px;
+  margin-top: 10px;
   font-size: 11px;
-  color: #6c7086;
+  color: var(--muted);
 }

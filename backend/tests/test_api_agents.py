@@ -237,7 +237,7 @@ class TestDeleteAgent:
 class TestReorderAgent:
     def test_patch_order_returns_200_and_updates_sort_order(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Ordered Agent",
                 "provider": "claude",
@@ -246,7 +246,7 @@ class TestReorderAgent:
             },
         )
         agent_id = resp.json()["data"]["agent"]["id"]
-        resp = client.patch(f"/agents/{agent_id}/order", json={"sort_order": 3})
+        resp = client.patch(f"/api/agents/{agent_id}/order", json={"sort_order": 3})
         assert resp.status_code == 200
         body = resp.json()
         assert body["ok"] is True
@@ -254,7 +254,7 @@ class TestReorderAgent:
 
     def test_get_agents_includes_sort_order_field(self, client: TestClient):
         client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Agent With Order",
                 "provider": "claude",
@@ -262,7 +262,7 @@ class TestReorderAgent:
                 "role": "worker",
             },
         )
-        resp = client.get("/agents")
+        resp = client.get("/api/agents")
         agents = resp.json()["data"]["agents"]
         assert len(agents) == 1
         assert "sort_order" in agents[0]
@@ -270,7 +270,7 @@ class TestReorderAgent:
 
     def test_patch_negative_sort_order_returns_400(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Agent",
                 "provider": "claude",
@@ -279,19 +279,19 @@ class TestReorderAgent:
             },
         )
         agent_id = resp.json()["data"]["agent"]["id"]
-        resp = client.patch(f"/agents/{agent_id}/order", json={"sort_order": -1})
+        resp = client.patch(f"/api/agents/{agent_id}/order", json={"sort_order": -1})
         assert resp.status_code == 400
         body = resp.json()
         assert body["ok"] is False
 
     def test_patch_order_nonexistent_agent_returns_404(self, client: TestClient):
-        resp = client.patch("/agents/nonexistent-id/order", json={"sort_order": 1})
+        resp = client.patch("/api/agents/nonexistent-id/order", json={"sort_order": 1})
         assert resp.status_code == 404
         assert resp.json()["ok"] is False
 
     def test_create_agent_has_default_sort_order_zero(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "New Agent",
                 "provider": "claude",
@@ -304,11 +304,11 @@ class TestReorderAgent:
 
     def test_get_agents_ordered_by_sort_order(self, client: TestClient):
         resp1 = client.post(
-            "/agents",
+            "/api/agents",
             json={"display_name": "Beta", "provider": "claude", "model": "opus", "role": "worker"},
         )
         resp2 = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Alpha",
                 "provider": "codex",
@@ -319,9 +319,9 @@ class TestReorderAgent:
         agent1_id = resp1.json()["data"]["agent"]["id"]
         agent2_id = resp2.json()["data"]["agent"]["id"]
         # Set Beta to sort_order 0 and Alpha to sort_order 1
-        client.patch(f"/agents/{agent1_id}/order", json={"sort_order": 0})
-        client.patch(f"/agents/{agent2_id}/order", json={"sort_order": 1})
-        agents = client.get("/agents").json()["data"]["agents"]
+        client.patch(f"/api/agents/{agent1_id}/order", json={"sort_order": 0})
+        client.patch(f"/api/agents/{agent2_id}/order", json={"sort_order": 1})
+        agents = client.get("/api/agents").json()["data"]["agents"]
         # Beta (sort_order=0) should come before Alpha (sort_order=1)
         assert agents[0]["display_name"] == "Beta"
         assert agents[1]["display_name"] == "Alpha"
