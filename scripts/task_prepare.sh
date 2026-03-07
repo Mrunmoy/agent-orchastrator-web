@@ -39,6 +39,9 @@ cat <<MSG
 - worker: $WORKER
 - worktree: $WT_PATH
 - prompt: $PROMPT_FILE
+
+Tell Claude in this session:
+  Read TASK_PROMPT.md in the current directory and execute it exactly.
 MSG
 
 if [[ "$OPEN_SHELL" == "1" ]]; then
