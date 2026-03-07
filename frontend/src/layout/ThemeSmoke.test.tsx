@@ -24,7 +24,7 @@ import { AppShell } from "./AppShell";
 import { TopBar } from "./TopBar";
 import { HistoryPane } from "./HistoryPane";
 
-describe("UI-011 Theme Smoke Tests", () => {
+describe("UI-012 Theme Smoke Tests", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     api.listConversations.mockResolvedValue([]);

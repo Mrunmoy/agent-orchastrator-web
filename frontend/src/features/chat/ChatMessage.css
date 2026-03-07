@@ -36,7 +36,7 @@
 }
 
 .chat-message--user .chat-avatar {
-  background: linear-gradient(135deg, #2a4a6e, #1264a3);
+  background: linear-gradient(135deg, var(--user-avatar-start), var(--user-avatar-end));
   border: none;
   color: #fff;
 }
@@ -56,8 +56,8 @@
 }
 
 .chat-message--user .chat-bubble {
-  background: rgba(124, 106, 247, 0.15);
-  border: 1px solid rgba(124, 106, 247, 0.25);
+  background: rgba(107, 91, 214, 0.15);
+  border: 1px solid var(--brand-glow);
 }
 
 .chat-bubble__header {

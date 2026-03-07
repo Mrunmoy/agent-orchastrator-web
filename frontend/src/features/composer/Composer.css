@@ -26,7 +26,7 @@
 
 .composer__agent-selector:focus {
   border-color: var(--brand);
-  box-shadow: 0 0 0 2px rgba(124, 106, 247, 0.25);
+  box-shadow: 0 0 0 2px var(--brand-glow);
 }
 
 .composer__input-row {
@@ -57,7 +57,7 @@
 
 .composer__input:focus {
   border-color: var(--brand);
-  box-shadow: 0 0 0 2px rgba(124, 106, 247, 0.25);
+  box-shadow: 0 0 0 2px var(--brand-glow);
 }
 
 .composer__input:disabled {
@@ -87,5 +87,5 @@
 
 .composer__send-button:hover:not(:disabled) {
   background: var(--brand-light);
-  box-shadow: 0 2px 8px rgba(124, 106, 247, 0.35);
+  box-shadow: 0 2px 8px var(--brand-glow-strong);
 }

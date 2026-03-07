@@ -25,7 +25,7 @@
   height: 18px;
   border-radius: 999px;
   background: var(--gold);
-  color: #111521;
+  color: var(--badge-ink);
   font-size: 10px;
   font-weight: 700;
   display: flex;
@@ -99,7 +99,7 @@
 }
 
 .provider-claude {
-  background: rgba(124, 106, 247, 0.2);
+  background: rgba(107, 91, 214, 0.2);
   color: var(--brand-light);
 }
 
@@ -130,7 +130,7 @@
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(124, 106, 247, 0.12);
+  background: rgba(107, 91, 214, 0.12);
   color: var(--brand-light);
 }
 
