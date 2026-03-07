@@ -24,6 +24,13 @@ from agent_orchestrator.api.responses import error_response, ok_response
 class RunBody(BaseModel):
     batch_size: int = 20
 
+    @field_validator("batch_size")
+    @classmethod
+    def batch_size_must_be_positive(cls, v: int) -> int:
+        if v < 1:
+            raise ValueError("batch_size must be >= 1")
+        return v
+
 
 class SteerBody(BaseModel):
     note: str
@@ -106,10 +113,10 @@ def start_run(conversation_id: str, body: RunBody | None = None) -> Any:
                 content=error_response("Conversation not found"),
             )
 
-        # Check for an already-active run
+        # Check for an already-active run (including paused)
         active = conn.execute(
             "SELECT id FROM scheduler_run "
-            "WHERE conversation_id = ? AND status IN ('running', 'queued') "
+            "WHERE conversation_id = ? AND status IN ('running', 'queued', 'paused') "
             "ORDER BY created_at DESC LIMIT 1",
             (conversation_id,),
         ).fetchone()

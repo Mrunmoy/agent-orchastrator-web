@@ -90,6 +90,29 @@ class TestRunEndpoint:
         assert resp.status_code == 409
         assert resp.json()["ok"] is False
 
+    def test_409_if_paused_run_exists(self, client: TestClient):
+        cid = _create_conversation(client)
+        _insert_run(cid, status="paused")
+        resp = client.post(f"/orchestration/{cid}/run")
+        assert resp.status_code == 409
+        assert resp.json()["ok"] is False
+
+    def test_422_for_zero_batch_size(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.post(
+            f"/orchestration/{cid}/run",
+            json={"batch_size": 0},
+        )
+        assert resp.status_code == 422
+
+    def test_422_for_negative_batch_size(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.post(
+            f"/orchestration/{cid}/run",
+            json={"batch_size": -5},
+        )
+        assert resp.status_code == 422
+
     def test_run_persisted_in_db(self, client: TestClient):
         cid = _create_conversation(client)
         resp = client.post(f"/orchestration/{cid}/run")
