@@ -45,7 +45,7 @@ Execution board for active parallel slices.
 | UI-001 | App shell layout | `frontend/src/layout/*` | P0 | claude-ui | Done | SETUP-002 | claude/ui-app-shell-layout |
 | UI-002 | Conversation history pane | `frontend/src/features/history/*` | P0 | claude-agent | Done | UI-001,API-002 | claude/ui-002-history-pane |
 | UI-003 | Chat timeline | `frontend/src/features/chat/*` | P0 | claude-agent | Done | UI-001,API-005 | claude/ui-003-chat-timeline |
-| UI-004 | Composer + run controls | `frontend/src/features/composer/*` | P0 | unassigned | Todo | UI-001,API-003 | - |
+| UI-004 | Composer + run controls | `frontend/src/features/composer/*` | P0 | claude-agent | Done | UI-001,API-003 | claude/ui-004-composer-controls |
 | UI-005 | Agent roster editor | `frontend/src/features/agents/*` | P1 | claude-agent | Done | UI-001,API-004 | claude/ui-005-agent-roster |
 | UI-006 | Intelligence pane | `frontend/src/features/intelligence/*` | P1 | claude-agent | Done | UI-001,API-005,ADPT-003 | claude/ui-006-intelligence-pane |
 | UI-007 | Run-window controls | `frontend/src/features/run-controls/*` | P1 | unassigned | Todo | UI-004,ORCH-005 | - |
