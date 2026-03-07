@@ -65,7 +65,7 @@ This is the source-of-truth backlog for current known scope.
 - [ ] `TEST-004` End-to-end scenario: debate -> agreement -> task split -> completion notification
 
 ## Epic OPS - Local Network and Security
-- [ ] `OPS-001` Add local auth token for control APIs and basic request limits
+- [x] `OPS-001` Add local auth token for control APIs and basic request limits
 - [ ] `OPS-002` Add LAN run profile and startup scripts for phone/tablet/laptop access
 - [x] `OPS-003` Add capacity telemetry snapshot (CPU/RAM/active agent runs) surfaced to UI
 
