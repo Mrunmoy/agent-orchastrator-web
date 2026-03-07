@@ -18,7 +18,7 @@ export const AgentRoster: React.FC<AgentRosterProps> = ({
     <div className="agent-roster" data-testid="agent-roster">
       <div className="agent-roster-header">
         <span className="agent-roster-title">Agents</span>
-        <button className="agent-roster-add-btn" onClick={onAdd}>
+        <button type="button" className="agent-roster-add-btn" onClick={onAdd}>
           Add Agent
         </button>
       </div>

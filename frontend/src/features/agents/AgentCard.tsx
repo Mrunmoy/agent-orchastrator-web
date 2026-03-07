@@ -26,6 +26,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, onEdit }) => {
       <span className="agent-card-model">{agent.model}</span>
       <div className="agent-card-footer">
         <button
+          type="button"
           className="agent-card-edit-btn"
           onClick={() => onEdit(agent.id)}
         >
