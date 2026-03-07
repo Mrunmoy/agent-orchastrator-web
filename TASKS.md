@@ -3,8 +3,8 @@
 This is the source-of-truth backlog for current known scope.
 
 ## Current State Snapshot
-- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot.
-- Not done: full orchestrator runtime, API surface beyond health/state, persistence features beyond schema+bootstrap, production workflow integration.
+- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex/Ollama adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot, domain models (enums + dataclasses), conversation CRUD endpoints, JSONL event log writer/reader.
+- Not done: full orchestrator runtime (state machine, scheduler, batch runner), API surface beyond health/conversations, checkpoint builder, production workflow integration.
 
 ## Definition of Done (per task)
 - Design/spec links are updated if behavior changed.
@@ -20,11 +20,11 @@ This is the source-of-truth backlog for current known scope.
 ## Epic DATA - Persistence and Context Memory
 - [x] `DATA-001` Implement SQLite schema v1 (conversations, agents, tasks, runs, checkpoints)
 - [x] `DATA-002` Add migration/bootstrap loader for schema initialization
-- [ ] `DATA-003` Implement append-only JSONL event log writer/reader
+- [x] `DATA-003` Implement append-only JSONL event log writer/reader
 - [ ] `DATA-004` Implement checkpoint pack builder with token bounds and summary compaction
 
 ## Epic ORCH - Orchestration Core
-- [ ] `ORCH-001` Implement domain models (Agent, Conversation, Task, RunWindow, Notification)
+- [x] `ORCH-001` Implement domain models (Agent, Conversation, Task, RunWindow, Notification)
 - [ ] `ORCH-002` Implement conversation state machine (`Debate`, `Planning`, `Working`, `NeedsInput`, `Queued`, `Completed`, `Failed`)
 - [ ] `ORCH-003` Implement round-robin scheduler with strict agent order
 - [ ] `ORCH-004` Implement 20-turn batch runner with pause/continue/stop-now
@@ -34,12 +34,12 @@ This is the source-of-truth backlog for current known scope.
 ## Epic ADPT - CLI Agent Adapters
 - [x] `ADPT-001` Implement Claude CLI adapter (prompt, session attach/resume hooks, timeout handling)
 - [x] `ADPT-002` Implement Codex CLI adapter (prompt, session attach/resume hooks, timeout handling)
-- [ ] `ADPT-003` Implement Ollama memo adapter for neutral decision memo
+- [x] `ADPT-003` Implement Ollama memo adapter for neutral decision memo
 - [ ] `ADPT-004` Normalize adapter output into common message/event schema
 
 ## Epic API - Backend Service
 - [x] `API-001` Implement FastAPI app with health/config endpoints
-- [ ] `API-002` Implement conversation CRUD endpoints
+- [x] `API-002` Implement conversation CRUD endpoints
 - [ ] `API-003` Implement orchestration control endpoints (`run`, `continue`, `stop`, `steer`)
 - [ ] `API-004` Implement agent config endpoints (name, role, personality, order, working dir)
 - [ ] `API-005` Implement events stream endpoint for UI live updates

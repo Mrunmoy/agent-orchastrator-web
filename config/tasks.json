@@ -8,10 +8,10 @@
 
     {"id":"DATA-001","slug":"data-sqlite-schema-v1","title":"SQLite schema v1","scope":"backend/storage/schema.sql","epic":"DATA","priority":"P0","status":"Done","depends_on":["SETUP-001"],"default_owner":"claude-data"},
     {"id":"DATA-002","slug":"data-migration-loader","title":"Schema migration/bootstrap loader","scope":"backend/storage/db.py","epic":"DATA","priority":"P1","status":"Done","depends_on":["DATA-001"],"default_owner":"claude-parallel"},
-    {"id":"DATA-003","slug":"data-event-log-jsonl","title":"JSONL event log writer/reader","scope":"backend/storage/event_log.py","epic":"DATA","priority":"P1","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
+    {"id":"DATA-003","slug":"data-event-log-jsonl","title":"JSONL event log writer/reader","scope":"backend/storage/event_log.py","epic":"DATA","priority":"P1","status":"Done","depends_on":["SETUP-001"],"default_owner":"unassigned"},
     {"id":"DATA-004","slug":"data-checkpoint-packer","title":"Checkpoint pack builder","scope":"backend/storage/checkpoint.py","epic":"DATA","priority":"P1","status":"Todo","depends_on":["DATA-001","DATA-003"],"default_owner":"unassigned"},
 
-    {"id":"ORCH-001","slug":"orch-domain-models","title":"Domain models","scope":"backend/orchestrator/models.py","epic":"ORCH","priority":"P0","status":"Todo","depends_on":["SETUP-001","DATA-001"],"default_owner":"unassigned"},
+    {"id":"ORCH-001","slug":"orch-domain-models","title":"Domain models","scope":"backend/orchestrator/models.py","epic":"ORCH","priority":"P0","status":"Done","depends_on":["SETUP-001","DATA-001"],"default_owner":"unassigned"},
     {"id":"ORCH-002","slug":"orch-state-machine","title":"Conversation state machine","scope":"backend/orchestrator/state_machine.py","epic":"ORCH","priority":"P0","status":"Todo","depends_on":["ORCH-001"],"default_owner":"unassigned"},
     {"id":"ORCH-003","slug":"orch-round-robin-scheduler","title":"Round-robin scheduler","scope":"backend/orchestrator/scheduler.py","epic":"ORCH","priority":"P0","status":"Todo","depends_on":["ORCH-001"],"default_owner":"unassigned"},
     {"id":"ORCH-004","slug":"orch-batch-runner","title":"20-turn batch runner","scope":"backend/orchestrator/batch_runner.py","epic":"ORCH","priority":"P0","status":"Todo","depends_on":["ORCH-002","ORCH-003","ADPT-001","ADPT-002"],"default_owner":"unassigned"},
@@ -20,11 +20,11 @@
 
     {"id":"ADPT-001","slug":"adpt-claude-cli","title":"Claude CLI adapter","scope":"backend/adapters/claude_adapter.py","epic":"ADPT","priority":"P0","status":"Done","depends_on":["SETUP-001"],"default_owner":"claude-adapter"},
     {"id":"ADPT-002","slug":"adpt-codex-cli","title":"Codex CLI adapter","scope":"backend/adapters/codex_adapter.py","epic":"ADPT","priority":"P0","status":"Done","depends_on":["SETUP-001"],"default_owner":"codex-adapter"},
-    {"id":"ADPT-003","slug":"adpt-ollama-memo","title":"Ollama memo adapter","scope":"backend/adapters/ollama_adapter.py","epic":"ADPT","priority":"P1","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
+    {"id":"ADPT-003","slug":"adpt-ollama-memo","title":"Ollama memo adapter","scope":"backend/adapters/ollama_adapter.py","epic":"ADPT","priority":"P1","status":"Done","depends_on":["SETUP-001"],"default_owner":"unassigned"},
     {"id":"ADPT-004","slug":"adpt-output-normalization","title":"Adapter output normalization","scope":"backend/adapters/normalize.py","epic":"ADPT","priority":"P1","status":"Todo","depends_on":["ADPT-001","ADPT-002","ADPT-003"],"default_owner":"unassigned"},
 
     {"id":"API-001","slug":"api-fastapi-core","title":"FastAPI app and health endpoint","scope":"backend/api/","epic":"API","priority":"P0","status":"Done","depends_on":["SETUP-001"],"default_owner":"claude-parallel"},
-    {"id":"API-002","slug":"api-conversation-crud","title":"Conversation CRUD endpoints","scope":"backend/api/routes/conversations.py","epic":"API","priority":"P0","status":"Todo","depends_on":["API-001","DATA-001"],"default_owner":"unassigned"},
+    {"id":"API-002","slug":"api-conversation-crud","title":"Conversation CRUD endpoints","scope":"backend/api/routes/conversations.py","epic":"API","priority":"P0","status":"Done","depends_on":["API-001","DATA-001"],"default_owner":"unassigned"},
     {"id":"API-003","slug":"api-orchestration-controls","title":"Run/continue/stop/steer endpoints","scope":"backend/api/routes/orchestration.py","epic":"API","priority":"P0","status":"Todo","depends_on":["API-001","ORCH-004"],"default_owner":"unassigned"},
     {"id":"API-004","slug":"api-agent-config","title":"Agent config endpoints","scope":"backend/api/routes/agents.py","epic":"API","priority":"P1","status":"Todo","depends_on":["API-001","ORCH-001"],"default_owner":"unassigned"},
     {"id":"API-005","slug":"api-events-stream","title":"Events stream endpoint","scope":"backend/api/routes/events.py","epic":"API","priority":"P1","status":"Todo","depends_on":["API-001","DATA-003"],"default_owner":"unassigned"},
