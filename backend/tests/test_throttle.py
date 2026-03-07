@@ -182,6 +182,15 @@ class TestRunQueue:
         queue = RunQueue(throttle)
         assert queue.remove("nope") is False
 
+    def test_enqueue_duplicate_is_idempotent(self) -> None:
+        throttle = CapacityThrottle()
+        queue = RunQueue(throttle)
+        pos0 = queue.enqueue("conv-1")
+        queue.enqueue("conv-2")
+        pos_dup = queue.enqueue("conv-1")
+        assert pos_dup == pos0
+        assert queue.pending() == ["conv-1", "conv-2"]
+
     def test_position_updates_after_dequeue(self) -> None:
         throttle = CapacityThrottle()
         queue = RunQueue(throttle)

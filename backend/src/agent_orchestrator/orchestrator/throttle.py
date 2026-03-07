@@ -128,7 +128,14 @@ class RunQueue:
         self._queue: list[str] = []
 
     def enqueue(self, conversation_id: str) -> int:
-        """Add *conversation_id* to the queue and return its 0-indexed position."""
+        """Add *conversation_id* to the queue and return its 0-indexed position.
+
+        Idempotent: if already queued, returns existing position.
+        """
+        try:
+            return self._queue.index(conversation_id)
+        except ValueError:
+            pass
         self._queue.append(conversation_id)
         return len(self._queue) - 1
 
