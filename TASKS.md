@@ -3,8 +3,8 @@
 This is the source-of-truth backlog for current known scope.
 
 ## Current State Snapshot
-- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex/Ollama adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot, domain models (enums + dataclasses), conversation CRUD endpoints, JSONL event log writer/reader, conversation state machine, round-robin scheduler, 20-turn batch runner, adapter output normalization, checkpoint pack builder, agent config endpoints, events stream endpoint, conversation history pane, chat timeline, agent roster editor, orchestration control endpoints, steering note injection, capacity-aware throttle, intelligence pane, merge coordinator queue.
-- Not done: branch lock policy, notification pipeline, auth, LAN profile, remaining test/doc tasks.
+- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex/Ollama adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot, domain models (enums + dataclasses), conversation CRUD endpoints, JSONL event log writer/reader, conversation state machine, round-robin scheduler, 20-turn batch runner, adapter output normalization, checkpoint pack builder, agent config endpoints, events stream endpoint, conversation history pane, chat timeline, agent roster editor, orchestration control endpoints, steering note injection, capacity-aware throttle, intelligence pane, merge coordinator queue, branch/task lock policy, notification pipeline, auth, LAN profile, remaining test/doc tasks.
+- Not done: no open items from current tracked scope snapshot.
 
 ## Definition of Done (per task)
 - Design/spec links are updated if behavior changed.
