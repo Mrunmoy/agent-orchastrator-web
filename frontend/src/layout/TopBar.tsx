@@ -21,7 +21,19 @@ function writeStorage(key: string, value: string): void {
   }
 }
 
-export function TopBar() {
+type TopBarProps = {
+  runStatus?: string;
+  gateStatus?: string;
+  onRunNewBatch?: () => void;
+  onStopRun?: () => void;
+};
+
+export function TopBar({
+  runStatus = "Idle",
+  gateStatus = "Open",
+  onRunNewBatch,
+  onStopRun,
+}: TopBarProps) {
   const initialWorkingDir = readStorage(WORKING_DIR_KEY) ?? DEFAULT_WORKING_DIR;
   const initialHistory = useMemo(() => {
     const raw = readStorage(WORKING_DIR_HISTORY_KEY);
@@ -46,10 +58,7 @@ export function TopBar() {
     const trimmed = workingDir.trim();
     if (!trimmed) return;
     writeStorage(WORKING_DIR_KEY, trimmed);
-    const nextHistory = [trimmed, ...history.filter((entry) => entry !== trimmed)].slice(
-      0,
-      10,
-    );
+    const nextHistory = [trimmed, ...history.filter((entry) => entry !== trimmed)].slice(0, 10);
     setHistory(nextHistory);
     writeStorage(WORKING_DIR_HISTORY_KEY, JSON.stringify(nextHistory));
     setWorkingDir(trimmed);
@@ -65,7 +74,7 @@ export function TopBar() {
       <div className="top-bar__title">
         Agent Orchestrator Lab
         <span className="chip">Phase: TDD Planning</span>
-        <span className="chip">Gate: Open</span>
+        <span className="chip">Gate: {gateStatus}</span>
       </div>
       <form className="top-bar__field" onSubmit={onSubmit}>
         <label htmlFor="working-dir">Working Directory</label>
@@ -88,10 +97,14 @@ export function TopBar() {
         </div>
       </form>
       <div className="top-bar__status" data-testid="run-status">
-        Idle
+        {runStatus}
       </div>
-      <button className="btn btn--primary">Run New Batch (20)</button>
-      <button className="btn btn--danger">Stop Current Run</button>
+      <button className="btn btn--primary" onClick={onRunNewBatch}>
+        Run New Batch (20)
+      </button>
+      <button className="btn btn--danger" onClick={onStopRun}>
+        Stop Current Run
+      </button>
     </header>
   );
 }

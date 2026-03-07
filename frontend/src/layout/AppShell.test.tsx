@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { AppShell } from "./AppShell";
 
@@ -43,5 +43,29 @@ describe("AppShell", () => {
     render(<AppShell />);
     const main = screen.getByTestId("main-content");
     expect(main.className).toContain("app-shell__main");
+  });
+
+  it("creates a new conversation when New is clicked", () => {
+    render(<AppShell />);
+    fireEvent.click(screen.getByRole("button", { name: /\+ new/i }));
+    const list = screen.getByTestId("conversation-list");
+    expect(within(list).getByText("Conversation 1")).toBeInTheDocument();
+  });
+
+  it("sends a message to the active conversation", () => {
+    render(<AppShell />);
+    fireEvent.click(screen.getByRole("button", { name: /\+ new/i }));
+    fireEvent.change(screen.getByPlaceholderText("Type a message..."), {
+      target: { value: "hello agents" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /send to group/i }));
+    expect(screen.getByText("hello agents")).toBeInTheDocument();
+  });
+
+  it("clear all removes conversations", () => {
+    render(<AppShell />);
+    fireEvent.click(screen.getByRole("button", { name: /\+ new/i }));
+    fireEvent.click(screen.getByRole("button", { name: /clear all/i }));
+    expect(screen.getByText("No conversations yet")).toBeInTheDocument();
   });
 });

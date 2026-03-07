@@ -21,6 +21,17 @@
   background: #ffffff;
 }
 
+.chat-message {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eceef5;
+  color: #1d1c1d;
+  font-size: 14px;
+}
+
+.chat-message strong {
+  color: #1d1c1d;
+}
+
 .chat-pane__empty {
   padding: 40px 12px;
   text-align: center;
