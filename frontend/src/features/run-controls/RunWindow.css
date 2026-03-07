@@ -1,0 +1,85 @@
+.run-window {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border-color, #333);
+  border-radius: 6px;
+  background: var(--surface-color, #1e1e1e);
+}
+
+.run-window__info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.run-window__status {
+  text-transform: capitalize;
+  font-weight: 600;
+  color: var(--text-color, #e0e0e0);
+}
+
+.run-window__turn {
+  color: var(--text-secondary, #999);
+}
+
+.run-window__elapsed {
+  color: var(--text-secondary, #999);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.run-window__progress {
+  height: 4px;
+  background: var(--surface-alt, #2a2a2a);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.run-window__progress-fill {
+  height: 100%;
+  background: var(--primary-color, #4a9eff);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.run-window__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.run-window__button {
+  padding: 6px 16px;
+  border-radius: 4px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+}
+
+.run-window__button--next {
+  background: var(--success-color, #2ea043);
+}
+
+.run-window__button--next:hover {
+  background: #3cb853;
+}
+
+.run-window__button--continue {
+  background: var(--primary-color, #4a9eff);
+}
+
+.run-window__button--continue:hover {
+  background: var(--primary-hover, #3a8eef);
+}
+
+.run-window__button--stop {
+  background: var(--danger-color, #da3633);
+}
+
+.run-window__button--stop:hover {
+  background: #e04848;
+}

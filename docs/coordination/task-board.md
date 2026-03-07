@@ -48,7 +48,7 @@ Execution board for active parallel slices.
 | UI-004 | Composer + run controls | `frontend/src/features/composer/*` | P0 | claude-agent | Done | UI-001,API-003 | claude/ui-004-composer-controls |
 | UI-005 | Agent roster editor | `frontend/src/features/agents/*` | P1 | claude-agent | Done | UI-001,API-004 | claude/ui-005-agent-roster |
 | UI-006 | Intelligence pane | `frontend/src/features/intelligence/*` | P1 | claude-agent | Done | UI-001,API-005,ADPT-003 | claude/ui-006-intelligence-pane |
-| UI-007 | Run-window controls | `frontend/src/features/run-controls/*` | P1 | unassigned | Todo | UI-004,ORCH-005 | - |
+| UI-007 | Run-window controls | `frontend/src/features/run-controls/*` | P1 | claude-agent | Done | UI-004,ORCH-005 | claude/ui-007-run-window-controls |
 | COORD-001 | Merge coordinator queue model | `backend/orchestrator/merge_queue.py` | P1 | claude-agent | Done | ORCH-004 | claude/coord-001-merge-queue |
 | COORD-002 | Task/branch lock policy | `backend/orchestrator/locks.py` | P1 | claude-agent | Done | COORD-001 | claude/coord-002-task-locks |
 | COORD-003 | Notification pipeline | `backend/runtime/notifications.py` | P1 | claude-agent | Done | ORCH-006 | claude/coord-003-notifications |
