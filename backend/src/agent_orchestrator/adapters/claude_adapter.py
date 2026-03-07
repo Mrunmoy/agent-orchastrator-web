@@ -26,7 +26,7 @@ class ClaudeAdapter(BaseAdapter):
         cmd = self._build_command(prompt, session_id=session_id)
         try:
             stdout, returncode = await self._run_cli(cmd, working_dir, timeout_seconds)
-        except TimeoutError:
+        except (asyncio.TimeoutError, TimeoutError):
             return AdapterResult(
                 text="Claude CLI timed out",
                 status=AdapterStatus.TIMED_OUT,
@@ -44,7 +44,7 @@ class ClaudeAdapter(BaseAdapter):
         cmd = self._build_command(prompt, session_id=session_id)
         try:
             stdout, returncode = await self._run_cli(cmd, working_dir, timeout_seconds)
-        except TimeoutError:
+        except (asyncio.TimeoutError, TimeoutError):
             return AdapterResult(
                 text="Claude CLI timed out",
                 session_id=session_id,
@@ -94,7 +94,7 @@ class ClaudeAdapter(BaseAdapter):
             stdout_bytes, _ = await asyncio.wait_for(
                 proc.communicate(), timeout=timeout_seconds
             )
-        except TimeoutError:
+        except (asyncio.TimeoutError, TimeoutError):
             proc.kill()
             await proc.wait()
             raise
