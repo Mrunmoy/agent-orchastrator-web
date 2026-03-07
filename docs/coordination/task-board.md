@@ -41,6 +41,7 @@ Execution board for active parallel slices.
 | COORD-001 | Merge coordinator queue model | `backend/orchestrator/merge_queue.py` | P1 | unassigned | Todo | ORCH-004 | - |
 | OPS-003 | Capacity telemetry snapshot | `backend/runtime/capacity.py` | P1 | claude-parallel | Done | SETUP-001 | master (merged) |
 | TEST-001 | Scheduler and batch unit tests | `backend/tests/orchestrator/*` | P1 | unassigned | Todo | ORCH-003,ORCH-004 | - |
+| TEST-002 | Adapter contract tests | `backend/tests/adapters/*` | P1 | claude-agent | Done | ADPT-001,ADPT-002 | claude/test-002-adapter-contracts |
 | TEST-003 | Frontend component tests | `frontend/tests/*` | P1 | unassigned | Todo | UI-002,UI-003,UI-004 | - |
 
 ## Merge Queue
