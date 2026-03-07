@@ -258,3 +258,20 @@ async def test_adapter_exception_recorded_as_error() -> None:
     assert result.status == RunStatus.DONE
     a1_turns = [r for r in result.turn_log if r.agent_id == "a1"]
     assert all(r.status == AdapterStatus.ERROR for r in a1_turns)
+
+
+@pytest.mark.asyncio
+async def test_missing_adapter_mapping_records_error() -> None:
+    """Missing adapter_map entry for agent records ERROR, doesn't crash."""
+    agents = [_make_agent("a1"), _make_agent("a2")]
+    # Only provide adapter for a2, not a1
+    adapters = {"a2": _make_adapter(text="ok")}
+    runner = _build_runner(agents=agents, adapter_map=adapters, batch_size=4)
+    result = await runner.run()
+
+    assert result.turns_completed == 4
+    assert result.status == RunStatus.DONE
+    a1_turns = [r for r in result.turn_log if r.agent_id == "a1"]
+    assert all(r.status == AdapterStatus.ERROR for r in a1_turns)
+    a2_turns = [r for r in result.turn_log if r.agent_id == "a2"]
+    assert all(r.status == AdapterStatus.IDLE for r in a2_turns)

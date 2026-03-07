@@ -112,9 +112,9 @@ class BatchRunner:
             # Mark agent as running
             self._scheduler.mark_agent_status(agent.id, AgentStatus.RUNNING)
 
-            # Call adapter
-            adapter = self._adapter_map[agent.id]
+            # Call adapter (lookup + invocation guarded together)
             try:
+                adapter = self._adapter_map[agent.id]
                 result = await adapter.send_prompt(
                     prompt,
                     working_dir=".",
@@ -136,12 +136,12 @@ class BatchRunner:
                     status=AdapterStatus.ERROR,
                     timestamp=datetime.now(UTC).isoformat(),
                 )
+            finally:
+                # Always reset agent to idle
+                self._scheduler.mark_agent_status(agent.id, AgentStatus.IDLE)
 
             self._turn_log.append(record)
             self._turns_completed = turn_num
-
-            # Mark agent back to idle
-            self._scheduler.mark_agent_status(agent.id, AgentStatus.IDLE)
 
             # Check pause/stop between turns
             if self._pause_requested:
