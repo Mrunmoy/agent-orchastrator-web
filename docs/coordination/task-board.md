@@ -27,7 +27,7 @@ Execution board for active parallel slices.
 | ORCH-003 | Round-robin scheduler | `backend/orchestrator/scheduler.py` | P0 | unassigned | Todo | ORCH-001 | - |
 | ORCH-004 | 20-turn batch runner | `backend/orchestrator/batch_runner.py` | P0 | unassigned | Todo | ORCH-003,ADPT-001,ADPT-002 | - |
 | ADPT-001 | Claude CLI adapter | `backend/adapters/claude_adapter.py` | P0 | claude-adapter | Done | SETUP-001 | claude/adpt-claude-cli |
-| ADPT-002 | Codex CLI adapter | `backend/adapters/codex_adapter.py` | P0 | codex-adapter | Review | SETUP-001 | codex/adpt-codex-cli |
+| ADPT-002 | Codex CLI adapter | `backend/adapters/codex_adapter.py` | P0 | codex-adapter | Done | SETUP-001 | codex/adpt-codex-cli |
 | API-001 | FastAPI app + health | `backend/api/app.py` | P0 | unassigned | Todo | SETUP-001 | - |
 | API-003 | Run/continue/stop/steer endpoints | `backend/api/routes/orchestration.py` | P0 | unassigned | Todo | API-001,ORCH-004 | - |
 | UI-001 | App shell layout | `frontend/src/layout/*` | P0 | unassigned | Todo | SETUP-002 | - |
