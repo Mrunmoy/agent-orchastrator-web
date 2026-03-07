@@ -2,11 +2,11 @@
   "version": 1,
   "source": "TASKS.md",
   "tasks": [
-    {"id":"SETUP-001","slug":"setup-backend-layout","title":"Backend Python package layout","scope":"backend/*","epic":"SETUP","priority":"P0","status":"Todo","depends_on":[],"default_owner":"unassigned"},
-    {"id":"SETUP-002","slug":"setup-frontend-shell","title":"Frontend TypeScript app shell","scope":"frontend/*","epic":"SETUP","priority":"P0","status":"Todo","depends_on":[],"default_owner":"unassigned"},
+    {"id":"SETUP-001","slug":"setup-backend-layout","title":"Backend Python package layout","scope":"backend/*","epic":"SETUP","priority":"P0","status":"Done","depends_on":[],"default_owner":"claude-backend"},
+    {"id":"SETUP-002","slug":"setup-frontend-shell","title":"Frontend TypeScript app shell","scope":"frontend/*","epic":"SETUP","priority":"P0","status":"Done","depends_on":[],"default_owner":"claude-frontend"},
     {"id":"SETUP-003","slug":"setup-dev-commands","title":"Shared dev commands","scope":"Makefile,scripts/*","epic":"SETUP","priority":"P1","status":"Todo","depends_on":["SETUP-001","SETUP-002"],"default_owner":"unassigned"},
 
-    {"id":"DATA-001","slug":"data-sqlite-schema-v1","title":"SQLite schema v1","scope":"backend/storage/schema.sql","epic":"DATA","priority":"P0","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
+    {"id":"DATA-001","slug":"data-sqlite-schema-v1","title":"SQLite schema v1","scope":"backend/storage/schema.sql","epic":"DATA","priority":"P0","status":"Done","depends_on":["SETUP-001"],"default_owner":"claude-data"},
     {"id":"DATA-002","slug":"data-migration-loader","title":"Schema migration/bootstrap loader","scope":"backend/storage/migrate.py","epic":"DATA","priority":"P1","status":"Todo","depends_on":["DATA-001"],"default_owner":"unassigned"},
     {"id":"DATA-003","slug":"data-event-log-jsonl","title":"JSONL event log writer/reader","scope":"backend/storage/event_log.py","epic":"DATA","priority":"P1","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
     {"id":"DATA-004","slug":"data-checkpoint-packer","title":"Checkpoint pack builder","scope":"backend/storage/checkpoint.py","epic":"DATA","priority":"P1","status":"Todo","depends_on":["DATA-001","DATA-003"],"default_owner":"unassigned"},
@@ -18,8 +18,8 @@
     {"id":"ORCH-005","slug":"orch-steering-notes","title":"Steering note injection","scope":"backend/orchestrator/steering.py","epic":"ORCH","priority":"P1","status":"Todo","depends_on":["ORCH-004"],"default_owner":"unassigned"},
     {"id":"ORCH-006","slug":"orch-capacity-throttle","title":"Capacity-aware throttle","scope":"backend/orchestrator/throttle.py","epic":"ORCH","priority":"P1","status":"Todo","depends_on":["ORCH-004","OPS-003"],"default_owner":"unassigned"},
 
-    {"id":"ADPT-001","slug":"adpt-claude-cli","title":"Claude CLI adapter","scope":"backend/adapters/claude_adapter.py","epic":"ADPT","priority":"P0","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
-    {"id":"ADPT-002","slug":"adpt-codex-cli","title":"Codex CLI adapter","scope":"backend/adapters/codex_adapter.py","epic":"ADPT","priority":"P0","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
+    {"id":"ADPT-001","slug":"adpt-claude-cli","title":"Claude CLI adapter","scope":"backend/adapters/claude_adapter.py","epic":"ADPT","priority":"P0","status":"Done","depends_on":["SETUP-001"],"default_owner":"claude-adapter"},
+    {"id":"ADPT-002","slug":"adpt-codex-cli","title":"Codex CLI adapter","scope":"backend/adapters/codex_adapter.py","epic":"ADPT","priority":"P0","status":"Done","depends_on":["SETUP-001"],"default_owner":"codex-adapter"},
     {"id":"ADPT-003","slug":"adpt-ollama-memo","title":"Ollama memo adapter","scope":"backend/adapters/ollama_adapter.py","epic":"ADPT","priority":"P1","status":"Todo","depends_on":["SETUP-001"],"default_owner":"unassigned"},
     {"id":"ADPT-004","slug":"adpt-output-normalization","title":"Adapter output normalization","scope":"backend/adapters/normalize.py","epic":"ADPT","priority":"P1","status":"Todo","depends_on":["ADPT-001","ADPT-002","ADPT-003"],"default_owner":"unassigned"},
 
@@ -29,7 +29,7 @@
     {"id":"API-004","slug":"api-agent-config","title":"Agent config endpoints","scope":"backend/api/routes/agents.py","epic":"API","priority":"P1","status":"Todo","depends_on":["API-001","ORCH-001"],"default_owner":"unassigned"},
     {"id":"API-005","slug":"api-events-stream","title":"Events stream endpoint","scope":"backend/api/routes/events.py","epic":"API","priority":"P1","status":"Todo","depends_on":["API-001","DATA-003"],"default_owner":"unassigned"},
 
-    {"id":"UI-001","slug":"ui-app-shell-layout","title":"App shell layout","scope":"frontend/src/layout/*","epic":"UI","priority":"P0","status":"Todo","depends_on":["SETUP-002"],"default_owner":"unassigned"},
+    {"id":"UI-001","slug":"ui-app-shell-layout","title":"App shell layout","scope":"frontend/src/layout/*","epic":"UI","priority":"P0","status":"Done","depends_on":["SETUP-002"],"default_owner":"claude-ui"},
     {"id":"UI-002","slug":"ui-history-pane","title":"Conversation history pane","scope":"frontend/src/features/history/*","epic":"UI","priority":"P0","status":"Todo","depends_on":["UI-001","API-002"],"default_owner":"unassigned"},
     {"id":"UI-003","slug":"ui-chat-timeline","title":"Chat timeline","scope":"frontend/src/features/chat/*","epic":"UI","priority":"P0","status":"Todo","depends_on":["UI-001","API-005"],"default_owner":"unassigned"},
     {"id":"UI-004","slug":"ui-composer-controls","title":"Composer and run controls","scope":"frontend/src/features/composer/*","epic":"UI","priority":"P0","status":"Todo","depends_on":["UI-001","API-003"],"default_owner":"unassigned"},
