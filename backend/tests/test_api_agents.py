@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from agent_orchestrator.api import create_app
-from agent_orchestrator.api.routes.agents import _init_db
+from agent_orchestrator.api.db_provider import _init_db
 
 
 @pytest.fixture(autouse=True)

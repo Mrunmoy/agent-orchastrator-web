@@ -10,37 +10,9 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from agent_orchestrator.api.db_provider import get_db
 from agent_orchestrator.api.responses import error_response, ok_response
 from agent_orchestrator.orchestrator.models import AgentRole, Provider
-from agent_orchestrator.storage import DatabaseManager
-
-# ---------------------------------------------------------------------------
-# Module-level database (in-memory for now; replace with DI later)
-# ---------------------------------------------------------------------------
-
-_db: DatabaseManager | None = None
-
-
-def _init_db() -> None:
-    """(Re)initialise the module-level in-memory database."""
-    global _db  # noqa: PLW0603
-    if _db is not None:
-        _db.close()
-    _db = DatabaseManager(":memory:", check_same_thread=False)
-    _db.initialize()
-
-
-def get_db() -> DatabaseManager:
-    """Return the module-level DatabaseManager, initialising if needed."""
-    global _db  # noqa: PLW0603
-    if _db is None:
-        _init_db()
-    assert _db is not None
-    return _db
-
-
-# Eagerly initialise on import so the router works immediately.
-_init_db()
 
 # ---------------------------------------------------------------------------
 # Request bodies
