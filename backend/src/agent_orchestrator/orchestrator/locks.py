@@ -82,14 +82,16 @@ class LockManager:
         self._locks[key] = lock
         return lock
 
-    def release(self, resource: str, owner: str) -> bool:
-        for key, lock in list(self._locks.items()):
-            if lock.resource == resource and key[1] == resource:
-                if lock.owner != owner:
-                    return False
-                del self._locks[key]
-                return True
-        return False
+    def release(self, lock_type: LockType, resource: str, owner: str) -> bool:
+        """Release a lock. Only the owner can release. Returns True if released."""
+        key = _make_key(lock_type, resource)
+        existing = self._locks.get(key)
+        if existing is None:
+            return False
+        if existing.owner != owner:
+            return False
+        del self._locks[key]
+        return True
 
     def is_locked(self, resource: str) -> bool:
         for key, lock in self._locks.items():

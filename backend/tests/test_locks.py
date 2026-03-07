@@ -80,18 +80,30 @@ class TestLockManagerRelease:
     def test_release_by_owner_succeeds(self):
         mgr = LockManager()
         mgr.acquire(LockType.BRANCH, "main", "agent-1")
-        assert mgr.release("main", "agent-1") is True
+        assert mgr.release(LockType.BRANCH, "main", "agent-1") is True
         assert mgr.is_locked("main") is False
 
     def test_release_by_non_owner_fails(self):
         mgr = LockManager()
         mgr.acquire(LockType.BRANCH, "main", "agent-1")
-        assert mgr.release("main", "agent-2") is False
+        assert mgr.release(LockType.BRANCH, "main", "agent-2") is False
         assert mgr.is_locked("main") is True
 
     def test_release_unknown_resource_returns_false(self):
         mgr = LockManager()
-        assert mgr.release("nonexistent", "agent-1") is False
+        assert mgr.release(LockType.BRANCH, "nonexistent", "agent-1") is False
+
+    def test_release_only_affects_matching_lock_type(self):
+        """Releasing a BRANCH lock must not affect a FILE lock on same resource."""
+        mgr = LockManager()
+        mgr.acquire(LockType.BRANCH, "main", "agent-1")
+        mgr.acquire(LockType.FILE, "main", "agent-2")
+        assert mgr.release(LockType.BRANCH, "main", "agent-1") is True
+        # FILE lock on "main" should still be active
+        file_lock = mgr.get_lock("main")
+        assert file_lock is not None
+        assert file_lock.lock_type == LockType.FILE
+        assert file_lock.owner == "agent-2"
 
 
 class TestLockManagerIsLocked:
@@ -100,7 +112,7 @@ class TestLockManagerIsLocked:
         assert mgr.is_locked("main") is False
         mgr.acquire(LockType.BRANCH, "main", "agent-1")
         assert mgr.is_locked("main") is True
-        mgr.release("main", "agent-1")
+        mgr.release(LockType.BRANCH, "main", "agent-1")
         assert mgr.is_locked("main") is False
 
 
