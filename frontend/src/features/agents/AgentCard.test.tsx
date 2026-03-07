@@ -11,6 +11,7 @@ const mockAgent: AgentData = {
   model: "opus-4",
   role: "worker",
   status: "idle",
+  sort_order: 0,
 };
 
 describe("AgentCard", () => {
@@ -47,5 +48,15 @@ describe("AgentCard", () => {
     render(<AgentCard agent={mockAgent} onEdit={onEdit} />);
     fireEvent.click(screen.getByRole("button", { name: /edit/i }));
     expect(onEdit).toHaveBeenCalledWith("agent-1");
+  });
+
+  it("renders order badge showing sort_order + 1", () => {
+    render(<AgentCard agent={{ ...mockAgent, sort_order: 0 }} onEdit={() => {}} />);
+    expect(screen.getByTestId("order-badge")).toHaveTextContent("1");
+  });
+
+  it("renders order badge with correct position for sort_order 2", () => {
+    render(<AgentCard agent={{ ...mockAgent, sort_order: 2 }} onEdit={() => {}} />);
+    expect(screen.getByTestId("order-badge")).toHaveTextContent("3");
   });
 });

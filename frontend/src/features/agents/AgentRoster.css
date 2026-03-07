@@ -37,6 +37,26 @@
   gap: 12px;
 }
 
+.agent-roster-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: grab;
+}
+
+.agent-roster-item:active {
+  cursor: grabbing;
+}
+
+.drag-handle {
+  color: #6c7086;
+  font-size: 16px;
+  padding-top: 18px;
+  flex-shrink: 0;
+  user-select: none;
+  cursor: grab;
+}
+
 .agent-roster-empty {
   color: #6c7086;
   font-size: 14px;

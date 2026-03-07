@@ -86,6 +86,7 @@ function toAgentData(row: {
   role: AgentRole;
   status: "idle" | "running" | "blocked" | "offline";
   personality_key?: string | null;
+  sort_order?: number;
 }): AgentData {
   return {
     id: row.id,
@@ -95,6 +96,7 @@ function toAgentData(row: {
     role: row.role,
     status: row.status,
     personality_key: row.personality_key ?? undefined,
+    sort_order: row.sort_order ?? 0,
   };
 }
 
@@ -459,7 +461,7 @@ export function AppShell() {
         <ChatPane
           activeConversationTitle={selectedConversation?.title ?? null}
           messages={selectedMessages}
-          onSend={(text, target) => void sendMessage(text, target)}
+          onSend={(text) => void sendMessage(text, null)}
         />
         <IntelligencePane
           agreementSummary={

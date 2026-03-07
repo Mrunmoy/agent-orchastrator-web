@@ -11,17 +11,16 @@ export type ChatMessage = {
 type ChatPaneProps = {
   activeConversationTitle?: string | null;
   messages?: ChatMessage[];
-  onSend?: (text: string, target: string) => void;
+  onSend?: (text: string) => void;
 };
 
 export function ChatPane({ activeConversationTitle = null, messages = [], onSend }: ChatPaneProps) {
   const [text, setText] = useState("");
-  const [target, setTarget] = useState("all");
 
   const send = () => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    onSend?.(trimmed, target);
+    onSend?.(trimmed);
     setText("");
   };
 
@@ -43,11 +42,6 @@ export function ChatPane({ activeConversationTitle = null, messages = [], onSend
         )}
       </div>
       <div className="chat-pane__composer" data-testid="composer">
-        <select value={target} onChange={(event) => setTarget(event.target.value)}>
-          <option value="all">Target First: All Agents</option>
-          <option value="codex">Target First: Codex</option>
-          <option value="claude">Target First: Claude</option>
-        </select>
         <input
           type="text"
           value={text}

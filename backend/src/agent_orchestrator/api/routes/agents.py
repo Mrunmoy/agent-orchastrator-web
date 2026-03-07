@@ -45,6 +45,10 @@ class AgentIdBody(BaseModel):
     agent_id: str
 
 
+class PatchAgentOrderBody(BaseModel):
+    sort_order: int
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -78,10 +82,12 @@ router = APIRouter()
 
 @router.get("/agents")
 def list_agents() -> dict[str, Any]:
-    """List all agents ordered by display_name."""
+    """List all agents ordered by sort_order, then display_name."""
     db = get_db()
     with db.connection() as conn:
-        rows = conn.execute("SELECT * FROM agent ORDER BY display_name").fetchall()
+        rows = conn.execute(
+            "SELECT * FROM agent ORDER BY sort_order ASC, display_name ASC"
+        ).fetchall()
     agents = [_row_to_dict(r) for r in rows]
     return ok_response({"agents": agents})
 
@@ -222,3 +228,35 @@ def delete_agent(body: AgentIdBody) -> Any:
         conn.execute("DELETE FROM agent WHERE id = ?", (body.agent_id,))
         conn.commit()
     return ok_response({"deleted_id": body.agent_id})
+
+
+@router.patch("/agents/{agent_id}/order")
+def patch_agent_order(agent_id: str, body: PatchAgentOrderBody) -> Any:
+    """Update the sort_order of an agent."""
+    if body.sort_order < 0:
+        return JSONResponse(
+            status_code=400,
+            content=error_response("sort_order must be a non-negative integer"),
+        )
+    db = get_db()
+    with db.connection() as conn:
+        row = conn.execute(
+            "SELECT id FROM agent WHERE id = ?",
+            (agent_id,),
+        ).fetchone()
+        if row is None:
+            return JSONResponse(
+                status_code=404,
+                content=error_response("Agent not found"),
+            )
+        now = datetime.now(UTC).isoformat()
+        conn.execute(
+            "UPDATE agent SET sort_order = ?, updated_at = ? WHERE id = ?",
+            (body.sort_order, now, agent_id),
+        )
+        conn.commit()
+        updated = conn.execute(
+            "SELECT * FROM agent WHERE id = ?",
+            (agent_id,),
+        ).fetchone()
+    return ok_response({"agent": _row_to_dict(updated)})

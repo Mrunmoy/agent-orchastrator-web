@@ -12,6 +12,7 @@ const agents: AgentData[] = [
     model: "opus-4",
     role: "worker",
     status: "idle",
+    sort_order: 0,
   },
   {
     id: "agent-2",
@@ -20,6 +21,7 @@ const agents: AgentData[] = [
     model: "codex-1",
     role: "coordinator",
     status: "running",
+    sort_order: 1,
   },
 ];
 
@@ -40,5 +42,31 @@ describe("AgentRoster", () => {
     render(<AgentRoster agents={[]} onEdit={() => {}} onAdd={onAdd} />);
     fireEvent.click(screen.getByRole("button", { name: /add agent/i }));
     expect(onAdd).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders agents sorted by sort_order", () => {
+    const unsortedAgents: AgentData[] = [
+      { ...agents[1], sort_order: 0 },
+      { ...agents[0], sort_order: 1 },
+    ];
+    render(<AgentRoster agents={unsortedAgents} onEdit={() => {}} onAdd={() => {}} />);
+    const items = screen.getAllByTestId("agent-roster-item");
+    expect(items[0]).toHaveTextContent("Codex Helper");
+    expect(items[1]).toHaveTextContent("Claude Worker");
+  });
+
+  it("drag-drop reorders agents in the list", () => {
+    const mockReorder = vi.fn().mockResolvedValue(undefined);
+    render(
+      <AgentRoster agents={agents} onEdit={() => {}} onAdd={() => {}} reorderAgent={mockReorder} />,
+    );
+    const items = screen.getAllByTestId("agent-roster-item");
+    fireEvent.dragStart(items[0]);
+    fireEvent.dragOver(items[1]);
+    fireEvent.drop(items[1]);
+    const updatedItems = screen.getAllByTestId("agent-roster-item");
+    expect(updatedItems[0]).toHaveTextContent("Codex Helper");
+    expect(updatedItems[1]).toHaveTextContent("Claude Worker");
+    expect(mockReorder).toHaveBeenCalled();
   });
 });

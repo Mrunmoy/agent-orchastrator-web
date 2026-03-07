@@ -63,11 +63,25 @@ class DatabaseManager:
         self._conn.executescript(schema_sql)
         # Re-enable foreign keys after executescript (implicit COMMIT resets)
         self._conn.execute("PRAGMA foreign_keys = ON")
+        self._apply_migrations()
 
         current = self._read_user_version()
         if current < _SCHEMA_VERSION:
             self._apply_migrations(current)
             self._conn.execute(f"PRAGMA user_version = {_SCHEMA_VERSION}")
+
+    def _apply_migrations(self) -> None:
+        """Apply incremental schema migrations for columns added post-initial schema.
+
+        Each migration checks whether the column already exists before issuing
+        ``ALTER TABLE``, making all migrations idempotent.
+        """
+        existing = {row[1] for row in self._conn.execute("PRAGMA table_info(agent)").fetchall()}
+        if "sort_order" not in existing:
+            self._conn.execute(
+                "ALTER TABLE agent ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"
+            )
+            self._conn.commit()
 
     # ------------------------------------------------------------------
     # Connection access

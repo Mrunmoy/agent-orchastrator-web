@@ -20,6 +20,7 @@ export type Agent = {
   role: "worker" | "coordinator" | "moderator";
   status: "idle" | "running" | "blocked" | "offline";
   personality_key?: string | null;
+  sort_order: number;
 };
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.toString().replace(/\/$/, "") ?? "/api";
@@ -127,6 +128,14 @@ export async function deleteAgent(agentId: string): Promise<void> {
     method: "POST",
     body: JSON.stringify({ agent_id: agentId }),
   });
+}
+
+export async function reorderAgent(agentId: string, sortOrder: number): Promise<Agent> {
+  const data = await request<{ agent: Agent }>(`/agents/${agentId}/order`, {
+    method: "PATCH",
+    body: JSON.stringify({ sort_order: sortOrder }),
+  });
+  return data.agent;
 }
 
 export async function runBatch(conversationId: string, batchSize = 20): Promise<void> {

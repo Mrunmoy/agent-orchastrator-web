@@ -18,6 +18,13 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, onEdit }) => {
 
   return (
     <div className="agent-card" data-testid="agent-card">
+      <span
+        className="order-badge"
+        data-testid="order-badge"
+        aria-label={`Position ${agent.sort_order + 1}`}
+      >
+        {agent.sort_order + 1}
+      </span>
       <div className="agent-card-header">
         <span
           className={`status-indicator status-${agent.status}`}
