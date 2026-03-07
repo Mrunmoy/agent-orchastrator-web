@@ -4,7 +4,7 @@
   gap: 6px;
   align-items: center;
   padding: 8px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--sidebar-line);
   cursor: pointer;
   color: var(--sidebar-text);
   font-size: 13px;
@@ -47,8 +47,8 @@
 }
 
 .badge--queued {
-  background: var(--surface-3);
-  color: var(--muted);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--sidebar-text);
 }
 
 .badge--debate {
@@ -72,8 +72,8 @@
 }
 
 .badge--completed {
-  background: var(--surface-3);
-  color: var(--muted);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--sidebar-text);
 }
 
 .badge--failed {

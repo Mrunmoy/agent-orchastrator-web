@@ -1,3 +1,13 @@
+.history-pane.panel {
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-line);
+  color: var(--sidebar-text);
+}
+
+.history-pane .section-title {
+  color: var(--sidebar-text);
+}
+
 .history-pane__scroll {
   overflow: auto;
   padding: 10px;
@@ -14,7 +24,7 @@
   max-height: 320px;
   overflow: auto;
   padding-right: 2px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--sidebar-line);
   border-radius: 6px;
   background: var(--sidebar-bg);
 }
@@ -22,7 +32,7 @@
 .conv-row {
   width: 100%;
   padding: 8px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--sidebar-line);
   cursor: pointer;
   display: grid;
   gap: 3px;

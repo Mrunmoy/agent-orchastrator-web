@@ -1,6 +1,6 @@
 .top-bar {
   background: var(--sidebar-bg);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--sidebar-line);
   border-radius: 0;
   box-shadow: none;
   padding: 10px 14px;
@@ -46,7 +46,7 @@
 }
 
 .top-bar__status {
-  border: 1px solid var(--line);
+  border: 1px solid var(--sidebar-line);
   border-radius: 999px;
   padding: 5px 12px;
   color: var(--warn);
