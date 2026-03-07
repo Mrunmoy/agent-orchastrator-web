@@ -60,7 +60,7 @@ This is the source-of-truth backlog for current known scope.
 
 ## Epic TEST - Test and Quality Gates
 - [x] `TEST-001` Backend unit tests for scheduler, batch runner, state transitions
-- [ ] `TEST-002` Adapter contract tests with mocked CLI responses
+- [x] `TEST-002` Adapter contract tests with mocked CLI responses
 - [x] `TEST-003` Frontend component tests for history, timeline, controls
 - [ ] `TEST-004` End-to-end scenario: debate -> agreement -> task split -> completion notification
 

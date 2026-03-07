@@ -56,7 +56,7 @@ Execution board for active parallel slices.
 | OPS-002 | LAN startup/run profile | `scripts/run_lan.sh` | P2 | unassigned | Todo | API-001,UI-001 | - |
 | OPS-003 | Capacity telemetry snapshot | `backend/runtime/capacity.py` | P1 | claude-parallel | Done | SETUP-001 | master (merged) |
 | TEST-001 | Orchestrator unit tests | `backend/tests/orchestrator/*` | P1 | claude-agent | Done | ORCH-003,ORCH-004 | (inline with impl) |
-| TEST-002 | Adapter contract tests | `backend/tests/adapters/*` | P1 | unassigned | Todo | ADPT-001,ADPT-002 | - |
+| TEST-002 | Adapter contract tests | `backend/tests/adapters/*` | P1 | claude-agent | Done | ADPT-001,ADPT-002 | claude/test-002-adapter-contracts |
 | TEST-003 | Frontend component tests | `frontend/tests/*` | P1 | claude-agent | Done | UI-002,UI-003,UI-004 | (inline with impl) |
 | TEST-004 | E2E scenario test | `tests/e2e/*` | P2 | unassigned | Todo | API-003,UI-004,COORD-003 | - |
 | DOC-001 | ADR entries | `docs/decisions/*` | P2 | unassigned | Todo | ORCH-004 | - |
