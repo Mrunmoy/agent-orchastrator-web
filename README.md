@@ -130,6 +130,9 @@ git -C /home/mrumoy/sandbox/agent-orchestrator-web worktree list
 ```bash
 make serve
 make test-ui
+make test-api-conversations
+make test-integration
+make test-all
 make ui-shot
 make verify
 make parallel-init AGENTS="codex-ui claude-orch ollama-data"

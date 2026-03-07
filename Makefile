@@ -5,7 +5,7 @@ PORT ?= 8080
 AGENTS ?=
 
 .PHONY: help serve ui-shot test-ui verify parallel-init parallel-status handoff-packs task-worktree task-prompt task-ready task-shell \
-	test test-backend test-frontend lint lint-backend lint-frontend format-check run-backend run-frontend
+	test test-backend test-frontend test-api-conversations test-integration test-all lint lint-backend lint-frontend format-check run-backend run-frontend
 
 help:
 	@echo "Targets:"
@@ -25,6 +25,9 @@ help:
 	@echo "  make test           - run backend + frontend tests"
 	@echo "  make test-backend   - run backend tests (pytest)"
 	@echo "  make test-frontend  - run frontend tests (vitest)"
+	@echo "  make test-api-conversations - run API conversations integration tests"
+	@echo "  make test-integration - run backend integration-style checks"
+	@echo "  make test-all       - run all tests (backend + frontend + ui smoke + integration)"
 	@echo "  make lint           - run backend + frontend linters"
 	@echo "  make lint-backend   - run ruff on backend"
 	@echo "  make lint-frontend  - run eslint on frontend"
@@ -43,6 +46,14 @@ test-backend:
 
 test-frontend:
 	cd $(ROOT)/frontend && npm test
+
+test-api-conversations:
+	cd $(ROOT)/backend && $(PYTHON) -m pytest -q tests/test_api_conversations.py
+
+test-integration:
+	cd $(ROOT)/backend && $(PYTHON) -m pytest -q tests/test_api_health.py tests/test_api_conversations.py tests/test_db_manager.py tests/test_schema.py
+
+test-all: test-ui test test-integration
 
 lint: lint-backend lint-frontend
 
