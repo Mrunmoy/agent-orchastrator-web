@@ -26,7 +26,7 @@ def client():
 
 class TestListAgents:
     def test_empty_list_initially(self, client: TestClient):
-        resp = client.get("/agents")
+        resp = client.get("/api/agents")
         assert resp.status_code == 200
         body = resp.json()
         assert body["ok"] is True
@@ -34,7 +34,7 @@ class TestListAgents:
 
     def test_list_after_creating_multiple(self, client: TestClient):
         client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Bravo",
                 "provider": "claude",
@@ -43,7 +43,7 @@ class TestListAgents:
             },
         )
         client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Alpha",
                 "provider": "codex",
@@ -51,7 +51,7 @@ class TestListAgents:
                 "role": "coordinator",
             },
         )
-        body = client.get("/agents").json()
+        body = client.get("/api/agents").json()
         agents = body["data"]["agents"]
         assert len(agents) == 2
         # Ordered by display_name
@@ -65,7 +65,7 @@ class TestListAgents:
 class TestCreateAgent:
     def test_create_with_valid_data(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Agent A",
                 "provider": "claude",
@@ -88,7 +88,7 @@ class TestCreateAgent:
 
     def test_create_with_all_optional_fields(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Agent B",
                 "provider": "gemini",
@@ -105,7 +105,7 @@ class TestCreateAgent:
 
     def test_create_with_invalid_provider(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Bad",
                 "provider": "invalid_provider",
@@ -120,7 +120,7 @@ class TestCreateAgent:
 
     def test_create_with_invalid_role(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Bad",
                 "provider": "claude",
@@ -140,7 +140,7 @@ class TestCreateAgent:
 class TestUpdateAgent:
     def test_update_display_name(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Old Name",
                 "provider": "claude",
@@ -150,7 +150,7 @@ class TestUpdateAgent:
         )
         agent_id = resp.json()["data"]["agent"]["id"]
         resp = client.post(
-            "/agents/update",
+            "/api/agents/update",
             json={"agent_id": agent_id, "display_name": "New Name"},
         )
         assert resp.status_code == 200
@@ -159,7 +159,7 @@ class TestUpdateAgent:
 
     def test_update_provider(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Test",
                 "provider": "claude",
@@ -169,7 +169,7 @@ class TestUpdateAgent:
         )
         agent_id = resp.json()["data"]["agent"]["id"]
         resp = client.post(
-            "/agents/update",
+            "/api/agents/update",
             json={"agent_id": agent_id, "provider": "codex"},
         )
         assert resp.status_code == 200
@@ -177,7 +177,7 @@ class TestUpdateAgent:
 
     def test_update_nonexistent_agent(self, client: TestClient):
         resp = client.post(
-            "/agents/update",
+            "/api/agents/update",
             json={"agent_id": "nonexistent", "display_name": "X"},
         )
         assert resp.status_code == 404
@@ -185,7 +185,7 @@ class TestUpdateAgent:
 
     def test_update_with_invalid_provider(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Test",
                 "provider": "claude",
@@ -195,7 +195,7 @@ class TestUpdateAgent:
         )
         agent_id = resp.json()["data"]["agent"]["id"]
         resp = client.post(
-            "/agents/update",
+            "/api/agents/update",
             json={"agent_id": agent_id, "provider": "bad_provider"},
         )
         assert resp.status_code == 400
@@ -208,7 +208,7 @@ class TestUpdateAgent:
 class TestDeleteAgent:
     def test_delete_agent(self, client: TestClient):
         resp = client.post(
-            "/agents",
+            "/api/agents",
             json={
                 "display_name": "Doomed",
                 "provider": "claude",
@@ -217,15 +217,15 @@ class TestDeleteAgent:
             },
         )
         agent_id = resp.json()["data"]["agent"]["id"]
-        resp = client.post("/agents/delete", json={"agent_id": agent_id})
+        resp = client.post("/api/agents/delete", json={"agent_id": agent_id})
         assert resp.status_code == 200
         assert resp.json()["ok"] is True
         assert resp.json()["data"]["deleted_id"] == agent_id
         # Confirm gone from list
-        agents = client.get("/agents").json()["data"]["agents"]
+        agents = client.get("/api/agents").json()["data"]["agents"]
         assert len(agents) == 0
 
     def test_delete_nonexistent_agent(self, client: TestClient):
-        resp = client.post("/agents/delete", json={"agent_id": "nonexistent"})
+        resp = client.post("/api/agents/delete", json={"agent_id": "nonexistent"})
         assert resp.status_code == 404
         assert resp.json()["ok"] is False

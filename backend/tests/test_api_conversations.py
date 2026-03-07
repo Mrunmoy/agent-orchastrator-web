@@ -26,47 +26,47 @@ def client():
 
 class TestListConversations:
     def test_returns_200(self, client: TestClient):
-        resp = client.get("/conversations")
+        resp = client.get("/api/conversations")
         assert resp.status_code == 200
 
     def test_envelope_ok(self, client: TestClient):
-        resp = client.get("/conversations")
+        resp = client.get("/api/conversations")
         body = resp.json()
         assert body["ok"] is True
 
     def test_empty_list_initially(self, client: TestClient):
-        body = client.get("/conversations").json()
+        body = client.get("/api/conversations").json()
         assert body["data"]["conversations"] == []
 
     def test_returns_created_conversation(self, client: TestClient):
         client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "Test", "project_path": "/tmp"},
         )
-        body = client.get("/conversations").json()
+        body = client.get("/api/conversations").json()
         assert len(body["data"]["conversations"]) == 1
         assert body["data"]["conversations"][0]["title"] == "Test"
 
     def test_excludes_deleted(self, client: TestClient):
         resp = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "Del", "project_path": "/tmp"},
         )
         cid = resp.json()["data"]["conversation"]["id"]
-        client.post("/conversations/delete", json={"conversation_id": cid})
-        body = client.get("/conversations").json()
+        client.post("/api/conversations/delete", json={"conversation_id": cid})
+        body = client.get("/api/conversations").json()
         assert len(body["data"]["conversations"]) == 0
 
     def test_ordered_by_updated_at_desc(self, client: TestClient):
         client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "First", "project_path": "/tmp"},
         )
         client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "Second", "project_path": "/tmp"},
         )
-        body = client.get("/conversations").json()
+        body = client.get("/api/conversations").json()
         titles = [c["title"] for c in body["data"]["conversations"]]
         assert titles == ["Second", "First"]
 
@@ -77,21 +77,21 @@ class TestListConversations:
 class TestCreateConversation:
     def test_returns_200(self, client: TestClient):
         resp = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "Test", "project_path": "/tmp"},
         )
         assert resp.status_code == 200
 
     def test_envelope_ok(self, client: TestClient):
         resp = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "Test", "project_path": "/tmp"},
         )
         assert resp.json()["ok"] is True
 
     def test_returns_conversation_with_id(self, client: TestClient):
         resp = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "Test", "project_path": "/tmp"},
         )
         conv = resp.json()["data"]["conversation"]
@@ -100,7 +100,7 @@ class TestCreateConversation:
 
     def test_defaults(self, client: TestClient):
         resp = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "Test", "project_path": "/tmp"},
         )
         conv = resp.json()["data"]["conversation"]
@@ -112,7 +112,7 @@ class TestCreateConversation:
 
     def test_timestamps_set(self, client: TestClient):
         resp = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "Test", "project_path": "/tmp"},
         )
         conv = resp.json()["data"]["conversation"]
@@ -127,44 +127,44 @@ class TestCreateConversation:
 class TestSelectConversation:
     def test_sets_active_flag(self, client: TestClient):
         resp = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "Test", "project_path": "/tmp"},
         )
         cid = resp.json()["data"]["conversation"]["id"]
-        resp = client.post("/conversations/select", json={"conversation_id": cid})
+        resp = client.post("/api/conversations/select", json={"conversation_id": cid})
         assert resp.status_code == 200
         assert resp.json()["data"]["conversation"]["active"] == 1
 
     def test_deactivates_others(self, client: TestClient):
         r1 = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "A", "project_path": "/tmp"},
         )
         r2 = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "B", "project_path": "/tmp"},
         )
         cid_a = r1.json()["data"]["conversation"]["id"]
         cid_b = r2.json()["data"]["conversation"]["id"]
-        client.post("/conversations/select", json={"conversation_id": cid_a})
-        client.post("/conversations/select", json={"conversation_id": cid_b})
-        convs = client.get("/conversations").json()["data"]["conversations"]
+        client.post("/api/conversations/select", json={"conversation_id": cid_a})
+        client.post("/api/conversations/select", json={"conversation_id": cid_b})
+        convs = client.get("/api/conversations").json()["data"]["conversations"]
         active_map = {c["id"]: c["active"] for c in convs}
         assert active_map[cid_a] == 0
         assert active_map[cid_b] == 1
 
     def test_envelope_ok(self, client: TestClient):
         resp = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "X", "project_path": "/tmp"},
         )
         cid = resp.json()["data"]["conversation"]["id"]
-        resp = client.post("/conversations/select", json={"conversation_id": cid})
+        resp = client.post("/api/conversations/select", json={"conversation_id": cid})
         assert resp.json()["ok"] is True
 
     def test_404_for_missing(self, client: TestClient):
         resp = client.post(
-            "/conversations/select",
+            "/api/conversations/select",
             json={"conversation_id": "nonexistent"},
         )
         assert resp.status_code == 404
@@ -173,11 +173,11 @@ class TestSelectConversation:
 
     def test_select_updates_only_selected_updated_at(self, client: TestClient):
         r1 = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "A", "project_path": "/tmp"},
         )
         r2 = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "B", "project_path": "/tmp"},
         )
         cid_a = r1.json()["data"]["conversation"]["id"]
@@ -191,9 +191,9 @@ class TestSelectConversation:
             conn.execute("UPDATE conversation SET updated_at = ? WHERE id = ?", (old_b, cid_b))
             conn.commit()
 
-        client.post("/conversations/select", json={"conversation_id": cid_a})
+        client.post("/api/conversations/select", json={"conversation_id": cid_a})
 
-        convs = client.get("/conversations").json()["data"]["conversations"]
+        convs = client.get("/api/conversations").json()["data"]["conversations"]
         by_id = {c["id"]: c for c in convs}
         assert by_id[cid_a]["updated_at"] != old_a
         assert by_id[cid_b]["updated_at"] == old_b
@@ -206,11 +206,11 @@ class TestSelectConversation:
 class TestDeleteConversation:
     def test_soft_deletes(self, client: TestClient):
         resp = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "Gone", "project_path": "/tmp"},
         )
         cid = resp.json()["data"]["conversation"]["id"]
-        del_resp = client.post("/conversations/delete", json={"conversation_id": cid})
+        del_resp = client.post("/api/conversations/delete", json={"conversation_id": cid})
         assert del_resp.status_code == 200
         assert del_resp.json()["ok"] is True
         conv = del_resp.json()["data"]["conversation"]
@@ -218,7 +218,7 @@ class TestDeleteConversation:
 
     def test_404_for_missing(self, client: TestClient):
         resp = client.post(
-            "/conversations/delete",
+            "/api/conversations/delete",
             json={"conversation_id": "nonexistent"},
         )
         assert resp.status_code == 404
@@ -231,37 +231,37 @@ class TestDeleteConversation:
 class TestClearAllConversations:
     def test_returns_count(self, client: TestClient):
         client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "A", "project_path": "/tmp"},
         )
         client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "B", "project_path": "/tmp"},
         )
-        resp = client.post("/conversations/clear-all")
+        resp = client.post("/api/conversations/clear-all")
         assert resp.status_code == 200
         assert resp.json()["ok"] is True
         assert resp.json()["data"]["deleted_count"] == 2
 
     def test_conversations_gone_after_clear(self, client: TestClient):
         client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "A", "project_path": "/tmp"},
         )
-        client.post("/conversations/clear-all")
-        convs = client.get("/conversations").json()["data"]["conversations"]
+        client.post("/api/conversations/clear-all")
+        convs = client.get("/api/conversations").json()["data"]["conversations"]
         assert convs == []
 
     def test_zero_when_none(self, client: TestClient):
-        resp = client.post("/conversations/clear-all")
+        resp = client.post("/api/conversations/clear-all")
         assert resp.json()["data"]["deleted_count"] == 0
 
     def test_does_not_redelete_already_deleted(self, client: TestClient):
         resp = client.post(
-            "/conversations/new",
+            "/api/conversations/new",
             json={"title": "A", "project_path": "/tmp"},
         )
         cid = resp.json()["data"]["conversation"]["id"]
-        client.post("/conversations/delete", json={"conversation_id": cid})
-        resp = client.post("/conversations/clear-all")
+        client.post("/api/conversations/delete", json={"conversation_id": cid})
+        resp = client.post("/api/conversations/clear-all")
         assert resp.json()["data"]["deleted_count"] == 0

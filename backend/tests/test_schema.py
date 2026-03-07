@@ -103,6 +103,7 @@ EXPECTED_COLUMNS = {
         "status",
         "session_id",
         "capabilities_json",
+        "sort_order",
         "created_at",
         "updated_at",
     ],
@@ -239,8 +240,8 @@ def test_conversation_agent_references(db):
     """Insert valid agent + conversation, then link them via conversation_agent."""
     now = "2026-03-07T00:00:00Z"
     db.execute(
-        "INSERT INTO agent VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-        ("a1", "Test Agent", "claude", "opus-4", None, "worker", "idle", None, "[]", now, now),
+        "INSERT INTO agent VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        ("a1", "Test Agent", "claude", "opus-4", None, "worker", "idle", None, "[]", 0, now, now),
     )
     db.execute(
         "INSERT INTO conversation VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",

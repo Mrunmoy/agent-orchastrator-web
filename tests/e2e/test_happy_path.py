@@ -24,7 +24,7 @@ pytestmark = pytest.mark.asyncio
 
 async def test_health_check(client: httpx.AsyncClient):
     """GET /health returns 200 with ok envelope."""
-    resp = await client.get("/health")
+    resp = await client.get("/api/health")
     assert resp.status_code == 200
     body = resp.json()
     assert body["ok"] is True
@@ -51,7 +51,7 @@ async def test_happy_path_full_scenario(client: httpx.AsyncClient):
 
     # ── Step 2: Create conversation ──────────────────────────────────
     resp = await client.post(
-        "/conversations/new",
+        "/api/conversations/new",
         json={"title": "E2E Happy Path Test", "project_path": "/tmp/e2e-test"},
     )
     assert resp.status_code == 200
@@ -66,7 +66,7 @@ async def test_happy_path_full_scenario(client: httpx.AsyncClient):
     # ── Step 3: Configure agents ─────────────────────────────────────
     # Agent 1: Claude worker
     resp = await client.post(
-        "/agents",
+        "/api/agents",
         json={
             "display_name": "Claude Worker",
             "provider": "claude",
@@ -85,7 +85,7 @@ async def test_happy_path_full_scenario(client: httpx.AsyncClient):
 
     # Agent 2: Codex coordinator
     resp = await client.post(
-        "/agents",
+        "/api/agents",
         json={
             "display_name": "Codex Coordinator",
             "provider": "codex",
@@ -102,7 +102,7 @@ async def test_happy_path_full_scenario(client: httpx.AsyncClient):
     assert agent_codex["role"] == "coordinator"
 
     # Verify both agents appear in listing
-    resp = await client.get("/agents")
+    resp = await client.get("/api/agents")
     assert resp.status_code == 200
     agents = resp.json()["data"]["agents"]
     assert len(agents) >= 2
@@ -112,7 +112,7 @@ async def test_happy_path_full_scenario(client: httpx.AsyncClient):
 
     # ── Step 4: Start a run ──────────────────────────────────────────
     resp = await client.post(
-        f"/orchestration/{conv_id}/run",
+        f"/api/orchestration/{conv_id}/run",
         json={"batch_size": 5},
     )
     assert resp.status_code == 200
@@ -125,7 +125,7 @@ async def test_happy_path_full_scenario(client: httpx.AsyncClient):
 
     # ── Step 5: Inject steering note ─────────────────────────────────
     resp = await client.post(
-        f"/orchestration/{conv_id}/steer",
+        f"/api/orchestration/{conv_id}/steer",
         json={"note": "Focus on unit tests before implementation"},
     )
     assert resp.status_code == 200
@@ -137,7 +137,7 @@ async def test_happy_path_full_scenario(client: httpx.AsyncClient):
     assert event["event_type"] == "steering"
 
     # ── Step 6: Stop the run ─────────────────────────────────────────
-    resp = await client.post(f"/orchestration/{conv_id}/stop")
+    resp = await client.post(f"/api/orchestration/{conv_id}/stop")
     assert resp.status_code == 200
     body = resp.json()
     assert body["ok"] is True
@@ -146,7 +146,7 @@ async def test_happy_path_full_scenario(client: httpx.AsyncClient):
     assert stopped_run["ended_at"] is not None
 
     # ── Step 7: Verify conversation state ────────────────────────────
-    resp = await client.get("/conversations")
+    resp = await client.get("/api/conversations")
     assert resp.status_code == 200
     body = resp.json()
     assert body["ok"] is True
@@ -162,7 +162,7 @@ async def test_happy_path_full_scenario(client: httpx.AsyncClient):
     # in the E2E test context (steering notes go to the DB, not JSONL).
     # We verify the endpoint responds correctly even with no file.
     resp = await client.get(
-        "/events",
+        "/api/events",
         params={"conversation_id": conv_id},
     )
     assert resp.status_code == 200
@@ -183,17 +183,17 @@ async def test_cannot_start_second_run_while_active(client: httpx.AsyncClient):
     """Starting a second run on the same conversation returns 409."""
     # Setup
     resp = await client.post(
-        "/conversations/new",
+        "/api/conversations/new",
         json={"title": "Double Run Test", "project_path": "/tmp"},
     )
     conv_id = resp.json()["data"]["conversation"]["id"]
 
     # First run succeeds
-    resp = await client.post(f"/orchestration/{conv_id}/run")
+    resp = await client.post(f"/api/orchestration/{conv_id}/run")
     assert resp.status_code == 200
 
     # Second run is rejected
-    resp = await client.post(f"/orchestration/{conv_id}/run")
+    resp = await client.post(f"/api/orchestration/{conv_id}/run")
     assert resp.status_code == 409
     assert resp.json()["ok"] is False
 
@@ -201,12 +201,12 @@ async def test_cannot_start_second_run_while_active(client: httpx.AsyncClient):
 async def test_stop_without_active_run_returns_409(client: httpx.AsyncClient):
     """Stopping when no run is active returns 409."""
     resp = await client.post(
-        "/conversations/new",
+        "/api/conversations/new",
         json={"title": "No Run Test", "project_path": "/tmp"},
     )
     conv_id = resp.json()["data"]["conversation"]["id"]
 
-    resp = await client.post(f"/orchestration/{conv_id}/stop")
+    resp = await client.post(f"/api/orchestration/{conv_id}/stop")
     assert resp.status_code == 409
     assert resp.json()["ok"] is False
 
@@ -214,7 +214,7 @@ async def test_stop_without_active_run_returns_409(client: httpx.AsyncClient):
 async def test_steer_nonexistent_conversation_returns_404(client: httpx.AsyncClient):
     """Steering a nonexistent conversation returns 404."""
     resp = await client.post(
-        "/orchestration/nonexistent-id/steer",
+        "/api/orchestration/nonexistent-id/steer",
         json={"note": "This should fail"},
     )
     assert resp.status_code == 404
@@ -224,7 +224,7 @@ async def test_steer_nonexistent_conversation_returns_404(client: httpx.AsyncCli
 async def test_create_agent_with_invalid_provider_returns_400(client: httpx.AsyncClient):
     """Creating an agent with an unknown provider returns 400."""
     resp = await client.post(
-        "/agents",
+        "/api/agents",
         json={
             "display_name": "Bad Agent",
             "provider": "nonexistent-provider",
@@ -238,7 +238,7 @@ async def test_create_agent_with_invalid_provider_returns_400(client: httpx.Asyn
 
 async def test_events_without_conversation_id_returns_400(client: httpx.AsyncClient):
     """GET /events without conversation_id query param returns 400."""
-    resp = await client.get("/events")
+    resp = await client.get("/api/events")
     assert resp.status_code == 400
     assert resp.json()["ok"] is False
 
@@ -247,14 +247,14 @@ async def test_select_and_delete_conversation(client: httpx.AsyncClient):
     """Select and then soft-delete a conversation."""
     # Create
     resp = await client.post(
-        "/conversations/new",
+        "/api/conversations/new",
         json={"title": "Lifecycle Test", "project_path": "/tmp"},
     )
     conv_id = resp.json()["data"]["conversation"]["id"]
 
     # Select (activate)
     resp = await client.post(
-        "/conversations/select",
+        "/api/conversations/select",
         json={"conversation_id": conv_id},
     )
     assert resp.status_code == 200
@@ -262,7 +262,7 @@ async def test_select_and_delete_conversation(client: httpx.AsyncClient):
 
     # Soft-delete
     resp = await client.post(
-        "/conversations/delete",
+        "/api/conversations/delete",
         json={"conversation_id": conv_id},
     )
     assert resp.status_code == 200
@@ -270,6 +270,6 @@ async def test_select_and_delete_conversation(client: httpx.AsyncClient):
     assert deleted_conv["deleted_at"] is not None
 
     # Should no longer appear in listing
-    resp = await client.get("/conversations")
+    resp = await client.get("/api/conversations")
     conv_ids = [c["id"] for c in resp.json()["data"]["conversations"]]
     assert conv_id not in conv_ids

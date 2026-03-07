@@ -16,10 +16,18 @@ from agent_orchestrator.api.routes.orchestration import router as orchestration_
 
 def _allowed_origins_from_env() -> list[str]:
     raw = os.getenv("ALLOWED_ORIGINS")
-    if raw is None or not raw.strip():
-        # Safe default for local dev; override explicitly for LAN/prod.
-        return ["http://127.0.0.1:5173", "http://localhost:5173"]
-    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+    if raw is not None and raw.strip():
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
+    env = os.getenv("ENV", "").lower()
+    dev_mode = os.getenv("DEV_MODE", "").lower() in {"1", "true", "yes"}
+    if env in {"dev", "development"} or dev_mode:
+        return ["*"]
+    return [
+        "http://localhost",
+        "http://127.0.0.1",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
 
 
 def create_app() -> FastAPI:
@@ -35,11 +43,11 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    application.include_router(health_router)
-    application.include_router(conversations_router)
-    application.include_router(events_router)
-    application.include_router(agents_router)
-    application.include_router(orchestration_router)
+    application.include_router(health_router, prefix="/api")
+    application.include_router(conversations_router, prefix="/api")
+    application.include_router(events_router, prefix="/api")
+    application.include_router(agents_router, prefix="/api")
+    application.include_router(orchestration_router, prefix="/api")
     return application
 
 

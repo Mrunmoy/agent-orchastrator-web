@@ -22,8 +22,7 @@ export type Agent = {
   personality_key?: string | null;
 };
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL?.toString().replace(/\/$/, "") ?? "http://127.0.0.1:8000";
+const API_BASE = import.meta.env.VITE_API_BASE_URL?.toString().replace(/\/$/, "") ?? "/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {

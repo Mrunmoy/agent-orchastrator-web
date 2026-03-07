@@ -59,6 +59,7 @@ _AGENT_KEYS = [
     "status",
     "session_id",
     "capabilities_json",
+    "sort_order",
     "created_at",
     "updated_at",
 ]
@@ -115,8 +116,8 @@ def create_agent(body: NewAgentBody) -> Any:
         conn.execute(
             "INSERT INTO agent "
             "(id, display_name, provider, model, personality_key, role, "
-            " status, session_id, capabilities_json, created_at, updated_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " status, session_id, capabilities_json, sort_order, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 agent_id,
                 body.display_name,
@@ -127,6 +128,7 @@ def create_agent(body: NewAgentBody) -> Any:
                 "idle",
                 None,
                 capabilities,
+                0,
                 now,
                 now,
             ),

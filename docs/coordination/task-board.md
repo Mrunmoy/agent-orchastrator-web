@@ -51,6 +51,7 @@ Execution board for active parallel slices.
 | UI-007 | Run-window controls | `frontend/src/features/run-controls/*` | P1 | claude-agent | Done | UI-004,ORCH-005 | claude/ui-007-run-window-controls |
 | UI-008 | New conversation form (title + working directory) | `frontend/src/layout/AppShell.tsx` | P0 | copilot | Done | UI-002,API-002 | copilot/fix-new-conversation-button |
 | UI-009 | Agent editor UX improvements | `frontend/src/layout/AppShell.tsx,frontend/src/features/agents/*` | P1 | copilot | Done | UI-005,API-004 | copilot/fix-add-agent-functionality |
+| UI-010 | Fix API connectivity (proxy + /api prefix + CORS) | `frontend/vite.config.ts,backend/api/__init__.py,frontend/src/api/client.ts` | P0 | claude-agent | Done | UI-009,API-001 | claude/fix-api-connectivity |
 | COORD-001 | Merge coordinator queue model | `backend/orchestrator/merge_queue.py` | P1 | claude-agent | Done | ORCH-004 | claude/coord-001-merge-queue |
 | COORD-002 | Task/branch lock policy | `backend/orchestrator/locks.py` | P1 | claude-agent | Done | COORD-001 | claude/coord-002-task-locks |
 | COORD-003 | Notification pipeline | `backend/runtime/notifications.py` | P1 | claude-agent | Done | ORCH-006 | claude/coord-003-notifications |
