@@ -95,3 +95,4 @@ Execution board for active parallel slices.
 | 22 | PR #15 API-003 | API-003 | merged |
 | 23 | copilot/fix-new-conversation-button | UI-008 | merged |
 | 24 | copilot/fix-add-agent-functionality | UI-009 | in review |
+| 25 | codex/ui-011-modernise-ui | UI-011 (modernise) | in review |

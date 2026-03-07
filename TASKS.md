@@ -77,3 +77,4 @@ This is the source-of-truth backlog for current known scope.
 - [x] `DOC-002` Add playbook templates for debugging and recovery drills
 - [x] `DOC-003` Start project saga log with incremental milestone updates
 - [x] `UI-011` Agent drag-to-reorder (sort_order column, PATCH endpoint, order badge, drag handles, remove Target First dropdown)
+- [x] `UI-012` UI modernisation — engineering cockpit theme (deep navy/violet tokens, Inter font, 200ms transitions, ThemeSmoke tests)
