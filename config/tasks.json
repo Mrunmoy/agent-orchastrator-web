@@ -627,7 +627,7 @@
       "default_owner": "copilot"
     },
     {
-      "id": "UI-011b",
+      "id": "UI-012",
       "slug": "modernise-ui",
       "title": "UI modernisation — engineering cockpit theme (deep navy/violet tokens, Inter font, 200ms transitions)",
       "scope": "frontend/src/**/*.css,frontend/src/layout/ThemeSmoke.test.tsx,frontend/src/layout/AppShell.test.tsx",

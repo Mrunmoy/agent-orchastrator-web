@@ -16,6 +16,9 @@
   --danger: #e06c75;
   --teal: #62d7c8;
   --gold: #d6b164;
+  --ok-light: #5ee4a8;
+  --danger-light: #ea8890;
+  --ok-contrast: #0d1a14;
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
   --radius: 8px;
@@ -125,11 +128,11 @@ textarea::placeholder {
 .btn--ok {
   background: var(--ok);
   border-color: var(--ok);
-  color: #0d1a14;
+  color: var(--ok-contrast);
 }
 
 .btn--ok:hover:not(:disabled) {
-  background: #5ee4a8;
+  background: var(--ok-light);
 }
 
 .btn--danger {
@@ -139,7 +142,7 @@ textarea::placeholder {
 }
 
 .btn--danger:hover:not(:disabled) {
-  background: #ea8890;
+  background: var(--danger-light);
 }
 
 .btn--subtle {
