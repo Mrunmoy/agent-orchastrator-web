@@ -1,38 +1,47 @@
-# The Orchestrator Saga -- Campaign Log
+# Project Saga Log
 
-*A chronicle of the Agent Orchestrator party's quest to build a multi-agent command center from nothing but a Nix shell and raw ambition.*
+This directory contains the incremental milestone log for the **agent-orchestrator-web** project -- a multi-agent orchestration web application for running local CLI agents (Claude, Codex, Ollama) in structured debate-style conversations.
 
-This directory is the campaign journal. Each quest (milestone) records what the party accomplished, what loot they gained (features, tests), what traps they fell into (review findings), and what new regions of the map they unlocked for the next expedition.
+## What This Log Captures
 
-## The Party
+Each milestone document records:
 
-- **The Dungeon Master** -- coordinates quests, reviews loot, decides what to tackle next
-- **Claude Agents** -- a squad of parallel adventurers, each working an isolated worktree dungeon
-- **GitHub CI** -- the gatekeeper who won't let anyone into the main keep without passing trials
+- **What was built** -- the tasks completed, files created, and capabilities added.
+- **How it was built** -- the parallel worktree workflow, PR review cycle, and TDD discipline.
+- **Key decisions** -- architectural choices and review findings that shaped the codebase.
+- **Test coverage** -- how many tests were added at each stage.
+- **What was unblocked** -- how each milestone enabled the next phase of work.
 
-## Campaign Rules
+## Project Development Model
 
-- **Test-Driven Development** -- write the tests (traps) before the code (treasure). No exceptions.
-- **Worktree Isolation** -- up to 5 party members operate in parallel, each in their own dungeon instance. No stepping on each other's loot.
-- **PR Review Gates** -- every quest completion goes through the Dungeon Master's review before merging to the main keep.
-- **Track Your Kills** -- every quest updates TASKS.md, task-board.md, and tasks.json. (Added after Quest 3 when the party realized nobody was updating the quest log.)
+The project was developed using a parallel multi-agent workflow:
 
-## Quest Index
+- **Nix dev shell** provides a reproducible environment for all agents.
+- **Git worktrees** allow up to 5 tasks to run simultaneously in isolated directories.
+- **TDD is mandatory** -- tests are written first (red phase), then implementation follows.
+- **All work flows through PRs** to `main` with CI checks (GitHub Actions).
+- **A merge coordinator** serializes integration to avoid conflicts.
 
-| Quest | Title | Party Size | Loot (Tests) | PRs |
-|-------|-------|-----------|-------------|-----|
-| [01](milestone-01-foundations.md) | The Foundation Stones | Solo | ~10 | Pre-PR era |
-| [02](milestone-02-core-infrastructure.md) | The Ten-Headed Hydra | Full party | ~214 | Merge queue |
-| [03](milestone-03-orchestration-engine.md) | First Raid: The Engine Room | 5 parallel | ~70 | PRs #1-5 |
-| [04](milestone-04-execution-runtime.md) | Second Raid: The Batch Forge | 5 parallel | ~56 | PRs #6-10 |
-| [05](milestone-05-coordination-layer.md) | Third Raid: The War Room | 5 parallel | ~93 | PRs #11-15 |
-| [06](milestone-06-production-readiness.md) | Fourth Raid: Fortifying the Keep | 5 parallel | ~149 | PRs #16-21 |
+Development proceeded in 4 parallel batches, each with 5 tasks running concurrently.
 
-**Total loot accumulated: 430+ tests across 40+ test files.**
+## Milestone Index
 
-## Related Scrolls
+| # | Title | Tasks | Document |
+|---|-------|-------|----------|
+| 01 | Foundations | SETUP-001, SETUP-002, SETUP-003 | [milestone-01-foundations.md](milestone-01-foundations.md) |
+| 02 | Core Infrastructure | DATA-001/002/003, ADPT-001/002/003, API-001/002, ORCH-001, OPS-003, UI-001 | [milestone-02-core-infrastructure.md](milestone-02-core-infrastructure.md) |
+| 03 | Orchestration Engine (Batch 1) | ORCH-002/003, API-004/005, UI-002 | [milestone-03-orchestration-engine.md](milestone-03-orchestration-engine.md) |
+| 04 | Execution Runtime (Batch 2) | ORCH-004, DATA-004, ADPT-004, UI-003, UI-005 | [milestone-04-execution-runtime.md](milestone-04-execution-runtime.md) |
+| 05 | Coordination Layer (Batch 3) | ORCH-005/006, API-003, UI-006, COORD-001 | [milestone-05-coordination-layer.md](milestone-05-coordination-layer.md) |
+| 06 | Production Readiness (Batch 4) | UI-004, COORD-002/003, OPS-001, TEST-002 | [milestone-06-production-readiness.md](milestone-06-production-readiness.md) |
 
-- **Task Board** (`docs/coordination/task-board.md`) -- the real-time quest tracker
-- **TASKS.md** -- the master quest log with completion checkboxes
-- **ADRs** (`docs/decisions/`) -- the party's architectural rulings
-- **Playbooks** (`docs/playbook/`) -- field guides for when things go sideways
+## Narrative Chapters
+
+The `*.html` files in this directory are storybook-style narrative chapters written during early development. They cover the same ground as milestones 01-02 but in a more narrative format.
+
+## Relationship to Other Docs
+
+- **Task board** (`docs/coordination/task-board.md`) -- real-time execution tracking.
+- **TASKS.md** -- the source-of-truth backlog with completion checkboxes.
+- **config/tasks.json** -- machine-readable task metadata.
+- **Saga chapter template** -- `docs/templates/saga-chapter-template.md`.
