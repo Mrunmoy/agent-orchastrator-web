@@ -3,8 +3,8 @@
 This is the source-of-truth backlog for current known scope.
 
 ## Current State Snapshot
-- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts.
-- Not done: actual frontend app, backend orchestrator runtime, adapters, API, persistence, production UI.
+- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex adapter baselines.
+- Not done: full orchestrator runtime, API surface completion, persistence features beyond schema, production workflow integration.
 
 ## Definition of Done (per task)
 - Design/spec links are updated if behavior changed.
@@ -13,12 +13,12 @@ This is the source-of-truth backlog for current known scope.
 - Task board status moved to `Done` with evidence note.
 
 ## Epic SETUP - Project Foundations
-- [ ] `SETUP-001` Create backend Python package layout (`backend/`, modules, lint/test config)
-- [ ] `SETUP-002` Create frontend TypeScript app shell (`frontend/`, build/test/lint)
+- [x] `SETUP-001` Create backend Python package layout (`backend/`, modules, lint/test config)
+- [x] `SETUP-002` Create frontend TypeScript app shell (`frontend/`, build/test/lint)
 - [ ] `SETUP-003` Add shared dev commands (`make lint`, `make test`, `make run-backend`, `make run-frontend`)
 
 ## Epic DATA - Persistence and Context Memory
-- [ ] `DATA-001` Implement SQLite schema v1 (conversations, agents, tasks, runs, checkpoints)
+- [x] `DATA-001` Implement SQLite schema v1 (conversations, agents, tasks, runs, checkpoints)
 - [ ] `DATA-002` Add migration/bootstrap loader for schema initialization
 - [ ] `DATA-003` Implement append-only JSONL event log writer/reader
 - [ ] `DATA-004` Implement checkpoint pack builder with token bounds and summary compaction
@@ -32,8 +32,8 @@ This is the source-of-truth backlog for current known scope.
 - [ ] `ORCH-006` Implement capacity-aware throttle and queue/resume policy
 
 ## Epic ADPT - CLI Agent Adapters
-- [ ] `ADPT-001` Implement Claude CLI adapter (prompt, session attach/resume hooks, timeout handling)
-- [ ] `ADPT-002` Implement Codex CLI adapter (prompt, session attach/resume hooks, timeout handling)
+- [x] `ADPT-001` Implement Claude CLI adapter (prompt, session attach/resume hooks, timeout handling)
+- [x] `ADPT-002` Implement Codex CLI adapter (prompt, session attach/resume hooks, timeout handling)
 - [ ] `ADPT-003` Implement Ollama memo adapter for neutral decision memo
 - [ ] `ADPT-004` Normalize adapter output into common message/event schema
 
@@ -45,7 +45,7 @@ This is the source-of-truth backlog for current known scope.
 - [ ] `API-005` Implement events stream endpoint for UI live updates
 
 ## Epic UI - Slack-Like Web Experience
-- [ ] `UI-001` Implement app shell layout (history left, chat center, intelligence right, controls bottom)
+- [x] `UI-001` Implement app shell layout (history left, chat center, intelligence right, controls bottom)
 - [ ] `UI-002` Implement conversation history list (scroll, select, delete, clear all, status icon)
 - [ ] `UI-003` Implement chat timeline (avatar, bold name, timestamp, typing/thinking indicator)
 - [ ] `UI-004` Implement composer + target-agent routing + run controls
