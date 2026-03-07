@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import personalitiesJson from "../config/personalities.json";
 import type { AgentData, AgentRole, Provider } from "../features/agents";
 import {
   clearConversations as clearConversationsApi,
@@ -39,9 +40,7 @@ const PROVIDER_MODELS: Record<Provider, string[]> = {
 
 const PERSONALITY_OPTIONS: { key: string; label: string }[] = [
   { key: "", label: "— none —" },
-  { key: "software_developer", label: "Software Developer" },
-  { key: "code_reviewer", label: "Code Reviewer" },
-  { key: "friendly_brainstormer", label: "Friendly Brainstormer" },
+  ...Object.entries(personalitiesJson).map(([key, val]) => ({ key, label: val.label })),
 ];
 
 type AgentEditorState = {
@@ -107,6 +106,7 @@ export function AppShell() {
   >({});
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [agentEditor, setAgentEditor] = useState<AgentEditorState | null>(null);
+  const [isSavingAgent, setIsSavingAgent] = useState(false);
   const [conversationCreator, setConversationCreator] = useState<ConversationCreatorState | null>(
     null,
   );
@@ -378,7 +378,7 @@ export function AppShell() {
   };
 
   const saveAgent = async () => {
-    if (!agentEditor) return;
+    if (!agentEditor || isSavingAgent) return;
     const payload = {
       display_name: agentEditor.displayName.trim(),
       provider: agentEditor.provider,
@@ -390,6 +390,7 @@ export function AppShell() {
       setErrorText("Agent display name and model are required.");
       return;
     }
+    setIsSavingAgent(true);
     try {
       if (agentEditor.mode === "create") {
         const created = await createAgentApi(payload);
@@ -413,6 +414,8 @@ export function AppShell() {
       setErrorText(null);
     } catch (error) {
       setErrorText(error instanceof Error ? error.message : "Failed to save agent");
+    } finally {
+      setIsSavingAgent(false);
     }
   };
 
@@ -607,8 +610,8 @@ export function AppShell() {
             </label>
           </div>
           <div className="agent-editor__actions">
-            <button className="btn btn--primary" onClick={() => void saveAgent()}>
-              Save Agent
+            <button className="btn btn--primary" onClick={() => void saveAgent()} disabled={isSavingAgent}>
+              {isSavingAgent ? "Saving…" : "Save Agent"}
             </button>
             {agentEditor.mode === "edit" ? (
               <button className="btn btn--danger" onClick={() => void removeAgent()}>
