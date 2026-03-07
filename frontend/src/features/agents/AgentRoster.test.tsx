@@ -30,9 +30,7 @@ describe("AgentRoster", () => {
   });
 
   it("renders list of agents", () => {
-    render(
-      <AgentRoster agents={agents} onEdit={() => {}} onAdd={() => {}} />,
-    );
+    render(<AgentRoster agents={agents} onEdit={() => {}} onAdd={() => {}} />);
     expect(screen.getByText("Claude Worker")).toBeInTheDocument();
     expect(screen.getByText("Codex Helper")).toBeInTheDocument();
   });

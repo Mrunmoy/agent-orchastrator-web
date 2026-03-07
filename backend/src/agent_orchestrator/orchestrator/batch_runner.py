@@ -104,10 +104,7 @@ class BatchRunner:
                 break
 
             # Build prompt
-            prompt = (
-                f"Continue the conversation. "
-                f"Turn {turn_num}/{self._batch_size}"
-            )
+            prompt = f"Continue the conversation. " f"Turn {turn_num}/{self._batch_size}"
 
             # Mark agent as running
             self._scheduler.mark_agent_status(agent.id, AgentStatus.RUNNING)

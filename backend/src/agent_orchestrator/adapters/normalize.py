@@ -54,6 +54,5 @@ def normalize_batch(
 ) -> list[NormalizedMessage]:
     """Normalize a batch of (agent_id, AdapterResult) pairs."""
     return [
-        normalize(result, agent_id=agent_id, timestamp=timestamp)
-        for agent_id, result in results
+        normalize(result, agent_id=agent_id, timestamp=timestamp) for agent_id, result in results
     ]

@@ -9,11 +9,7 @@ interface AgentRosterProps {
   onAdd: () => void;
 }
 
-export const AgentRoster: React.FC<AgentRosterProps> = ({
-  agents,
-  onEdit,
-  onAdd,
-}) => {
+export const AgentRoster: React.FC<AgentRosterProps> = ({ agents, onEdit, onAdd }) => {
   return (
     <div className="agent-roster" data-testid="agent-roster">
       <div className="agent-roster-header">

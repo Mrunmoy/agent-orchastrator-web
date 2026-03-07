@@ -8,9 +8,7 @@ must wait until capacity is available.
 from __future__ import annotations
 
 from collections import OrderedDict
-from collections.abc import Sequence
-from dataclasses import dataclass, field
-
+from dataclasses import dataclass
 
 # ---------------------------------------------------------------------------
 # Policy & decision data classes

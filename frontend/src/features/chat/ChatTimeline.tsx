@@ -19,9 +19,7 @@ export function ChatTimeline({ messages }: ChatTimelineProps) {
   if (messages.length === 0) {
     return (
       <div className="chat-timeline" data-testid="chat-timeline">
-        <div className="chat-timeline__empty">
-          No messages yet. Start a conversation!
-        </div>
+        <div className="chat-timeline__empty">No messages yet. Start a conversation!</div>
       </div>
     );
   }

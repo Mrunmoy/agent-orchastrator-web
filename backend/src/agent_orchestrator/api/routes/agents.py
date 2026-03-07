@@ -80,9 +80,7 @@ def list_agents() -> dict[str, Any]:
     """List all agents ordered by display_name."""
     db = get_db()
     with db.connection() as conn:
-        rows = conn.execute(
-            "SELECT * FROM agent ORDER BY display_name"
-        ).fetchall()
+        rows = conn.execute("SELECT * FROM agent ORDER BY display_name").fetchall()
     agents = [_row_to_dict(r) for r in rows]
     return ok_response({"agents": agents})
 
@@ -104,8 +102,7 @@ def create_agent(body: NewAgentBody) -> Any:
         return JSONResponse(
             status_code=400,
             content=error_response(
-                f"Invalid role '{body.role}'. "
-                f"Valid roles: {sorted(VALID_ROLES)}"
+                f"Invalid role '{body.role}'. " f"Valid roles: {sorted(VALID_ROLES)}"
             ),
         )
 
@@ -184,8 +181,7 @@ def update_agent(body: UpdateAgentBody) -> Any:
             return JSONResponse(
                 status_code=400,
                 content=error_response(
-                    f"Invalid role '{body.role}'. "
-                    f"Valid roles: {sorted(VALID_ROLES)}"
+                    f"Invalid role '{body.role}'. " f"Valid roles: {sorted(VALID_ROLES)}"
                 ),
             )
 

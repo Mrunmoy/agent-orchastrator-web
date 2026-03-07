@@ -1,9 +1,4 @@
-export type AgreementLevel =
-  | "strong_agree"
-  | "agree"
-  | "neutral"
-  | "disagree"
-  | "strong_disagree";
+export type AgreementLevel = "strong_agree" | "agree" | "neutral" | "disagree" | "strong_disagree";
 
 export interface AgentPosition {
   agent_id: string;

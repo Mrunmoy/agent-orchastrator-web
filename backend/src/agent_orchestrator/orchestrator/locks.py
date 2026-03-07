@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 
 
@@ -48,7 +48,7 @@ class LockManager:
     def _is_expired(self, lock: Lock) -> bool:
         if lock.expires_at is None:
             return False
-        return datetime.now(timezone.utc) >= datetime.fromisoformat(lock.expires_at)
+        return datetime.now(UTC) >= datetime.fromisoformat(lock.expires_at)
 
     def acquire(
         self,
@@ -63,11 +63,9 @@ class LockManager:
         if existing is not None and not self._is_expired(existing):
             if existing.owner == owner:
                 return existing
-            raise LockConflictError(
-                resource=resource, owner=owner, existing_owner=existing.owner
-            )
+            raise LockConflictError(resource=resource, owner=owner, existing_owner=existing.owner)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         expires_at: str | None = None
         if ttl_seconds is not None:
             expires_at = (now + timedelta(seconds=ttl_seconds)).isoformat()

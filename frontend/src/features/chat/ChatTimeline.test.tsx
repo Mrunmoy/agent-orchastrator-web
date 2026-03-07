@@ -4,9 +4,7 @@ import { describe, it, expect } from "vitest";
 import { ChatTimeline } from "./ChatTimeline";
 import type { ChatMessageData } from "./types";
 
-function makeMessage(
-  overrides: Partial<ChatMessageData> = {},
-): ChatMessageData {
+function makeMessage(overrides: Partial<ChatMessageData> = {}): ChatMessageData {
   return {
     id: "msg-1",
     agentName: "Claude",
@@ -20,9 +18,7 @@ function makeMessage(
 describe("ChatTimeline", () => {
   it("renders empty state when no messages", () => {
     render(<ChatTimeline messages={[]} />);
-    expect(
-      screen.getByText("No messages yet. Start a conversation!"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No messages yet. Start a conversation!")).toBeInTheDocument();
   });
 
   it("renders list of messages", () => {

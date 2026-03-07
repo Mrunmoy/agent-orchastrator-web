@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-import pytest
-
 from agent_orchestrator.orchestrator.throttle import (
     CapacityThrottle,
     RunQueue,
-    ThrottleDecision,
     ThrottlePolicy,
 )
-
 
 # ---------------------------------------------------------------------------
 # ThrottlePolicy defaults

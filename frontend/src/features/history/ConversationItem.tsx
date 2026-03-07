@@ -29,14 +29,9 @@ export interface ConversationItemProps {
   onSelect: (id: string) => void;
 }
 
-export function ConversationItem({
-  conversation,
-  onSelect,
-}: ConversationItemProps) {
+export function ConversationItem({ conversation, onSelect }: ConversationItemProps) {
   const { id, title, state, active, updated_at } = conversation;
-  const classes = ["conv-item", active ? "conv-item--active" : ""]
-    .filter(Boolean)
-    .join(" ");
+  const classes = ["conv-item", active ? "conv-item--active" : ""].filter(Boolean).join(" ");
 
   return (
     <div
@@ -52,10 +47,7 @@ export function ConversationItem({
       <span className="conv-item__title" data-testid="conv-item-title">
         {truncateTitle(title)}
       </span>
-      <span
-        className={`conv-item__badge badge--${state}`}
-        data-testid="state-badge"
-      >
+      <span className={`conv-item__badge badge--${state}`} data-testid="state-badge">
         {state}
       </span>
       <span className="conv-item__time" data-testid="conv-item-time">

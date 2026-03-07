@@ -7,11 +7,9 @@ import uuid
 from agent_orchestrator.runtime.notifications import (
     LoggingHandler,
     Notification,
-    NotificationHandler,
     NotificationPipeline,
     NotificationType,
 )
-
 
 # ---------------------------------------------------------------------------
 # NotificationType enum
@@ -101,9 +99,7 @@ class TestLoggingHandler:
 class TestPipelineEmit:
     def test_emit_creates_notification_with_correct_fields(self):
         pipeline = NotificationPipeline()
-        n = pipeline.emit(
-            NotificationType.NEEDS_INPUT, "conv-42", "User input required"
-        )
+        n = pipeline.emit(NotificationType.NEEDS_INPUT, "conv-42", "User input required")
         assert n.notification_type == NotificationType.NEEDS_INPUT
         assert n.conversation_id == "conv-42"
         assert n.message == "User input required"
@@ -118,9 +114,7 @@ class TestPipelineEmit:
     def test_emit_with_metadata(self):
         pipeline = NotificationPipeline()
         meta = {"key": "value"}
-        n = pipeline.emit(
-            NotificationType.ERROR, "conv-1", "boom", metadata=meta
-        )
+        n = pipeline.emit(NotificationType.ERROR, "conv-1", "boom", metadata=meta)
         assert n.metadata == meta
 
     def test_emit_dispatches_to_all_handlers(self):

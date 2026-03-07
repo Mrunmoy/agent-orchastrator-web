@@ -5,15 +5,12 @@ from __future__ import annotations
 import time
 from unittest.mock import patch
 
-import pytest
-
 from agent_orchestrator.api.security import (
     AuthConfig,
     RateLimiter,
     TokenValidator,
     generate_token,
 )
-
 
 # ---------------------------------------------------------------------------
 # TokenValidator tests
@@ -61,7 +58,9 @@ class TestTokenValidatorEnabled:
 
     def test_uses_constant_time_comparison(self) -> None:
         """Ensure secrets.compare_digest is used, not == operator."""
-        with patch("agent_orchestrator.api.security.secrets.compare_digest", return_value=True) as mock_cmp:
+        with patch(
+            "agent_orchestrator.api.security.secrets.compare_digest", return_value=True
+        ) as mock_cmp:
             self.validator.validate("some-token")
             mock_cmp.assert_called_once()
 

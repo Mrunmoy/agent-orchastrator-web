@@ -21,9 +21,7 @@ TRANSITIONS: dict[ConversationState, frozenset[ConversationState]] = {
     S.DEBATE: frozenset({S.EXECUTION_PLANNING, S.NEEDS_USER_INPUT, S.FAILED}),
     S.EXECUTION_PLANNING: frozenset({S.AUTONOMOUS_WORK, S.NEEDS_USER_INPUT, S.FAILED}),
     S.AUTONOMOUS_WORK: frozenset({S.COMPLETED, S.NEEDS_USER_INPUT, S.FAILED}),
-    S.NEEDS_USER_INPUT: frozenset(
-        {S.DEBATE, S.EXECUTION_PLANNING, S.AUTONOMOUS_WORK, S.FAILED}
-    ),
+    S.NEEDS_USER_INPUT: frozenset({S.DEBATE, S.EXECUTION_PLANNING, S.AUTONOMOUS_WORK, S.FAILED}),
     S.COMPLETED: frozenset(),
     S.FAILED: frozenset({S.QUEUED}),
 }
@@ -40,9 +38,7 @@ class InvalidTransition(Exception):  # noqa: N818
     def __init__(self, from_state: ConversationState, to_state: ConversationState) -> None:
         self.from_state = from_state
         self.to_state = to_state
-        super().__init__(
-            f"Invalid transition from {from_state.value!r} to {to_state.value!r}"
-        )
+        super().__init__(f"Invalid transition from {from_state.value!r} to {to_state.value!r}")
 
 
 # ---------------------------------------------------------------------------
@@ -88,6 +84,4 @@ class StateMachine:
             raise InvalidTransition(self._current_state, target_state)
         prev = self._current_state
         self._current_state = target_state
-        self._history.append(
-            (prev, target_state, datetime.now(UTC).isoformat())
-        )
+        self._history.append((prev, target_state, datetime.now(UTC).isoformat()))

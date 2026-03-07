@@ -11,10 +11,7 @@ interface IntelligencePaneProps {
 export const IntelligencePane: React.FC<IntelligencePaneProps> = ({ data }) => {
   if (!data) {
     return (
-      <div
-        className="intelligence-pane intelligence-empty"
-        data-testid="intelligence-empty"
-      >
+      <div className="intelligence-pane intelligence-empty" data-testid="intelligence-empty">
         No intelligence data
       </div>
     );
