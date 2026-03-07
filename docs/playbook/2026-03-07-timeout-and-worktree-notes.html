@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Timeout And Worktree Notes</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Timeout And Worktree Notes</h1>
+    <div class="meta">Playbook Entry · 2026-03-07</div>
+
+    <h2>Issue 1: Timeout test mismatch</h2>
+    <p><strong>Symptom:</strong> backend pytest failed in timeout kill-path validation.</p>
+    <p><strong>Cause:</strong> timeout exception handling diverged between adapter and mocked coroutine behavior.</p>
+    <p><strong>Fix:</strong> accept both <code>asyncio.TimeoutError</code> and builtin <code>TimeoutError</code> in adapter timeout paths, and align test mock side effect to <code>asyncio.TimeoutError</code>.</p>
+
+    <h2>Issue 2: Stale worktree shell path</h2>
+    <p><strong>Symptom:</strong> <code>make task-shell ...</code> returned <code>getcwd: No such file or directory</code>.</p>
+    <p><strong>Cause:</strong> command launched from a deleted worktree directory.</p>
+    <p><strong>Recovery:</strong> run commands from repo root and regenerate task worktree.</p>
+
+    <h2>Preventive Rules</h2>
+    <ul>
+      <li>Always run orchestration make targets from repo root.</li>
+      <li>Keep each worker bound to its generated <code>TASK_PROMPT.md</code>.</li>
+      <li>Treat design/playbook/saga updates as mandatory completion artifacts.</li>
+    </ul>
+  </article>
+</body>
+</html>

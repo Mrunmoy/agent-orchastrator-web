@@ -67,10 +67,10 @@ Execution contract:
 - Keep commits small and descriptive.
 - Do not merge to {args.base_branch}.
 - If blocked by dependency, stop and report blocker clearly.
-- Update project docs as part of completion:
-  - design note in `docs/design/`
-  - debugging/ops note in `docs/playbook/`
-  - milestone update in `docs/saga/`
+- Update project docs as HTML storybook chapters:
+  - design page in `docs/design/*.html`
+  - playbook page in `docs/playbook/*.html`
+  - saga page in `docs/saga/*.html`
 
 Board updates required:
 - Set owner and status to In Progress when starting.
@@ -80,7 +80,7 @@ Board updates required:
 Final report format:
 1) Changes made
 2) Tests run + results
-3) Docs updated (design/playbook/saga file paths)
+3) Docs updated (HTML file paths for design/playbook/saga)
 4) Open issues/blockers
 5) Next recommended task IDs
 """
