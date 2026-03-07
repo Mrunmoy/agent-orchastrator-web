@@ -21,6 +21,7 @@
             python312Packages.mypy
             python312Packages.fastapi
             python312Packages.uvicorn
+            python312Packages.httpx
             python312Packages.psutil
             python312Packages.playwright
             chromium
