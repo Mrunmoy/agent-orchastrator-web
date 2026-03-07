@@ -19,6 +19,7 @@ from agent_orchestrator.orchestrator.models import (
     Task,
     TaskStatus,
 )
+from agent_orchestrator.orchestrator.scheduler import RoundRobinScheduler
 from agent_orchestrator.orchestrator.state_machine import (
     TRANSITIONS,
     InvalidTransition,
@@ -42,6 +43,7 @@ __all__ = [
     "Phase",
     "Provider",
     "ResourceSnapshot",
+    "RoundRobinScheduler",
     "RunStatus",
     "SchedulerRun",
     "Task",
