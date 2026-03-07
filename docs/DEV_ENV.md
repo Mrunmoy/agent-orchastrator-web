@@ -35,7 +35,7 @@ laptops can reach the UI.
 ### Quick Start
 ```bash
 nix develop              # enter the dev shell
-scripts/run_lan.sh       # start both services on 0.0.0.0
+make dev-up-lan          # start both services on 0.0.0.0
 ```
 
 The script prints a banner with the LAN IP and URLs:
@@ -47,9 +47,21 @@ The script prints a banner with the LAN IP and URLs:
 
 Open the **Frontend URL** on any device connected to the same Wi-Fi / LAN.
 
+### Localhost-Only Start
+```bash
+make dev-up
+```
+
+### Status / Logs / Stop
+```bash
+make dev-status
+make dev-logs
+make dev-down
+```
+
 ### Custom Ports
 ```bash
-scripts/run_lan.sh --backend-port 9000 --frontend-port 3000
+scripts/dev_stack.sh start --lan --backend-port 9000 --frontend-port 3000
 ```
 
 ### Firewall Notes
@@ -66,5 +78,7 @@ sudo firewall-cmd --add-port=8000/tcp --add-port=5173/tcp
 ```
 
 ### Stopping
-Press **Ctrl+C** in the terminal. The script traps SIGINT/SIGTERM and
-cleanly shuts down both the backend and frontend processes.
+Use:
+```bash
+make dev-down
+```
