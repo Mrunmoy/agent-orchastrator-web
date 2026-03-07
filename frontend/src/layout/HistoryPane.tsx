@@ -18,6 +18,7 @@ type HistoryPaneProps = {
   onSelectConversation?: (conversationId: string) => void;
   onAddAgent?: () => void;
   onEditAgent?: (agentId: string) => void;
+  reorderConversationAgents?: (agentIds: string[]) => Promise<unknown>;
 };
 
 export function HistoryPane({
@@ -30,6 +31,7 @@ export function HistoryPane({
   onSelectConversation,
   onAddAgent,
   onEditAgent,
+  reorderConversationAgents,
 }: HistoryPaneProps) {
   return (
     <aside className="panel history-pane" data-testid="history-pane">
@@ -76,6 +78,7 @@ export function HistoryPane({
           agents={agents}
           onAdd={() => onAddAgent?.()}
           onEdit={(agentId) => onEditAgent?.(agentId)}
+          reorderConversationAgents={reorderConversationAgents}
         />
       </div>
     </aside>

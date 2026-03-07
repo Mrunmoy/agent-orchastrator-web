@@ -9,10 +9,15 @@ interface AgentRosterProps {
   onEdit: (agentId: string) => void;
   onAdd: () => void;
   reorderAgent?: (agentId: string, sortOrder: number) => Promise<unknown>;
+  reorderConversationAgents?: (agentIds: string[]) => Promise<unknown>;
+}
+
+function orderKey(a: AgentData): number {
+  return a.turn_order != null ? a.turn_order : a.sort_order;
 }
 
 function sortByOrder(agents: AgentData[]): AgentData[] {
-  return [...agents].sort((a, b) => a.sort_order - b.sort_order);
+  return [...agents].sort((a, b) => orderKey(a) - orderKey(b));
 }
 
 export const AgentRoster: React.FC<AgentRosterProps> = ({
@@ -20,6 +25,7 @@ export const AgentRoster: React.FC<AgentRosterProps> = ({
   onEdit,
   onAdd,
   reorderAgent = defaultReorderAgent,
+  reorderConversationAgents,
 }) => {
   const [localAgents, setLocalAgents] = useState<AgentData[]>(() => sortByOrder(agents));
   const prevAgentsRef = useRef(agents);
@@ -49,10 +55,18 @@ export const AgentRoster: React.FC<AgentRosterProps> = ({
     }
     const [moved] = reordered.splice(fromIdx, 1);
     reordered.splice(toIdx, 0, moved);
-    const withOrder = reordered.map((a, i) => ({ ...a, sort_order: i }));
+    const withOrder = reordered.map((a, i) => ({
+      ...a,
+      sort_order: i,
+      ...(a.turn_order != null ? { turn_order: i + 1 } : {}),
+    }));
     setLocalAgents(withOrder);
-    for (const a of withOrder) {
-      reorderAgent(a.id, a.sort_order).catch(console.error);
+    if (reorderConversationAgents) {
+      reorderConversationAgents(withOrder.map((a) => a.id)).catch(console.error);
+    } else {
+      for (const a of withOrder) {
+        reorderAgent(a.id, a.sort_order).catch(console.error);
+      }
     }
     dragId.current = null;
   };

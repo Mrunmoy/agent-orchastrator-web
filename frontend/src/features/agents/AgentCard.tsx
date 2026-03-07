@@ -15,15 +15,17 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, onEdit }) => {
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ")
     : null;
+  const displayOrder =
+    agent.turn_order != null ? agent.turn_order : agent.sort_order + 1;
 
   return (
     <div className="agent-card" data-testid="agent-card">
       <span
         className="order-badge"
         data-testid="order-badge"
-        aria-label={`Position ${agent.sort_order + 1}`}
+        aria-label={`Position ${displayOrder}`}
       >
-        {agent.sort_order + 1}
+        {displayOrder}
       </span>
       <div className="agent-card-header">
         <span

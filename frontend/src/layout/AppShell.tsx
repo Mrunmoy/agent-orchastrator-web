@@ -8,7 +8,10 @@ import {
   deleteAgent as deleteAgentApi,
   deleteConversation as deleteConversationApi,
   listAgents,
+  listConversationAgents,
   listConversations,
+  removeAgentFromConversation as removeAgentFromConversationApi,
+  reorderConversationAgents as reorderConversationAgentsApi,
   runBatch,
   selectConversation as selectConversationApi,
   steerConversation,
@@ -87,6 +90,7 @@ function toAgentData(row: {
   status: "idle" | "running" | "blocked" | "offline";
   personality_key?: string | null;
   sort_order?: number;
+  turn_order?: number;
 }): AgentData {
   return {
     id: row.id,
@@ -97,6 +101,7 @@ function toAgentData(row: {
     status: row.status,
     personality_key: row.personality_key ?? undefined,
     sort_order: row.sort_order ?? 0,
+    turn_order: row.turn_order,
   };
 }
 
@@ -129,24 +134,42 @@ export function AppShell() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [conversationRows, agentRows] = await Promise.all([
-          listConversations(),
-          listAgents(),
-        ]);
+        const conversationRows = await listConversations();
         const nextConversations = conversationRows.map(toConversationSummary);
         setConversations(nextConversations);
-        setSelectedConversationId(
+        const activeId =
           conversationRows.find((conversation) => conversation.active === 1)?.id ??
-            nextConversations[0]?.id ??
-            null,
-        );
-        setAgents(agentRows.map(toAgentData));
+          nextConversations[0]?.id ??
+          null;
+        setSelectedConversationId(activeId);
       } catch (error) {
         setErrorText(error instanceof Error ? error.message : "Failed to load initial data");
       }
     };
     void load();
   }, []);
+
+  useEffect(() => {
+    const loadAgents = async () => {
+      try {
+        if (selectedConversationId) {
+          const agentRows = await listConversationAgents(selectedConversationId);
+          setAgents(agentRows.map(toAgentData));
+        } else {
+          setAgents([]);
+        }
+      } catch {
+        // Fallback to global agents if conversation-scoped endpoint fails
+        try {
+          const agentRows = await listAgents();
+          setAgents(agentRows.map(toAgentData));
+        } catch (error) {
+          setErrorText(error instanceof Error ? error.message : "Failed to load agents");
+        }
+      }
+    };
+    void loadAgents();
+  }, [selectedConversationId]);
 
   const createConversation = async (
     title: string,
@@ -395,7 +418,10 @@ export function AppShell() {
     setIsSavingAgent(true);
     try {
       if (agentEditor.mode === "create") {
-        const created = await createAgentApi(payload);
+        const created = await createAgentApi({
+          ...payload,
+          ...(selectedConversationId ? { conversation_id: selectedConversationId } : {}),
+        });
         setAgents((prev) =>
           [...prev, toAgentData(created)].sort((a, b) =>
             a.display_name.localeCompare(b.display_name),
@@ -424,7 +450,11 @@ export function AppShell() {
   const removeAgent = async () => {
     if (!agentEditor?.agentId) return;
     try {
-      await deleteAgentApi(agentEditor.agentId);
+      if (selectedConversationId) {
+        await removeAgentFromConversationApi(selectedConversationId, agentEditor.agentId);
+      } else {
+        await deleteAgentApi(agentEditor.agentId);
+      }
       setAgents((prev) => prev.filter((agent) => agent.id !== agentEditor.agentId));
       setAgentEditor(null);
       setErrorText(null);
@@ -457,6 +487,12 @@ export function AppShell() {
           onSelectConversation={(conversationId) => void selectConversation(conversationId)}
           onAddAgent={openCreateAgent}
           onEditAgent={openEditAgent}
+          reorderConversationAgents={
+            selectedConversationId
+              ? (agentIds: string[]) =>
+                  reorderConversationAgentsApi(selectedConversationId, agentIds)
+              : undefined
+          }
         />
         <ChatPane
           activeConversationTitle={selectedConversation?.title ?? null}

@@ -8,10 +8,13 @@ const api = vi.hoisted(() => ({
   deleteConversation: vi.fn(),
   clearConversations: vi.fn(),
   listAgents: vi.fn(),
+  listConversationAgents: vi.fn(),
   createAgent: vi.fn(),
   updateAgent: vi.fn(),
   deleteAgent: vi.fn(),
   reorderAgent: vi.fn(),
+  removeAgentFromConversation: vi.fn(),
+  reorderConversationAgents: vi.fn(),
   runBatch: vi.fn(),
   continueBatch: vi.fn(),
   stopBatch: vi.fn(),
@@ -27,6 +30,9 @@ describe("AppShell", () => {
     vi.resetAllMocks();
     api.listConversations.mockResolvedValue([]);
     api.listAgents.mockResolvedValue([]);
+    api.listConversationAgents.mockResolvedValue([]);
+    api.removeAgentFromConversation.mockResolvedValue(undefined);
+    api.reorderConversationAgents.mockResolvedValue(undefined);
     api.createConversation.mockResolvedValue({
       id: "conv-1",
       title: "Conversation 1",
@@ -153,7 +159,7 @@ describe("AppShell", () => {
 
   it("opens agent editor and creates an agent", async () => {
     render(<AppShell />);
-    await waitFor(() => expect(api.listAgents).toHaveBeenCalledOnce());
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
 
     fireEvent.click(screen.getByRole("button", { name: /add agent/i }));
     expect(screen.getByTestId("agent-editor")).toBeInTheDocument();
@@ -174,7 +180,7 @@ describe("AppShell", () => {
 
   it("model dropdown resets to first model when provider changes", async () => {
     render(<AppShell />);
-    await waitFor(() => expect(api.listAgents).toHaveBeenCalledOnce());
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
 
     fireEvent.click(screen.getByRole("button", { name: /add agent/i }));
     const editor = screen.getByTestId("agent-editor");
@@ -197,7 +203,7 @@ describe("AppShell", () => {
 
   it("personality dropdown shows all options and can be selected", async () => {
     render(<AppShell />);
-    await waitFor(() => expect(api.listAgents).toHaveBeenCalledOnce());
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
 
     fireEvent.click(screen.getByRole("button", { name: /add agent/i }));
     const editor = screen.getByTestId("agent-editor");

@@ -21,6 +21,7 @@ export type Agent = {
   status: "idle" | "running" | "blocked" | "offline";
   personality_key?: string | null;
   sort_order: number;
+  turn_order?: number;
 };
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.toString().replace(/\/$/, "") ?? "/api";
@@ -94,12 +95,18 @@ export async function listAgents(): Promise<Agent[]> {
   return data.agents;
 }
 
+export async function listConversationAgents(conversationId: string): Promise<Agent[]> {
+  const data = await request<{ agents: Agent[] }>(`/conversations/${conversationId}/agents`);
+  return data.agents;
+}
+
 export async function createAgent(body: {
   display_name: string;
   provider: Agent["provider"];
   model: string;
   role: Agent["role"];
   personality_key?: string;
+  conversation_id?: string;
 }): Promise<Agent> {
   const data = await request<{ agent: Agent }>("/agents", {
     method: "POST",
@@ -136,6 +143,26 @@ export async function reorderAgent(agentId: string, sortOrder: number): Promise<
     body: JSON.stringify({ sort_order: sortOrder }),
   });
   return data.agent;
+}
+
+export async function removeAgentFromConversation(
+  conversationId: string,
+  agentId: string,
+): Promise<void> {
+  await request<Record<string, unknown>>(
+    `/conversations/${conversationId}/agents/${agentId}/remove`,
+    { method: "POST" },
+  );
+}
+
+export async function reorderConversationAgents(
+  conversationId: string,
+  agentIds: string[],
+): Promise<void> {
+  await request<Record<string, unknown>>(`/conversations/${conversationId}/agents/reorder`, {
+    method: "PATCH",
+    body: JSON.stringify({ agent_ids: agentIds }),
+  });
 }
 
 export async function runBatch(conversationId: string, batchSize = 20): Promise<void> {
