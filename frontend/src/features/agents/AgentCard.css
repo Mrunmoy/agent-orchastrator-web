@@ -13,7 +13,7 @@
 }
 
 .agent-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   border-color: var(--brand);
 }
 
@@ -99,7 +99,7 @@
 }
 
 .provider-claude {
-  background: rgba(107, 91, 214, 0.2);
+  background: var(--brand-glow);
   color: var(--brand-light);
 }
 
@@ -130,7 +130,7 @@
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(107, 91, 214, 0.12);
+  background: var(--brand-glow);
   color: var(--brand-light);
 }
 

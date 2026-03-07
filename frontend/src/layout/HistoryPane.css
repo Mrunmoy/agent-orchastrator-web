@@ -14,19 +14,19 @@
   max-height: 320px;
   overflow: auto;
   padding-right: 2px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
-  background: var(--surface-2);
+  background: var(--sidebar-bg);
 }
 
 .conv-row {
   width: 100%;
   padding: 8px 10px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   display: grid;
   gap: 3px;
-  color: var(--muted);
+  color: var(--sidebar-text);
   font-size: 13px;
   text-align: left;
   border-left: 3px solid transparent;
@@ -40,9 +40,9 @@
 }
 
 .conv-row[data-selected="true"] {
-  background: var(--surface-3);
-  border-left-color: var(--brand);
-  color: var(--ink);
+  background: var(--sidebar-bg-active);
+  border-left-color: var(--sidebar-text-active);
+  color: var(--sidebar-text-active);
 }
 
 .conv-row:last-child {
@@ -50,8 +50,8 @@
 }
 
 .conv-row:hover {
-  background: var(--surface-3);
-  color: var(--ink);
+  background: var(--sidebar-bg-hover);
+  color: var(--sidebar-text-active);
 }
 
 .conv-head {
