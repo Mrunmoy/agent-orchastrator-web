@@ -49,7 +49,7 @@
     {"id":"OPS-002","slug":"ops-lan-startup-profile","title":"LAN startup/run profile","scope":"scripts/run_lan.sh,docs/DEV_ENV.md","epic":"OPS","priority":"P2","status":"Todo","depends_on":["API-001","UI-001"],"default_owner":"unassigned"},
     {"id":"OPS-003","slug":"ops-capacity-telemetry","title":"Capacity telemetry snapshot","scope":"backend/runtime/capacity.py","epic":"OPS","priority":"P1","status":"Done","depends_on":["SETUP-001"],"default_owner":"claude-parallel"},
     {"id":"DOC-001","slug":"doc-adr-core-decisions","title":"ADR entries for core decisions","scope":"docs/decisions/*","epic":"DOC","priority":"P2","status":"Done","depends_on":["ORCH-004"],"default_owner":"claude-agent"},
-    {"id":"DOC-002","slug":"doc-playbook-recovery","title":"Playbook recovery/debug entries","scope":"docs/playbook/*","epic":"DOC","priority":"P2","status":"Todo","depends_on":["TEST-001"],"default_owner":"unassigned"},
+    {"id":"DOC-002","slug":"doc-playbook-recovery","title":"Playbook recovery/debug entries","scope":"docs/playbook/*","epic":"DOC","priority":"P2","status":"Done","depends_on":["TEST-001"],"default_owner":"claude-agent"},
     {"id":"DOC-003","slug":"doc-saga-milestones","title":"Project saga milestone updates","scope":"docs/saga/*","epic":"DOC","priority":"P2","status":"Todo","depends_on":["SETUP-002"],"default_owner":"unassigned"}
   ]
 }
