@@ -51,7 +51,7 @@ Execution board for active parallel slices.
 | UI-007 | Run-window controls | `frontend/src/features/run-controls/*` | P1 | unassigned | Todo | UI-004,ORCH-005 | - |
 | COORD-001 | Merge coordinator queue model | `backend/orchestrator/merge_queue.py` | P1 | claude-agent | Done | ORCH-004 | claude/coord-001-merge-queue |
 | COORD-002 | Branch/task lock policy | `backend/orchestrator/locks.py` | P1 | unassigned | Todo | COORD-001 | - |
-| COORD-003 | Notification pipeline | `backend/runtime/notifications.py` | P1 | unassigned | Todo | ORCH-006 | - |
+| COORD-003 | Notification pipeline | `backend/runtime/notifications.py` | P1 | claude-agent | Done | ORCH-006 | claude/coord-003-notifications |
 | OPS-001 | Local auth + request limits | `backend/api/security.py` | P1 | unassigned | Todo | API-001 | - |
 | OPS-002 | LAN startup/run profile | `scripts/run_lan.sh` | P2 | unassigned | Todo | API-001,UI-001 | - |
 | OPS-003 | Capacity telemetry snapshot | `backend/runtime/capacity.py` | P1 | claude-parallel | Done | SETUP-001 | master (merged) |
