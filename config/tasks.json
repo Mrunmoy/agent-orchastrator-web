@@ -35,7 +35,7 @@
     {"id":"UI-004","slug":"ui-composer-controls","title":"Composer and run controls","scope":"frontend/src/features/composer/*","epic":"UI","priority":"P0","status":"Done","depends_on":["UI-001","API-003"],"default_owner":"claude-agent"},
     {"id":"UI-005","slug":"ui-agent-roster-editor","title":"Agent roster editor","scope":"frontend/src/features/agents/*","epic":"UI","priority":"P1","status":"Done","depends_on":["UI-001","API-004"],"default_owner":"unassigned"},
     {"id":"UI-006","slug":"ui-intelligence-pane","title":"Intelligence pane","scope":"frontend/src/features/intelligence/*","epic":"UI","priority":"P1","status":"Done","depends_on":["UI-001","API-005","ADPT-003"],"default_owner":"unassigned"},
-    {"id":"UI-007","slug":"ui-run-window-controls","title":"Run-window controls and steering","scope":"frontend/src/features/run-controls/*","epic":"UI","priority":"P1","status":"Todo","depends_on":["UI-004","ORCH-005"],"default_owner":"unassigned"},
+    {"id":"UI-007","slug":"ui-run-window-controls","title":"Run-window controls and steering","scope":"frontend/src/features/run-controls/*","epic":"UI","priority":"P1","status":"Done","depends_on":["UI-004","ORCH-005"],"default_owner":"unassigned"},
 
     {"id":"COORD-001","slug":"coord-merge-queue-model","title":"Merge coordinator queue model","scope":"backend/orchestrator/merge_queue.py","epic":"COORD","priority":"P1","status":"Done","depends_on":["ORCH-004"],"default_owner":"unassigned"},
     {"id":"COORD-002","slug":"coord-task-lock-policy","title":"Task/branch lock policy","scope":"backend/orchestrator/locks.py","epic":"COORD","priority":"P1","status":"Done","depends_on":["COORD-001"],"default_owner":"claude-agent"},

@@ -1,0 +1,66 @@
+.steering-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-color, #333);
+  background: var(--surface-color, #1e1e1e);
+}
+
+.steering-panel__input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.steering-panel__textarea {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #444);
+  background: var(--input-bg, #2a2a2a);
+  color: var(--text-color, #e0e0e0);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 40px;
+}
+
+.steering-panel__textarea::placeholder {
+  color: var(--text-secondary, #999);
+}
+
+.steering-panel__submit {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #444);
+  background: var(--surface-color, #2a2a2a);
+  color: var(--text-color, #e0e0e0);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.steering-panel__submit:hover {
+  background: var(--surface-hover, #333);
+}
+
+.steering-panel__history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.steering-panel__history-item {
+  font-size: 12px;
+  color: var(--text-secondary, #999);
+  padding: 4px 8px;
+  background: var(--surface-alt, #252525);
+  border-radius: 3px;
+  border-left: 2px solid var(--primary-color, #4a9eff);
+}

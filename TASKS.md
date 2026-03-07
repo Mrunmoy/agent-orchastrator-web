@@ -4,7 +4,7 @@ This is the source-of-truth backlog for current known scope.
 
 ## Current State Snapshot
 - Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex/Ollama adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot, domain models (enums + dataclasses), conversation CRUD endpoints, JSONL event log writer/reader, conversation state machine, round-robin scheduler, 20-turn batch runner, adapter output normalization, checkpoint pack builder, agent config endpoints, events stream endpoint, conversation history pane, chat timeline, agent roster editor, orchestration control endpoints, steering note injection, capacity-aware throttle, intelligence pane, merge coordinator queue.
-- Not done: composer + run controls (UI-004), run-window controls (UI-007), branch lock policy, notification pipeline, auth, LAN profile, remaining test/doc tasks.
+- Not done: branch lock policy, notification pipeline, auth, LAN profile, remaining test/doc tasks.
 
 ## Definition of Done (per task)
 - Design/spec links are updated if behavior changed.
@@ -51,7 +51,7 @@ This is the source-of-truth backlog for current known scope.
 - [x] `UI-004` Implement composer + target-agent routing + run controls
 - [x] `UI-005` Implement agent roster editor (unique name, source, model, personality, order)
 - [x] `UI-006` Implement intelligence pane (agreement/disagreement + neutral memo)
-- [ ] `UI-007` Implement run-window controls (next 20, continue 20, stop now, steering note)
+- [x] `UI-007` Implement run-window controls (next 20, continue 20, stop now, steering note)
 
 ## Epic COORD - Parallel Delivery and Merge Safety
 - [x] `COORD-001` Implement merge-coordinator queue model and serialized integration flow
