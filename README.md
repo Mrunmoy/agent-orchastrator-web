@@ -43,15 +43,29 @@ make test-all    # run backend + frontend tests
 make verify      # UI smoke test + screenshot
 ```
 
-### Start the Dev Server
+### Start the Full Stack (Single Command)
 
 ```bash
-# Backend API
-cd backend && uvicorn agent_orchestrator.api.app:app --reload
-
-# Frontend dev server
-cd frontend && npm run dev
+make dev-up
 ```
+
+This starts both backend and frontend in the background.
+
+Useful commands:
+
+```bash
+make dev-status   # show PIDs + URLs
+make dev-logs     # show recent backend/frontend logs
+make dev-down     # stop both services
+```
+
+### Start for LAN Access (Phone/Tablet/Laptop)
+
+```bash
+make dev-up-lan
+```
+
+This binds services to `0.0.0.0` and prints LAN URLs.
 
 ## API Quick Tour
 

@@ -5,6 +5,7 @@ PORT ?= 8080
 AGENTS ?=
 
 .PHONY: help serve ui-shot test-ui verify parallel-init parallel-status handoff-packs task-worktree task-prompt task-ready task-shell \
+	dev-up dev-up-lan dev-down dev-status dev-logs \
 	test test-backend test-frontend test-api-conversations test-integration test-all lint lint-backend lint-frontend format-check run-backend run-frontend
 
 help:
@@ -34,6 +35,11 @@ help:
 	@echo "  make format-check   - check formatting (black + prettier)"
 	@echo "  make run-backend    - start uvicorn dev server"
 	@echo "  make run-frontend   - start vite dev server"
+	@echo "  make dev-up         - start backend + frontend in background"
+	@echo "  make dev-up-lan     - start backend + frontend in LAN mode (0.0.0.0)"
+	@echo "  make dev-down       - stop background backend + frontend"
+	@echo "  make dev-status     - show running status and URLs"
+	@echo "  make dev-logs       - show recent backend/frontend logs"
 
 # ---------------------------------------------------------------------------
 # Dev commands (SETUP-003)
@@ -72,6 +78,21 @@ run-backend:
 
 run-frontend:
 	cd $(ROOT)/frontend && npm run dev
+
+dev-up:
+	./scripts/dev_stack.sh start
+
+dev-up-lan:
+	./scripts/dev_stack.sh start --lan
+
+dev-down:
+	./scripts/dev_stack.sh stop
+
+dev-status:
+	./scripts/dev_stack.sh status
+
+dev-logs:
+	./scripts/dev_stack.sh logs
 
 # ---------------------------------------------------------------------------
 
