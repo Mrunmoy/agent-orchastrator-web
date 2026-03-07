@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: Shared Dev Commands (SETUP-003)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2d3a; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Shared Dev Commands</h1>
+    <div class="meta">Design Codex Entry &middot; 2026-03-07 &middot; SETUP-003</div>
+
+    <h2>Context</h2>
+    <p>No unified Makefile targets existed for lint, test, format-check, or running dev servers. Developers had to remember per-directory commands for backend and frontend stacks.</p>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li>Nine new targets added to root <code>Makefile</code>: <code>test</code>, <code>test-backend</code>, <code>test-frontend</code>, <code>lint</code>, <code>lint-backend</code>, <code>lint-frontend</code>, <code>format-check</code>, <code>run-backend</code>, <code>run-frontend</code>.</li>
+      <li>Aggregate targets (<code>test</code>, <code>lint</code>, <code>format-check</code>) run both stacks sequentially.</li>
+      <li>All commands assume <code>nix develop</code> shell. Backend uses <code>$(PYTHON)</code> variable; frontend uses npm scripts.</li>
+    </ul>
+
+    <h2>Rationale</h2>
+    <ul>
+      <li>Makefile already established as the project runner &mdash; no need for npm workspaces or shell wrappers.</li>
+      <li>Sub-targets allow running each stack independently for faster iteration.</li>
+      <li>Fail-fast semantics ensure broken checks surface immediately.</li>
+    </ul>
+
+    <h2>Test Strategy</h2>
+    <p>Dry-run verification tests in <code>tests/test_dev_commands.py</code> confirm each make target exists and wires the correct underlying commands. 12 tests total.</p>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li>CI pipeline integration (deferred).</li>
+      <li>Pre-commit hooks (deferred).</li>
+      <li><code>make lint</code> and <code>make format-check</code> should be run before merging any branch.</li>
+    </ul>
+  </article>
+</body>
+</html>

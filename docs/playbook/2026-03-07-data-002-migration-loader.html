@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Migration/Bootstrap Loader (DATA-002)</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1a2a2e; padding:2px 6px; border-radius:4px; }
+    pre { background:#0f1a1e; padding:16px; border-radius:8px; overflow-x:auto; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Migration/Bootstrap Loader</h1>
+    <div class="meta">Playbook Entry &middot; 2026-03-07 &middot; DATA-002</div>
+
+    <h2>Quick start</h2>
+    <pre><code>from agent_orchestrator.storage import DatabaseManager
+
+db = DatabaseManager("data/orchestrator.db")
+db.initialize()
+
+with db.connection() as conn:
+    conn.execute("INSERT INTO agent ...")
+    conn.commit()
+
+print(db.schema_version)  # 1
+db.close()</code></pre>
+
+    <h2>In-memory (for tests)</h2>
+    <pre><code>db = DatabaseManager(":memory:")
+db.initialize()</code></pre>
+
+    <h2>Gotcha: executescript resets foreign keys</h2>
+    <p><strong>Symptom:</strong> Foreign key constraints not enforced after <code>initialize()</code>.</p>
+    <p><strong>Cause:</strong> SQLite's <code>executescript()</code> implicitly issues a <code>COMMIT</code> and resets <code>PRAGMA foreign_keys</code> to OFF.</p>
+    <p><strong>Fix:</strong> Re-enable <code>PRAGMA foreign_keys = ON</code> after every <code>executescript()</code> call.</p>
+
+    <h2>Key behaviours</h2>
+    <ul>
+      <li><strong>Idempotent:</strong> <code>initialize()</code> can be called multiple times safely.</li>
+      <li><strong>WAL mode:</strong> Automatically enabled on file-backed databases.</li>
+      <li><strong>Foreign keys:</strong> Enabled on every connection.</li>
+      <li><strong>Schema version:</strong> Tracked via <code>PRAGMA user_version</code> (currently 1).</li>
+      <li><strong>Context manager:</strong> Supports <code>with DatabaseManager(...) as db:</code> pattern.</li>
+    </ul>
+
+    <h2>Files</h2>
+    <ul>
+      <li><code>backend/src/agent_orchestrator/storage/db.py</code> &mdash; Implementation</li>
+      <li><code>backend/src/agent_orchestrator/storage/schema.sql</code> &mdash; Schema DDL</li>
+      <li><code>backend/tests/test_db_manager.py</code> &mdash; 14 tests</li>
+    </ul>
+  </article>
+</body>
+</html>

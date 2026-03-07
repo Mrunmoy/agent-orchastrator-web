@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: Migration/Bootstrap Loader (DATA-002)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2d3a; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Migration/Bootstrap Loader</h1>
+    <div class="meta">Design Codex Entry &middot; 2026-03-07 &middot; DATA-002</div>
+
+    <h2>Context</h2>
+    <p>The storage module had a <code>schema.sql</code> DDL file but no programmatic way to initialize a database, manage connections, or track schema versions. Application code had no entry point for bootstrapping.</p>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li><code>DatabaseManager</code> class holds a single <code>sqlite3.Connection</code> internally.</li>
+      <li><code>initialize()</code> reads and executes <code>schema.sql</code>, sets WAL mode on file-backed DBs, tracks version via <code>PRAGMA user_version</code>.</li>
+      <li><code>initialize()</code> is idempotent &mdash; safe to call multiple times without data loss.</li>
+      <li><code>connection()</code> context manager yields the internal connection with foreign keys enabled.</li>
+      <li>Supports both <code>str</code> and <code>pathlib.Path</code> for db_path. Also implements <code>__enter__</code>/<code>__exit__</code> for use as a context manager.</li>
+    </ul>
+
+    <h2>Rationale</h2>
+    <ul>
+      <li><code>PRAGMA user_version</code> is simpler than a <code>schema_version</code> table &mdash; built into SQLite.</li>
+      <li>Single persistent connection matches SQLite's single-writer design.</li>
+      <li>Alembic or similar migration tools are overkill for a single-schema local-first app.</li>
+    </ul>
+
+    <h2>Gotcha</h2>
+    <p><code>executescript()</code> resets <code>PRAGMA foreign_keys</code> to OFF. The implementation re-enables foreign keys after every <code>executescript()</code> call.</p>
+
+    <h2>Test Strategy</h2>
+    <p>14 tests in <code>test_db_manager.py</code>: initialization, idempotency, data preservation, connection management, WAL mode, foreign keys, context manager protocol, path object acceptance, close behavior, schema version edge cases.</p>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li>Connection pooling not needed now (single-writer model).</li>
+      <li>Multi-file migration chains deferred until schema v2.</li>
+    </ul>
+  </article>
+</body>
+</html>

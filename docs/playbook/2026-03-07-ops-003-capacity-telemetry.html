@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Capacity Telemetry (OPS-003)</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1a2a2e; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Capacity Telemetry Snapshot</h1>
+    <div class="meta">Playbook Entry &middot; 2026-03-07 &middot; OPS-003</div>
+
+    <h2>What it does</h2>
+    <p>Reads CPU load and RAM usage via <code>psutil</code>, packages results into a <code>CapacitySnapshot</code>, and evaluates three ordered gates to decide whether a new agent run may be launched.</p>
+
+    <h2>Gates (checked in order)</h2>
+    <ul>
+      <li><strong>CPU:</strong> 1-min load average as percent of cores &ge; 85% &rarr; denied</li>
+      <li><strong>RAM:</strong> Free RAM (total &minus; used) &le; 2048 MB &rarr; denied</li>
+      <li><strong>Active runs:</strong> Current runs &ge; max allowed &rarr; denied</li>
+    </ul>
+    <p>First failing gate produces a <code>CapacityVerdict(allowed=False, reason="...")</code>. All thresholds are configurable.</p>
+
+    <h2>Testing notes</h2>
+    <p>All 22 tests mock <code>psutil.getloadavg</code> and <code>psutil.virtual_memory</code>. No real system calls in the test suite. Edge cases at exact threshold boundaries are covered.</p>
+
+    <h2>Known stubs</h2>
+    <ul>
+      <li>GPU telemetry returns <code>"[]"</code> &mdash; real enumeration deferred.</li>
+      <li><code>agent_capacity_available</code> is caller-supplied; this module does not track running agents.</li>
+    </ul>
+
+    <h2>Files</h2>
+    <ul>
+      <li><code>backend/src/agent_orchestrator/runtime/capacity.py</code> &mdash; Implementation</li>
+      <li><code>backend/tests/test_capacity.py</code> &mdash; 22 tests</li>
+    </ul>
+  </article>
+</body>
+</html>

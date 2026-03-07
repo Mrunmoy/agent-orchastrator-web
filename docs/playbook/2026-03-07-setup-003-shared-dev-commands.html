@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Shared Dev Commands (SETUP-003)</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1a2a2e; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Shared Dev Commands</h1>
+    <div class="meta">Playbook Entry &middot; 2026-03-07 &middot; SETUP-003</div>
+
+    <h2>Issue: Pre-existing lint and format violations</h2>
+    <p><strong>Symptom:</strong> <code>make lint</code> and <code>make format-check</code> failed immediately on the existing codebase.</p>
+    <p><strong>Cause:</strong> Earlier tasks (ADPT-001, ADPT-002, DATA-001) were merged without project-wide lint/format checks because those targets didn't exist yet.</p>
+    <p><strong>Fix:</strong> Fixed all violations across 4 backend files: ruff UP041 (<code>asyncio.TimeoutError</code> &rarr; <code>TimeoutError</code>), black formatting, extracted <code>_INSERT_MSG_EVENT</code> constant in test_schema.py for line-length. Fixed prettier violation in frontend <code>ChatPane.tsx</code>.</p>
+
+    <h2>Verification</h2>
+    <p>12/12 tests in <code>tests/test_dev_commands.py</code> pass. All backend (pytest) and frontend (vitest) checks green.</p>
+
+    <h2>Preventive Rules</h2>
+    <ul>
+      <li><code>make lint</code> and <code>make format-check</code> must be run before merging any branch going forward.</li>
+      <li>All commands assume <code>nix develop</code> shell.</li>
+    </ul>
+  </article>
+</body>
+</html>

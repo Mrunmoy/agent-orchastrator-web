@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: FastAPI App + Health (API-001)</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1a2a2e; padding:2px 6px; border-radius:4px; }
+    pre { background:#0f1a1e; padding:16px; border-radius:8px; overflow-x:auto; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>FastAPI App + Health Endpoint</h1>
+    <div class="meta">Playbook Entry &middot; 2026-03-07 &middot; API-001</div>
+
+    <h2>How to run</h2>
+    <pre><code>nix develop
+cd backend
+uvicorn agent_orchestrator.api:app --reload
+curl http://localhost:8000/health
+curl http://localhost:8000/state</code></pre>
+
+    <h2>How to test</h2>
+    <pre><code>nix develop
+cd backend
+python -m pytest tests/test_api_health.py -q</code></pre>
+
+    <h2>Key files</h2>
+    <ul>
+      <li><code>backend/src/agent_orchestrator/api/__init__.py</code> &mdash; App factory and module-level <code>app</code></li>
+      <li><code>backend/src/agent_orchestrator/api/routes/health.py</code> &mdash; Health and state routes</li>
+      <li><code>backend/src/agent_orchestrator/api/responses.py</code> &mdash; Shared envelope helpers</li>
+      <li><code>backend/tests/test_api_health.py</code> &mdash; 9 endpoint tests</li>
+    </ul>
+
+    <h2>Review finding: envelope duplication</h2>
+    <p><strong>Symptom:</strong> <code>ok_response()</code> was defined inline in <code>health.py</code>, would be duplicated by every future route module.</p>
+    <p><strong>Fix:</strong> Extracted <code>ok_response()</code> and <code>error_response()</code> to shared <code>api/responses.py</code>.</p>
+
+    <h2>Nix change</h2>
+    <p>Added <code>python312Packages.httpx</code> to <code>flake.nix</code> &mdash; required by <code>fastapi.testclient.TestClient</code>.</p>
+  </article>
+</body>
+</html>

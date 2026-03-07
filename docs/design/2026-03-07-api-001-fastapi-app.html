@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: FastAPI App + Health (API-001)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2d3a; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>FastAPI App + Health Endpoint</h1>
+    <div class="meta">Design Codex Entry &middot; 2026-03-07 &middot; API-001</div>
+
+    <h2>Context</h2>
+    <p>The backend package structure existed but contained no application instance or routes. Downstream tasks (orchestration API, WebSocket layer, frontend integration) needed a running HTTP server to build on.</p>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li>App factory pattern: <code>create_app()</code> in <code>api/__init__.py</code> builds FastAPI instance and includes routers. Module-level <code>app = create_app()</code> enables <code>uvicorn</code> import.</li>
+      <li>Two endpoints: <code>GET /health</code> (liveness probe) and <code>GET /state</code> (app metadata stub).</li>
+      <li>All responses follow the <code>{"ok": true/false, ...}</code> envelope convention. Shared helpers <code>ok_response()</code> and <code>error_response()</code> extracted to <code>api/responses.py</code>.</li>
+      <li>Synchronous endpoints &mdash; health/state are trivial, no async needed.</li>
+    </ul>
+
+    <h2>Rationale</h2>
+    <ul>
+      <li>App factory allows test isolation and future configuration injection.</li>
+      <li>Shared envelope helpers prevent duplication across future route modules.</li>
+      <li>Keeping app in <code>api/__init__.py</code> is conventional for small FastAPI projects.</li>
+    </ul>
+
+    <h2>Test Strategy</h2>
+    <p>9 tests using <code>fastapi.testclient.TestClient</code> covering response status codes, JSON structure, and envelope fields for both endpoints.</p>
+
+    <h2>Nix Change</h2>
+    <p>Added <code>python312Packages.httpx</code> to <code>flake.nix</code> &mdash; required by TestClient.</p>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li>Version <code>"0.1.0"</code> is duplicated in <code>create_app()</code> and <code>/state</code> &mdash; wire to <code>importlib.metadata</code> later.</li>
+      <li>No 404 route test yet &mdash; add when error-handling middleware lands.</li>
+    </ul>
+  </article>
+</body>
+</html>
