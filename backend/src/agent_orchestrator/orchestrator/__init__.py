@@ -1,5 +1,10 @@
 """Orchestration core: scheduler, batch runner, state machine, models."""
 
+from agent_orchestrator.orchestrator.batch_runner import (
+    BatchResult,
+    BatchRunner,
+    TurnRecord,
+)
 from agent_orchestrator.orchestrator.models import (
     Agent,
     AgentRole,
@@ -28,6 +33,8 @@ from agent_orchestrator.orchestrator.state_machine import (
 
 __all__ = [
     "Agent",
+    "BatchResult",
+    "BatchRunner",
     "InvalidTransition",
     "StateMachine",
     "TRANSITIONS",
@@ -48,4 +55,5 @@ __all__ = [
     "SchedulerRun",
     "Task",
     "TaskStatus",
+    "TurnRecord",
 ]

@@ -16,6 +16,7 @@
             python312
             python312Packages.pip
             python312Packages.pytest
+            python312Packages.pytest-asyncio
             python312Packages.black
             python312Packages.ruff
             python312Packages.mypy
