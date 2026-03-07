@@ -1,4 +1,4 @@
-"""Conversation-scoped agent endpoints (UI-013)."""
+"""Conversation-scoped agent endpoints (UI-014)."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Tests for conversation-scoped agent endpoints (UI-013)."""
+"""Tests for conversation-scoped agent endpoints (UI-014)."""
 
 from __future__ import annotations
 
@@ -59,7 +59,7 @@ def _create_agent(
     return resp.json()["data"]["agent"]
 
 
-# ── UI-013a: GET /conversations/{cid}/agents ──────────────────────
+# ── UI-014a: GET /conversations/{cid}/agents ──────────────────────
 
 
 class TestListConversationAgents:
@@ -112,7 +112,7 @@ class TestListConversationAgents:
         assert "turn_order" in agent
 
 
-# ── UI-013b: POST /agents with optional conversation_id ───────────
+# ── UI-014b: POST /agents with optional conversation_id ───────────
 
 
 class TestCreateAgentWithConversation:
@@ -159,7 +159,7 @@ class TestCreateAgentWithConversation:
         assert a2["turn_order"] == 1
 
 
-# ── UI-013c: POST /conversations/{cid}/agents/{aid}/remove ────────
+# ── UI-014c: POST /conversations/{cid}/agents/{aid}/remove ────────
 
 
 class TestRemoveAgentFromConversation:
@@ -193,7 +193,7 @@ class TestRemoveAgentFromConversation:
         assert len(agents) == 0
 
 
-# ── UI-013d: PATCH /conversations/{cid}/agents/reorder ────────────
+# ── UI-014d: PATCH /conversations/{cid}/agents/reorder ────────────
 
 
 class TestReorderConversationAgents:

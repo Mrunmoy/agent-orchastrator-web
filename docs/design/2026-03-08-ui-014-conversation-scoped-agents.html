@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: Conversation-Scoped Agents (UI-014)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2,h3 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.3rem; margin-top:28px; }
+    h3 { font-size:1.1rem; margin-top:18px; }
+    p,li { color:var(--ink); line-height:1.7; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2d3a; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+    pre { background:#1a1d2e; padding:16px; border-radius:8px; overflow-x:auto; font-size:0.85em; line-height:1.5; }
+    table { border-collapse:collapse; width:100%; margin:12px 0; }
+    th,td { border:1px solid #5a4728; padding:8px 12px; text-align:left; }
+    th { background:#2a2d3a; color:var(--gold); }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Conversation-Scoped Agents</h1>
+    <div class="meta">Design Codex Entry &middot; 2026-03-08 &middot; UI-014</div>
+
+    <h2>Problem</h2>
+    <p>Agents are currently global. When a user creates two agents in a conversation, both show badge "1" because <code>sort_order</code> defaults to 0. Agents should be <strong>per-conversation</strong> with a <code>turn_order</code> that determines the round-robin message cycling.</p>
+
+    <h2>Design</h2>
+    <p>The <code>conversation_agent</code> join table (already in schema) becomes the source of truth for which agents belong to a conversation and their turn order.</p>
+
+    <h3>API Endpoints</h3>
+    <table>
+      <tr><th>Endpoint</th><th>Description</th></tr>
+      <tr><td><code>GET /conversations/{id}/agents</code></td><td>List agents for conversation, ordered by turn_order</td></tr>
+      <tr><td><code>POST /agents</code> (modified)</td><td>Optional conversation_id; auto-increments turn_order</td></tr>
+      <tr><td><code>POST /conversations/{id}/agents/{aid}/remove</code></td><td>Remove agent from conversation (not deleted)</td></tr>
+      <tr><td><code>PATCH /conversations/{id}/agents/reorder</code></td><td>Bulk reorder via agent_ids array</td></tr>
+    </table>
+
+    <h3>Round-Robin Cycling</h3>
+    <pre>
+turn_order=1: calude-code → turn_order=2: codex-code → turn_order=3: review-bot → back to 1</pre>
+
+    <h2>TDD</h2>
+    <p>16 backend tests written first (failing), then implementation. 552 total tests pass.</p>
+  </article>
+</body>
+</html>
