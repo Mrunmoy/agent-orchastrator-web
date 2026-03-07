@@ -66,7 +66,7 @@ This is the source-of-truth backlog for current known scope.
 
 ## Epic OPS - Local Network and Security
 - [x] `OPS-001` Add local auth token for control APIs and basic request limits
-- [ ] `OPS-002` Add LAN run profile and startup scripts for phone/tablet/laptop access
+- [x] `OPS-002` Add LAN run profile and startup scripts for phone/tablet/laptop access
 - [x] `OPS-003` Add capacity telemetry snapshot (CPU/RAM/active agent runs) surfaced to UI
 
 ## Epic DOC - Living Engineering Record
