@@ -55,6 +55,30 @@ describe("AgentRoster", () => {
     expect(items[1]).toHaveTextContent("Claude Worker");
   });
 
+  it("drag-drop calls reorderConversationAgents when provided", () => {
+    const agentsWithTurnOrder: AgentData[] = [
+      { ...agents[0], turn_order: 1 },
+      { ...agents[1], turn_order: 2 },
+    ];
+    const mockConversationReorder = vi.fn().mockResolvedValue(undefined);
+    const mockReorder = vi.fn().mockResolvedValue(undefined);
+    render(
+      <AgentRoster
+        agents={agentsWithTurnOrder}
+        onEdit={() => {}}
+        onAdd={() => {}}
+        reorderAgent={mockReorder}
+        reorderConversationAgents={mockConversationReorder}
+      />,
+    );
+    const items = screen.getAllByTestId("agent-roster-item");
+    fireEvent.dragStart(items[0]);
+    fireEvent.dragOver(items[1]);
+    fireEvent.drop(items[1]);
+    expect(mockConversationReorder).toHaveBeenCalledWith(["agent-2", "agent-1"]);
+    expect(mockReorder).not.toHaveBeenCalled();
+  });
+
   it("drag-drop reorders agents in the list", () => {
     const mockReorder = vi.fn().mockResolvedValue(undefined);
     render(

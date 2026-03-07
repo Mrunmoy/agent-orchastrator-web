@@ -50,13 +50,18 @@ describe("AgentCard", () => {
     expect(onEdit).toHaveBeenCalledWith("agent-1");
   });
 
-  it("renders order badge showing sort_order + 1", () => {
+  it("renders order badge showing sort_order + 1 when no turn_order", () => {
     render(<AgentCard agent={{ ...mockAgent, sort_order: 0 }} onEdit={() => {}} />);
     expect(screen.getByTestId("order-badge")).toHaveTextContent("1");
   });
 
-  it("renders order badge with correct position for sort_order 2", () => {
+  it("renders order badge with correct position for sort_order 2 when no turn_order", () => {
     render(<AgentCard agent={{ ...mockAgent, sort_order: 2 }} onEdit={() => {}} />);
+    expect(screen.getByTestId("order-badge")).toHaveTextContent("3");
+  });
+
+  it("renders order badge showing turn_order directly when present", () => {
+    render(<AgentCard agent={{ ...mockAgent, sort_order: 0, turn_order: 3 }} onEdit={() => {}} />);
     expect(screen.getByTestId("order-badge")).toHaveTextContent("3");
   });
 });
