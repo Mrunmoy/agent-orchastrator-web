@@ -53,16 +53,33 @@ Build a local-first, multi-agent orchestration web app that:
 - Keep context token-bounded; include only relevant state slices.
 
 ## Definition of Done
-A feature is done when:
-- design doc exists/updated,
-- unit + integration tests pass,
-- docs/specs updated,
-- playbook notes added for key decisions/debug findings,
-- UI behavior matches agreed workflow.
+A feature is done when all items in `docs/checklists/slice-checklist.md` are checked.
+
+Summary:
+- Design doc exists as **HTML** in `docs/design/` (gold theme),
+- Failing tests written first (TDD), then implementation,
+- `make test`, `make lint`, `make format-check` all pass,
+- Playbook entry exists as **HTML** in `docs/playbook/` (teal theme),
+- Saga chapter exists as **HTML** in `docs/saga/` (rose theme, **narrative/storytelling voice**),
+- All three index.html files updated with links to new docs,
+- Tracking files updated: `TASKS.md`, `docs/coordination/task-board.md`, `config/tasks.json`.
+
+## Mandatory Workflow Order
+See `docs/WORKFLOW.md` for the full contract. In brief:
+1. Design doc (HTML) → 2. Failing tests → 3. Implement → 4. Verify (`make test/lint/format-check`) → 5. Playbook (HTML) → 6. Saga (HTML, narrative voice) → 7. Update indexes → 8. Update tracking files
+
+## Doc Format Rules
+- **All design, playbook, and saga docs are HTML** — never markdown.
+- Design: gold theme (`--gold:#d6b164`). Playbook: teal theme (`--teal:#62d7c8`). Saga: rose theme (`--rose:#ffa3bf`).
+- Saga chapters tell a **story** — like a D&D campaign log. Technical details go in design/playbook.
+- Copy CSS from existing HTML files in each directory.
 
 ## Quick Commands
 - Enter dev shell: `nix develop`
-- Run mock UI: `make mockup`
-- Capture mock screenshot: `make capture-mock`
-- Run UI tests: `make test-ui`
-- Run all checks: `make check`
+- Run all tests: `make test`
+- Run backend tests only: `make test-backend`
+- Run frontend tests only: `make test-frontend`
+- Lint all: `make lint`
+- Format check: `make format-check`
+- Run backend dev server: `make run-backend`
+- Run frontend dev server: `make run-frontend`
