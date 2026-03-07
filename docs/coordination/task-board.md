@@ -53,7 +53,7 @@ Execution board for active parallel slices.
 | COORD-002 | Task/branch lock policy | `backend/orchestrator/locks.py` | P1 | claude-agent | Done | COORD-001 | claude/coord-002-task-locks |
 | COORD-003 | Notification pipeline | `backend/runtime/notifications.py` | P1 | claude-agent | Done | ORCH-006 | claude/coord-003-notifications |
 | OPS-001 | Local auth token and request limits | `backend/api/security.py` | P1 | claude-agent | Done | API-001 | claude/ops-001-auth-limits |
-| OPS-002 | LAN startup/run profile | `scripts/run_lan.sh` | P2 | unassigned | Todo | API-001,UI-001 | - |
+| OPS-002 | LAN startup/run profile | `scripts/run_lan.sh` | P2 | claude-agent | Done | API-001,UI-001 | claude/ops-002-lan-startup-profile |
 | OPS-003 | Capacity telemetry snapshot | `backend/runtime/capacity.py` | P1 | claude-parallel | Done | SETUP-001 | master (merged) |
 | TEST-001 | Orchestrator unit tests | `backend/tests/orchestrator/*` | P1 | claude-agent | Done | ORCH-003,ORCH-004 | (inline with impl) |
 | TEST-002 | Adapter contract tests | `backend/tests/adapters/*` | P1 | claude-agent | Done | ADPT-001,ADPT-002 | claude/test-002-adapter-contracts |
