@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { TopBar } from "./TopBar";
 
@@ -13,9 +13,17 @@ describe("TopBar", () => {
     expect(screen.getByText("Agent Orchestrator Lab")).toBeInTheDocument();
   });
 
-  it("renders the working directory selector", () => {
+  it("renders the working directory input", () => {
     render(<TopBar />);
     expect(screen.getByLabelText("Working Directory")).toBeInTheDocument();
+  });
+
+  it("allows editing and saving the working directory", () => {
+    render(<TopBar />);
+    const input = screen.getByLabelText("Working Directory");
+    fireEvent.change(input, { target: { value: "/tmp/my-project" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(window.localStorage.getItem("ao_working_dir")).toBe("/tmp/my-project");
   });
 
   it("renders a status indicator", () => {
