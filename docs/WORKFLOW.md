@@ -5,9 +5,9 @@
 For every feature/slice, follow these steps **in order**:
 
 1. **Design doc** — Create `docs/design/2026-MM-DD-<task-id>-<slug>.html` using the gold theme from existing design HTML files. Follow the structure in `docs/templates/feature-design-template.md` but output as HTML.
-2. **Failing tests first** — Write unit tests before implementation. Tests must fail initially (TDD).
-3. **Implement** — Small, focused commits. Run `make lint` and `make format-check` before considering done.
-4. **Verify** — Run `make test` to confirm all tests pass (not just yours — the full suite).
+2. **Failing tests first (TDD)** — Write unit tests **before** any implementation code. Run them and confirm they **fail**. This is non-negotiable — test-driven development is the law of this project. No implementation without a failing test first.
+3. **Implement** — Write the minimum code to make tests pass. Small, focused commits. Run `make lint` and `make format-check` before considering done.
+4. **Verify** — Run `make test` to confirm all tests pass (not just yours — the full suite). If anything else breaks, fix it.
 5. **Playbook** — Create `docs/playbook/2026-MM-DD-<task-id>-<slug>.html` using the teal theme. Document gotchas, debug findings, how-to-run, key files.
 6. **Saga** — Create `docs/saga/2026-MM-DD-chapter-<narrative-title>.html` using the rose theme. Write in **narrative/storytelling style** (like a D&D campaign log). Technical details belong in design/playbook, not here.
 7. **Update indexes** — Add links to your new HTML files in `docs/design/index.html`, `docs/playbook/index.html`, and `docs/saga/index.html`.

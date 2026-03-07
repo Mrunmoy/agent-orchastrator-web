@@ -11,8 +11,9 @@ Build a local-first, multi-agent orchestration web app that:
 - supports background multi-conversation operation with resource-aware scheduling.
 
 ## Working Style
+- **Test-Driven Development (TDD) is mandatory.** Write failing tests first, then implement the minimum to make them pass. No exceptions.
 - Use small, single-purpose commits.
-- Follow: design doc -> tests -> implementation -> integration test -> docs/playbook update.
+- Follow: design doc (HTML) → failing tests → implement → verify full suite → playbook (HTML) → saga (HTML, narrative) → update indexes → update tracking files.
 - Keep modules cohesive and responsibilities separated.
 - Prefer explicit interfaces and predictable data contracts.
 
@@ -66,7 +67,7 @@ Summary:
 
 ## Mandatory Workflow Order
 See `docs/WORKFLOW.md` for the full contract. In brief:
-1. Design doc (HTML) → 2. Failing tests → 3. Implement → 4. Verify (`make test/lint/format-check`) → 5. Playbook (HTML) → 6. Saga (HTML, narrative voice) → 7. Update indexes → 8. Update tracking files
+1. Design doc (HTML) → 2. **Failing tests first (TDD)** → 3. Implement minimum to pass → 4. Verify (`make test/lint/format-check`) → 5. Playbook (HTML) → 6. Saga (HTML, narrative voice) → 7. Update indexes → 8. Update tracking files
 
 ## Doc Format Rules
 - **All design, playbook, and saga docs are HTML** — never markdown.
