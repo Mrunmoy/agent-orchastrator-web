@@ -1,0 +1,83 @@
+.conv-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #272c4d;
+  cursor: pointer;
+  color: #d7c6d8;
+  font-size: 13px;
+  transition: background 0.15s;
+}
+
+.conv-item:last-child {
+  border-bottom: none;
+}
+
+.conv-item:hover {
+  background: #1a2040;
+}
+
+.conv-item--active {
+  background: #1a2040;
+  border-left: 3px solid #36c5f0;
+}
+
+.conv-item__title {
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conv-item__badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.badge--queued {
+  background: #4a4d55;
+  color: #ccc;
+}
+
+.badge--debate {
+  background: #1264a3;
+  color: #fff;
+}
+
+.badge--execution_planning {
+  background: #6b3fa0;
+  color: #fff;
+}
+
+.badge--autonomous_work {
+  background: #2eb67d;
+  color: #fff;
+}
+
+.badge--needs_user_input {
+  background: #ecb22e;
+  color: #1a1d29;
+}
+
+.badge--completed {
+  background: #6b6f76;
+  color: #fff;
+}
+
+.badge--failed {
+  background: #e01e5a;
+  color: #fff;
+}
+
+.conv-item__time {
+  font-size: 11px;
+  color: #6b6f76;
+  white-space: nowrap;
+}
