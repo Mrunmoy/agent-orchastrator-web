@@ -39,6 +39,7 @@ Execution board for active parallel slices.
 | UI-003 | Chat timeline | `frontend/src/features/chat/*` | P0 | unassigned | Todo | UI-001,API-005 | - |
 | UI-004 | Composer + run controls | `frontend/src/features/composer/*` | P0 | unassigned | Todo | UI-001,API-003 | - |
 | COORD-001 | Merge coordinator queue model | `backend/orchestrator/merge_queue.py` | P1 | unassigned | Todo | ORCH-004 | - |
+| COORD-002 | Task/branch lock policy | `backend/orchestrator/locks.py` | P1 | claude-agent | Done | COORD-001 | claude/coord-002-task-locks |
 | OPS-003 | Capacity telemetry snapshot | `backend/runtime/capacity.py` | P1 | claude-parallel | Done | SETUP-001 | master (merged) |
 | TEST-001 | Scheduler and batch unit tests | `backend/tests/orchestrator/*` | P1 | unassigned | Todo | ORCH-003,ORCH-004 | - |
 | TEST-003 | Frontend component tests | `frontend/tests/*` | P1 | unassigned | Todo | UI-002,UI-003,UI-004 | - |

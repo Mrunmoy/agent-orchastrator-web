@@ -38,7 +38,7 @@
     {"id":"UI-007","slug":"ui-run-window-controls","title":"Run-window controls and steering","scope":"frontend/src/features/run-controls/*","epic":"UI","priority":"P1","status":"Todo","depends_on":["UI-004","ORCH-005"],"default_owner":"unassigned"},
 
     {"id":"COORD-001","slug":"coord-merge-queue-model","title":"Merge coordinator queue model","scope":"backend/orchestrator/merge_queue.py","epic":"COORD","priority":"P1","status":"Todo","depends_on":["ORCH-004"],"default_owner":"unassigned"},
-    {"id":"COORD-002","slug":"coord-task-lock-policy","title":"Task/branch lock policy","scope":"backend/orchestrator/locks.py","epic":"COORD","priority":"P1","status":"Todo","depends_on":["COORD-001"],"default_owner":"unassigned"},
+    {"id":"COORD-002","slug":"coord-task-lock-policy","title":"Task/branch lock policy","scope":"backend/orchestrator/locks.py","epic":"COORD","priority":"P1","status":"Done","depends_on":["COORD-001"],"default_owner":"claude-agent"},
     {"id":"COORD-003","slug":"coord-notification-pipeline","title":"Notification pipeline","scope":"backend/runtime/notifications.py","epic":"COORD","priority":"P1","status":"Todo","depends_on":["ORCH-006"],"default_owner":"unassigned"},
 
     {"id":"TEST-001","slug":"test-orchestrator-units","title":"Orchestrator unit tests","scope":"backend/tests/orchestrator/*","epic":"TEST","priority":"P1","status":"Todo","depends_on":["ORCH-003","ORCH-004"],"default_owner":"unassigned"},
