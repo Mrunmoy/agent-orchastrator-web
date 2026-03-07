@@ -1,5 +1,7 @@
 export type ConversationState =
+  | "queued"
   | "debate"
+  | "execution_planning"
   | "autonomous_work"
   | "needs_user_input"
   | "completed"

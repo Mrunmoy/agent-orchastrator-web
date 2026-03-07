@@ -1,6 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { ConversationList } from "./ConversationList";
 import type { ConversationSummary } from "./types";
@@ -48,9 +47,8 @@ describe("ConversationList", () => {
     expect(screen.getByText("Second conversation")).toBeInTheDocument();
   });
 
-  it("calls onSelect with correct id when clicking an item", async () => {
+  it("calls onSelect with correct id when clicking an item", () => {
     const handleSelect = vi.fn();
-    const user = userEvent.setup();
     render(
       <ConversationList
         conversations={sampleConversations}
@@ -59,7 +57,7 @@ describe("ConversationList", () => {
         onClearAll={() => {}}
       />,
     );
-    await user.click(screen.getByText("Second conversation"));
+    fireEvent.click(screen.getByText("Second conversation"));
     expect(handleSelect).toHaveBeenCalledWith("c2");
   });
 
@@ -77,9 +75,8 @@ describe("ConversationList", () => {
     expect(items[1]!.className).not.toContain("conv-item--active");
   });
 
-  it("calls onCreate when New Conversation button is clicked", async () => {
+  it("calls onCreate when New Conversation button is clicked", () => {
     const handleCreate = vi.fn();
-    const user = userEvent.setup();
     render(
       <ConversationList
         conversations={[]}
@@ -88,14 +85,12 @@ describe("ConversationList", () => {
         onClearAll={() => {}}
       />,
     );
-    await user.click(screen.getByRole("button", { name: /new conversation/i }));
+    fireEvent.click(screen.getByRole("button", { name: /new conversation/i }));
     expect(handleCreate).toHaveBeenCalledOnce();
   });
 
-  it("calls onClearAll when Clear All is confirmed", async () => {
+  it("calls onClearAll when Clear All is confirmed", () => {
     const handleClearAll = vi.fn();
-    const user = userEvent.setup();
-    // Mock window.confirm to return true
     vi.spyOn(window, "confirm").mockReturnValue(true);
     render(
       <ConversationList
@@ -105,14 +100,13 @@ describe("ConversationList", () => {
         onClearAll={handleClearAll}
       />,
     );
-    await user.click(screen.getByRole("button", { name: /clear all/i }));
+    fireEvent.click(screen.getByRole("button", { name: /clear all/i }));
     expect(handleClearAll).toHaveBeenCalledOnce();
     vi.restoreAllMocks();
   });
 
-  it("does not call onClearAll when Clear All is cancelled", async () => {
+  it("does not call onClearAll when Clear All is cancelled", () => {
     const handleClearAll = vi.fn();
-    const user = userEvent.setup();
     vi.spyOn(window, "confirm").mockReturnValue(false);
     render(
       <ConversationList
@@ -122,7 +116,7 @@ describe("ConversationList", () => {
         onClearAll={handleClearAll}
       />,
     );
-    await user.click(screen.getByRole("button", { name: /clear all/i }));
+    fireEvent.click(screen.getByRole("button", { name: /clear all/i }));
     expect(handleClearAll).not.toHaveBeenCalled();
     vi.restoreAllMocks();
   });

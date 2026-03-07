@@ -41,8 +41,18 @@
   border-radius: 999px;
 }
 
+.badge--queued {
+  background: #4a4d55;
+  color: #ccc;
+}
+
 .badge--debate {
   background: #1264a3;
+  color: #fff;
+}
+
+.badge--execution_planning {
+  background: #6b3fa0;
   color: #fff;
 }
 

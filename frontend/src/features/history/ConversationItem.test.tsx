@@ -38,6 +38,18 @@ describe("ConversationItem", () => {
     expect(titleEl.textContent).toContain("...");
   });
 
+  it("shows state badge with correct color class for queued", () => {
+    render(
+      <ConversationItem
+        conversation={makeConversation({ state: "queued" })}
+        onSelect={() => {}}
+      />,
+    );
+    const badge = screen.getByTestId("state-badge");
+    expect(badge).toHaveTextContent("queued");
+    expect(badge.className).toContain("badge--queued");
+  });
+
   it("shows state badge with correct color class for debate", () => {
     render(
       <ConversationItem
@@ -60,6 +72,18 @@ describe("ConversationItem", () => {
     const badge = screen.getByTestId("state-badge");
     expect(badge).toHaveTextContent("autonomous_work");
     expect(badge.className).toContain("badge--autonomous_work");
+  });
+
+  it("shows state badge with correct color class for execution_planning", () => {
+    render(
+      <ConversationItem
+        conversation={makeConversation({ state: "execution_planning" })}
+        onSelect={() => {}}
+      />,
+    );
+    const badge = screen.getByTestId("state-badge");
+    expect(badge).toHaveTextContent("execution_planning");
+    expect(badge.className).toContain("badge--execution_planning");
   });
 
   it("shows state badge with correct color class for needs_user_input", () => {
