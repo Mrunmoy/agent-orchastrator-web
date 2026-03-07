@@ -1,61 +1,45 @@
-# Milestone 01: Project Foundations
+# Quest 01: The Foundation Stones
 
-## Summary
+> *Before you can slay dragons, you need a campsite. The party lays down the Nix shell, the backend package layout, and the frontend app shell -- the three foundation stones upon which everything else will be built.*
 
-The foundations milestone established the development environment, backend package layout, frontend app shell, and shared developer commands. This phase set the rules for everything that followed: Nix for reproducibility, TDD as mandatory practice, and git worktrees for parallel task execution.
+## Quest Objectives
 
-## Timeline
+| Task | Objective | Status |
+|------|-----------|--------|
+| SETUP-001 | Establish the backend Python stronghold | Complete |
+| SETUP-002 | Raise the frontend TypeScript watchtower | Complete |
+| SETUP-003 | Forge shared dev commands in the Makefile anvil | Complete |
 
-All foundation work landed on `main` via direct branch merges before the PR-based workflow was introduced.
+## Loot Gained
 
-| Commit | Task | Description |
-|--------|------|-------------|
-| `61e5cbc` | -- | Initialize dev environment and project scaffolding |
-| `712147e` | -- | Add parallel multi-agent handoff and coordination workflow |
-| `99d9044` | -- | Add task-id based worktree provisioning workflow |
-| `136bb1d` | SETUP-001 | Add backend Python package layout with lint/test config |
-| `f8ec0b2` | SETUP-002 | Add frontend TypeScript app shell with React, Vite, and test setup |
-| `ce559ca` | SETUP-003 | Add shared dev commands to root Makefile |
+### SETUP-001: The Backend Stronghold
+- **Location:** `backend/`
+- Created the module structure: `api/`, `adapters/`, `orchestrator/`, `storage/`, `runtime/`
+- Added lint (ruff) and test (pytest) configuration
+- 7 tests verifying all modules import correctly
 
-## What Was Built
+### SETUP-002: The Frontend Watchtower
+- **Location:** `frontend/`
+- React + TypeScript + Vite, with Vitest for testing
+- 2 smoke tests to prove the watchtower stands
 
-### SETUP-001: Backend Python Package Layout
+### SETUP-003: The Makefile Anvil
+- **Location:** `Makefile`, `scripts/`
+- Targets: `make lint`, `make test`, `make run-backend`, `make run-frontend`
+- 1 test validating targets exist
 
-- **Scope:** `backend/`
-- Created the Python package structure: `backend/api/`, `backend/adapters/`, `backend/orchestrator/`, `backend/storage/`, `backend/runtime/`
-- Added lint configuration (ruff/flake8) and test configuration (pytest)
-- `backend/tests/test_package_layout.py` -- 7 tests verifying module imports
-- **Owner:** `claude-backend`
+## Key Decisions Made at Camp
 
-### SETUP-002: Frontend TypeScript App Shell
+- **Nix dev shell** (`flake.nix`) -- every party member enters the same environment. No "works on my machine" excuses.
+- **Git worktrees** -- the party can split up and work in parallel dungeons without merge conflicts.
+- **Branch namespaces** -- `claude/` and `codex/` prefixes keep everyone's branches separate.
 
-- **Scope:** `frontend/`
-- Bootstrapped React + TypeScript + Vite project
-- Configured Vitest for component testing
-- `frontend/src/App.test.tsx` -- 2 smoke tests
-- **Owner:** `claude-frontend`
+## Loot Summary
 
-### SETUP-003: Shared Dev Commands
+~10 tests total. Not much treasure yet, but the campsite is solid.
 
-- **Scope:** `Makefile`, `scripts/`
-- Root `Makefile` with targets: `make lint`, `make test`, `make run-backend`, `make run-frontend`
-- Later extended with `make test-api`, `make test-integration`, `make test-all`
-- `tests/test_dev_commands.py` -- validates Makefile targets exist
-- **Owner:** unassigned (completed as part of foundation sweep)
+## Map Unlocked
 
-## Infrastructure Decisions
+Every single future quest depends on these three foundation stones. SETUP-001 unlocks all backend work (DATA, ORCH, ADPT, API, OPS). SETUP-002 unlocks all frontend work (UI). The Makefile enables CI via GitHub Actions.
 
-- **Nix dev shell** (`flake.nix`) pins Python, Node, and all tooling versions. Every agent enters the same environment via `nix develop`.
-- **Worktree provisioning** -- `scripts/` contains task-prompt generators that create isolated git worktrees per task ID, enabling parallel execution.
-- **Branch namespace prefixes** -- parallel sub-agents use `claude/`, `codex/` prefixes to avoid branch collisions.
-
-## Tests Added
-
-- 7 backend package layout tests
-- 2 frontend smoke tests
-- 1 dev commands test
-- **Total: ~10 tests**
-
-## What This Unblocked
-
-Every subsequent task depends on SETUP-001 or SETUP-002. The backend layout enabled all DATA, ORCH, ADPT, API, and OPS tasks. The frontend shell enabled all UI tasks. The shared Makefile enabled CI (GitHub Actions was added in commit `12c1311`).
+*The party has a base camp. Time to start exploring.*

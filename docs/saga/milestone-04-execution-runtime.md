@@ -1,84 +1,65 @@
-# Milestone 04: Execution Runtime (Batch 2 Parallel Delivery)
+# Quest 04: Second Raid -- The Batch Forge
 
-## Summary
+> *The party descends into the forge to build the core execution engine. The 20-turn batch runner -- the heart of the whole system -- is forged here, along with the checkpoint packer, output normalization, and two UI components. Two traps spring during review, both caught before they can do real damage.*
 
-The second parallel batch delivered the execution runtime: the 20-turn batch runner that actually drives agent conversations, the checkpoint packer for context management, adapter output normalization for a unified message schema, and two UI components (chat timeline and agent roster). Five tasks ran in worktrees, producing PRs #6 through #10.
+## Raid Composition
 
-## Timeline
+| PR | Task | Objective | Tests |
+|----|------|-----------|-------|
+| #6 | ADPT-004 | Adapter output normalization | 13 |
+| #7 | DATA-004 | Checkpoint pack builder | 13 |
+| #8 | ORCH-004 | 20-turn batch runner | 11 |
+| #9 | UI-003 | Chat timeline | 10 |
+| #10 | UI-005 | Agent roster editor | 9 |
 
-| PR | Branch | Task | Merge Commit |
-|----|--------|------|-------------|
-| #6 | `claude/adpt-004-output-normalization` | ADPT-004 | `3ae290a` |
-| #7 | `claude/data-004-checkpoint-packer` | DATA-004 | `058f519` |
-| #8 | `claude/orch-004-batch-runner` | ORCH-004 | `263c69b` |
-| #9 | `claude/ui-003-chat-timeline` | UI-003 | `b9cf6b9` |
-| #10 | `claude/ui-005-agent-roster` | UI-005 | `07e8e40` |
+## Loot Gained
 
-### Review Fix Commits
+### ORCH-004: The Batch Runner (Boss Drop)
+- **Drop:** `backend/orchestrator/batch_runner.py`
+- Drives agent conversations in 20-turn windows
+- Pause/continue/stop controls checked between turns (not mid-turn -- intentional design)
+- Records every turn as a TurnRecord with agent ID, prompt, response, status, timestamp
+- Adapter errors don't crash the batch -- they're recorded as ERROR status and the batch continues
 
-| Commit | Fix |
-|--------|-----|
-| `15f22a4` | Guard adapter lookup inside try block, add missing-adapter test |
-| `207b642` | Add `type="button"` to prevent unintended form submission |
+### ADPT-004: Output Normalization
+- **Drop:** `backend/adapters/normalize.py`
+- Converts raw adapter output into `NormalizedMessage` schema
+- Status mapping: IDLE/RUNNING --> "ok", TIMED_OUT --> "timeout", ERROR --> "error"
+- All adapters now speak the same language
 
-## What Was Built
-
-### ADPT-004: Adapter Output Normalization
-
-- **File:** `backend/adapters/normalize.py`
-- Converts raw adapter output (Claude JSON, Codex text, Ollama structured) into a common `NormalizedMessage` schema
-- Handles edge cases: missing fields, unexpected formats, encoding issues
-- **Review finding:** Adapter lookup was not guarded in a try block. When an unknown adapter name was passed, it crashed with a `KeyError` instead of returning a clear error. Fixed in `15f22a4` with a missing-adapter test added.
-- 13 tests in `backend/tests/test_normalize.py`
-
-### DATA-004: Checkpoint Pack Builder
-
-- **File:** `backend/storage/checkpoint.py`
-- Packs conversation context into token-bounded checkpoints
-- Summary compaction when context exceeds token limits
-- Supports resume from checkpoint for long-running conversations
-- 13 tests in `backend/tests/test_checkpoint.py`
-
-### ORCH-004: 20-Turn Batch Runner
-
-- **File:** `backend/orchestrator/batch_runner.py`
-- Drives conversations in 20-turn windows with pause/continue/stop-now controls
-- Coordinates with scheduler to determine next agent
-- Uses adapter normalization for consistent message handling
-- 11 tests in `backend/tests/test_batch_runner.py`
+### DATA-004: Checkpoint Packer
+- **Drop:** `backend/storage/checkpoint.py`
+- Token-bounded context packs for conversation resume
+- Two-phase compaction: drop oldest events first, then truncate summary if still over limit
+- Token estimation: `words * 1.3`
 
 ### UI-003: Chat Timeline
-
-- **Files:** `frontend/src/features/chat/ChatTimeline.tsx`, `ChatMessage.tsx`
-- Avatar display, bold agent name, timestamp formatting
-- Typing/thinking indicator for active agents
-- **Review finding:** Buttons in the timeline needed explicit `type="button"` to prevent unintended form submission in parent forms. Fixed in `207b642`.
-- 10 tests across `ChatTimeline.test.tsx` (3) and `ChatMessage.test.tsx` (7)
+- **Drop:** `frontend/src/features/chat/`
+- ChatMessage (avatar, name, timestamp, thinking dots) + ChatTimeline (scrollable, auto-scroll, empty state)
 
 ### UI-005: Agent Roster Editor
+- **Drop:** `frontend/src/features/agents/`
+- AgentCard (status dot, provider badge, role badge, edit button) + AgentRoster (grid, add button, empty state)
 
-- **Files:** `frontend/src/features/agents/AgentRoster.tsx`, `AgentCard.tsx`
-- Edit unique agent name, source (Claude/Codex/Ollama), model, personality prompt, turn order
-- Card-based layout with inline editing
-- 9 tests across `AgentRoster.test.tsx` (3) and `AgentCard.test.tsx` (6)
+## Traps and Review Findings
 
-## Tests Added This Batch
+| Trap | What Went Wrong | Fix |
+|------|----------------|-----|
+| Unguarded adapter lookup | `self._adapter_map[agent.id]` was outside the try block -- a missing adapter would crash the entire batch instead of recording an error | Moved inside try, added finally for agent status reset, added `test_missing_adapter_mapping_records_error` |
+| Missing button types | Buttons in AgentRoster and AgentCard lacked `type="button"` -- inside a form, they'd trigger unintended submission | Added `type="button"` to both |
 
-| Component | Tests |
-|-----------|-------|
-| Output normalization | 13 |
-| Checkpoint packer | 13 |
-| Batch runner | 11 |
-| Chat timeline (frontend) | 10 |
-| Agent roster (frontend) | 9 |
-| **Total** | **56** |
+## Loot Summary
 
-## What This Unblocked
+56 tests (37 backend + 19 frontend).
 
-- ORCH-004 (batch runner) was the critical-path dependency. It unblocked:
-  - ORCH-005 (steering notes) -- inject user guidance between windows
-  - ORCH-006 (capacity throttle) -- queue/resume policy
-  - API-003 (orchestration control endpoints)
-  - COORD-001 (merge coordinator queue model)
-- ADPT-004 ensured all adapters speak the same language going forward
-- DATA-004 enabled long conversations to resume from checkpoints rather than replaying full history
+## Map Unlocked
+
+ORCH-004 was the critical-path boss. Defeating it unlocked:
+- ORCH-005 (steering notes) -- inject user guidance between batch windows
+- ORCH-006 (capacity throttle) -- queue/resume policy
+- API-003 (orchestration control endpoints) -- the API to drive it all
+- COORD-001 (merge coordinator queue) -- serialized integration model
+
+DATA-004 means long conversations can resume from checkpoints instead of replaying everything.
+
+*The forge is lit. The batch runner hums with power. The party can now orchestrate agents for real.*

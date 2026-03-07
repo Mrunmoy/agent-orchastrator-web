@@ -1,137 +1,79 @@
-# Milestone 02: Core Infrastructure
+# Quest 02: The Ten-Headed Hydra
 
-## Summary
+> *The party's most ambitious early quest -- ten tasks across five different guilds, all merged through the first serialized merge queue. The data layer, all three CLI adapters, the API gateway, domain models, capacity monitoring, and the UI shell all came together in one massive push.*
 
-With foundations in place, the core infrastructure milestone built out the data layer (SQLite schema, DatabaseManager, JSONL event log), all three CLI adapters (Claude, Codex, Ollama), the FastAPI application with health and conversation CRUD endpoints, domain models, and capacity telemetry. This was the densest milestone, completing 10 tasks across 5 epics.
+## Quest Objectives
 
-## Timeline
+| Task | Guild | Objective | Status |
+|------|-------|-----------|--------|
+| DATA-001 | Data | SQLite schema v1 (conversations, agents, tasks, runs, checkpoints) | Complete |
+| DATA-002 | Data | DatabaseManager bootstrap loader | Complete |
+| DATA-003 | Data | JSONL event log writer/reader | Complete |
+| ADPT-001 | Adapters | Claude CLI adapter | Complete |
+| ADPT-002 | Adapters | Codex CLI adapter | Complete |
+| ADPT-003 | Adapters | Ollama memo adapter | Complete |
+| API-001 | API | FastAPI app + health endpoints | Complete |
+| API-002 | API | Conversation CRUD endpoints | Complete |
+| ORCH-001 | Orchestration | Domain models (9 enums, 8 dataclasses) | Complete |
+| OPS-003 | Operations | Capacity telemetry snapshot | Complete |
+| UI-001 | Frontend | App shell layout (4-panel Slack-style) | Complete |
 
-Tasks were completed in a mix of direct merges and the early merge-queue workflow. The merge queue (documented in `docs/coordination/task-board.md`) serialized integration of 7 parallel branches.
+## The First Merge Queue
 
-| Commit | Task | Description |
-|--------|------|-------------|
-| `de588f4` | ADPT-001 | Add Claude CLI adapter with base interface and tests |
-| `a89f1f1` | DATA-001 | Add SQLite schema v1 with tests |
-| `f1caebd` | ADPT-002 | Implement Codex CLI adapter |
-| `b49e58f` | UI-001 | Implement app shell layout components |
-| `ae6a570` | API-001 | Add FastAPI app with health and state endpoints |
-| `f5c3124` | DATA-002 | Add DatabaseManager for schema bootstrap and connection management |
-| `7f85415` | OPS-003 | Add capacity telemetry snapshot with threshold gates |
-| `4b6726f` | ORCH-001 | Add domain models with 9 enums and 8 dataclasses |
-| `8d9a944` | ADPT-003 | Add Ollama memo adapter with stdin piping |
-| `b166be9` | DATA-003 | Add append-only JSONL event log writer/reader |
-| `d109a85` | API-002 | Add conversation CRUD endpoints with soft-delete |
+Seven branches needed to merge without stepping on each other. The party established the merge coordinator pattern -- one branch at a time, in order:
 
-### Merge Queue Order (first serialized integration)
-
-| Order | Task | Status |
+| Order | Task | Result |
 |-------|------|--------|
-| 1 | API-001 | merged |
-| 2 | DATA-002 | merged |
-| 3 | OPS-003 | merged |
-| 4 | ORCH-001 | merged |
-| 5 | ADPT-003 | merged |
-| 6 | DATA-003 | merged |
-| 7 | API-002 | merged |
+| 1 | API-001 | Merged |
+| 2 | DATA-002 | Merged |
+| 3 | OPS-003 | Merged |
+| 4 | ORCH-001 | Merged |
+| 5 | ADPT-003 | Merged |
+| 6 | DATA-003 | Merged |
+| 7 | API-002 | Merged |
 
-## What Was Built
+## Loot Gained
 
-### DATA-001: SQLite Schema v1
+### Data Guild
+- **SQLite schema** (`backend/storage/schema.sql`) -- 11 tests
+- **DatabaseManager** (`backend/storage/db.py`) -- bootstrap on first connect, connection pooling -- 14 tests
+- **JSONL event log** (`backend/storage/event_log.py`) -- append-only with filtering and tail -- 17 tests
 
-- **File:** `backend/storage/schema.sql`
-- Tables: `conversations`, `agents`, `tasks`, `runs`, `checkpoints`
-- 11 tests in `backend/tests/test_schema.py`
-- **Owner:** `claude-data`
+### Adapter Guild
+- **Claude adapter** (`backend/adapters/claude_adapter.py`) -- established the `BaseAdapter` ABC contract -- 14 tests
+- **Codex adapter** (`backend/adapters/codex_adapter.py`) -- same interface, different CLI -- 16 tests
+- **Ollama adapter** (`backend/adapters/ollama_adapter.py`) -- neutral memo generator via stdin piping -- 15 tests
 
-### DATA-002: DatabaseManager
+### API Guild
+- **FastAPI app** (`backend/api/app.py`) -- health check, state endpoint, CORS -- 9 tests
+- **Conversation CRUD** (`backend/api/routes/conversations.py`) -- create/read/update/soft-delete/list -- 22 tests
 
-- **File:** `backend/storage/db.py`
-- Bootstrap loader that applies schema on first connection
-- Connection pooling and transaction helpers
-- 14 tests in `backend/tests/test_db_manager.py`
+### Orchestration Guild
+- **Domain models** (`backend/orchestrator/models.py`) -- the type system for the whole project -- 43 tests
 
-### DATA-003: JSONL Event Log
+### Operations Guild
+- **Capacity telemetry** (`backend/runtime/capacity.py`) -- CPU/RAM/active-run snapshots -- 22 tests
 
-- **File:** `backend/storage/event_log.py`
-- Append-only writer with structured event envelope (timestamp, type, payload)
-- Reader with filtering and tail support
-- 17 tests in `backend/tests/test_event_log.py`
+### Frontend Guild
+- **App shell** (`frontend/src/layout/`) -- TopBar, HistoryPane, ChatPane, IntelligencePane, BottomControls -- 29 tests
 
-### ADPT-001: Claude CLI Adapter
+## Traps Encountered
 
-- **File:** `backend/adapters/claude_adapter.py`
-- Base adapter interface (`AdapterBase`) defining the contract for all adapters
-- Session attach/resume hooks, timeout handling with configurable limits
-- 14 tests in `backend/tests/test_claude_adapter.py`
-- **Owner:** `claude-adapter`
+- Adapter timeout handling needed tightening after initial integration
+- Batch fix across API-001, DATA-002, OPS-003 caught in review
 
-### ADPT-002: Codex CLI Adapter
+## Loot Summary
 
-- **File:** `backend/adapters/codex_adapter.py`
-- Implements the same `AdapterBase` interface for OpenAI Codex CLI
-- 16 tests in `backend/tests/test_codex_adapter.py`
-- **Owner:** `codex-adapter`
+~214 tests (183 backend + 31 frontend). The hydra is slain.
 
-### ADPT-003: Ollama Memo Adapter
+## Map Unlocked
 
-- **File:** `backend/adapters/ollama_adapter.py`
-- Neutral decision memo generator using Ollama with stdin piping
-- Availability check for local Ollama installation
-- 15 tests in `backend/tests/test_ollama_adapter.py`
+This was the quest that opened up the entire map:
+- DATA-001 + DATA-003 --> DATA-004 (checkpoint packer)
+- ORCH-001 --> ORCH-002 (state machine), ORCH-003 (scheduler), API-004 (agent config)
+- All adapters --> ADPT-004 (output normalization), ORCH-004 (batch runner)
+- API-001 --> API-003/004/005
+- UI-001 --> all remaining UI quests (UI-002 through UI-007)
+- GitHub Actions CI gate added -- no more merging without passing trials
 
-### API-001: FastAPI App + Health Endpoints
-
-- **File:** `backend/api/app.py`, `backend/api/routes/health.py`
-- Health check endpoint, state endpoint, CORS configuration
-- 9 tests in `backend/tests/test_api_health.py`
-
-### API-002: Conversation CRUD
-
-- **File:** `backend/api/routes/conversations.py`
-- Create, read, update, delete (soft-delete), list, and select endpoints
-- Preserves conversation recency on select (commit `39c03c5`)
-- 22 tests in `backend/tests/test_api_conversations.py`
-
-### ORCH-001: Domain Models
-
-- **File:** `backend/orchestrator/models.py`
-- 9 enums: `AgentSource`, `AgentStatus`, `ConversationState`, `TaskStatus`, `RunPhase`, `NotificationType`, `EventType`, `Priority`, `Role`
-- 8 dataclasses: `Agent`, `Conversation`, `Task`, `RunWindow`, `Notification`, `Event`, `Checkpoint`, `SteeringNote`
-- 43 tests in `backend/tests/test_orchestrator_models.py`
-
-### OPS-003: Capacity Telemetry
-
-- **File:** `backend/runtime/capacity.py`
-- CPU/RAM/active-agent-run snapshot with threshold gates
-- 22 tests in `backend/tests/test_capacity.py`
-
-### UI-001: App Shell Layout
-
-- **Files:** `frontend/src/layout/AppShell.tsx`, `HistoryPane.tsx`, `ChatPane.tsx`, `IntelligencePane.tsx`, `TopBar.tsx`, `BottomControls.tsx`
-- Four-panel layout: history (left), chat (center), intelligence (right), controls (bottom)
-- TDD approach: tests written first in commit `1b8678a`, implementation in `b49e58f`
-- 29 tests across 6 layout test files
-- **Owner:** `claude-ui`
-
-## Review Findings
-
-- `b30b53a` -- Fix review findings across API-001, DATA-002, OPS-003 (batch fix after initial integration)
-- Adapter timeout handling was tightened (`a89dc89`)
-- Mandatory doc updates were enforced in task prompts going forward
-
-## Tests Added This Milestone
-
-| Component | Tests |
-|-----------|-------|
-| Backend (schema, db, event_log, adapters x3, api x2, models, capacity) | ~183 |
-| Frontend (layout x6, App) | ~31 |
-| **Total** | **~214** |
-
-## What This Unblocked
-
-- DATA-001 + DATA-003 unblocked DATA-004 (checkpoint packer)
-- ORCH-001 unblocked ORCH-002 (state machine), ORCH-003 (scheduler), API-004 (agent config)
-- API-001 unblocked API-003/004/005
-- All three adapters unblocked ADPT-004 (output normalization) and ORCH-004 (batch runner)
-- UI-001 unblocked all remaining UI tasks (UI-002 through UI-007)
-- GitHub Actions CI was added (`12c1311`) to gate all future PRs
+*The dungeon is mapped. Time to start raiding.*
