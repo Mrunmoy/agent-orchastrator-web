@@ -54,6 +54,7 @@ This is the source-of-truth backlog for current known scope.
 - [x] `UI-007` Implement run-window controls (next 20, continue 20, stop now, steering note)
 - [x] `UI-008` Implement new conversation form (title + working directory, inline creator, focus shift on creation)
 - [x] `UI-009` Agent editor UX improvements (model dropdown per provider, personality field, save fix, status tooltip)
+- [x] `UI-010` Fix API connectivity: Vite proxy, /api prefix, CORS wildcard, sort_order column
 
 ## Epic COORD - Parallel Delivery and Merge Safety
 - [x] `COORD-001` Implement merge-coordinator queue model and serialized integration flow
