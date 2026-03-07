@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Codex Adapter Implementation Notes</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Codex Adapter Implementation Notes</h1>
+    <div class="meta">Playbook Entry &middot; ADPT-002 &middot; 2026-03-07</div>
+
+    <h2>Key Difference: Output Structure</h2>
+    <p><strong>Claude CLI</strong> returns <code>{"result": "...", "session_id": "..."}</code> at the top level.</p>
+    <p><strong>Codex CLI</strong> returns a nested structure: <code>{"id": "...", "output": [{"type": "message", "content": [{"type": "output_text", "text": "..."}]}]}</code>.</p>
+    <p>The adapter uses <code>_extract_text()</code> to walk the nested output and concatenate all <code>output_text</code> blocks into a single string.</p>
+
+    <h2>Key Difference: Session Resume</h2>
+    <p>Claude uses <code>--resume &lt;session_id&gt;</code>. Codex uses <code>--session &lt;session_id&gt;</code>. Both are handled transparently by each adapter's <code>_build_command()</code>.</p>
+
+    <h2>Shared Patterns</h2>
+    <ul>
+      <li>Both adapters handle <code>asyncio.TimeoutError</code> and builtin <code>TimeoutError</code> in timeout paths.</li>
+      <li>Both kill the subprocess on timeout before re-raising.</li>
+      <li>Both return <code>AdapterResult</code> with consistent status enum values.</li>
+    </ul>
+
+    <h2>Testing Notes</h2>
+    <ul>
+      <li>16 tests cover: interface conformance, availability check, prompt building, session resume, timeout, CLI errors, malformed JSON, multi-block text extraction, empty output.</li>
+      <li>All tests mock <code>_run_cli</code> to avoid actual CLI invocation.</li>
+    </ul>
+  </article>
+</body>
+</html>

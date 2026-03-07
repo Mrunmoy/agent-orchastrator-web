@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: Codex CLI Adapter</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Codex CLI Adapter</h1>
+    <div class="meta">Design Codex Entry &middot; ADPT-002 &middot; 2026-03-07</div>
+
+    <h2>Context</h2>
+    <p>The Codex CLI adapter (<code>ADPT-002</code>) brings OpenAI Codex CLI parity alongside the existing Claude adapter. Both adapters share the same <code>BaseAdapter</code> contract and produce normalized <code>AdapterResult</code> objects.</p>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li>Codex CLI is invoked via <code>codex --json &lt;prompt&gt;</code>, mirroring the structured output approach used by the Claude adapter.</li>
+      <li>Session resume uses <code>--session &lt;id&gt;</code> flag (Codex CLI convention) rather than Claude's <code>--resume</code> flag.</li>
+      <li>Response parsing extracts text from the nested <code>output[].content[].text</code> structure, concatenating multiple <code>output_text</code> blocks.</li>
+      <li>Session ID is extracted from the top-level <code>id</code> field in the JSON response.</li>
+    </ul>
+
+    <h2>Rationale</h2>
+    <ul>
+      <li>Maintaining adapter parity ensures the orchestrator scheduler can treat all adapters uniformly without provider-specific branches.</li>
+      <li>Codex's nested output structure requires a dedicated <code>_extract_text</code> helper, keeping parsing logic clean and testable.</li>
+      <li>Same timeout and error handling patterns as Claude adapter reduce cognitive load and ensure consistent resilience behavior.</li>
+    </ul>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li>Normalize adapter outputs into common event schema (<code>ADPT-004</code>).</li>
+      <li>Add Ollama memo adapter (<code>ADPT-003</code>).</li>
+      <li>Wire adapters into the batch runner (<code>ORCH-004</code>).</li>
+    </ul>
+  </article>
+</body>
+</html>
