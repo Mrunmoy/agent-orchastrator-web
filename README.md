@@ -84,6 +84,14 @@ make task-worktree TASK_ID=UI-002 PREFIX=codex
 cd /home/mrumoy/sandbox/agent-orchestrator-worktrees/ui-chat-timeline && codex
 ```
 
+### 5.1) Generate task-specific prompt text
+From repo root, generate a prompt and paste it into the matching agent terminal:
+```bash
+make task-prompt TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-setup
+make task-prompt TASK_ID=SETUP-002 PREFIX=codex WORKER=codex-setup
+make task-prompt TASK_ID=ADPT-001 PREFIX=claude WORKER=claude-adapter
+```
+
 ### 6) Monitor current parallel state
 ```bash
 make parallel-status
