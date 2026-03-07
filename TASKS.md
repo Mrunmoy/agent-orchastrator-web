@@ -1,134 +1,75 @@
-# Agent Orchestrator Web - Task Tracker
+# Agent Orchestrator Web - Unified Backlog
 
-## Phase 0 - Foundation
-- [ ] Create project skeleton (`src/`, `docs/`, `config/`, `tests/`, `scripts/`, `data/`)
-- [x] Add `README.md` with quickstart and architecture overview
-- [x] Add Nix toolchain (`flake.nix`, optional `.envrc`, `nix develop` workflow)
-- [ ] Add Python project bootstrap (`pyproject.toml`)
-- [ ] Add `Makefile` targets: `run`, `lint`, `test`, `format`
-- [x] Add default personalities config: `config/personalities.json`
+This is the source-of-truth backlog for current known scope.
 
-## Phase 1 - Core Orchestrator
-- [ ] Implement `Agent` model (id, name, kind, session_id, personality_key, order, enabled)
-- [ ] Implement `ConversationState` and `WorkflowState`
-- [ ] Implement strict round-robin scheduler for N agents
-- [ ] Implement directed first-turn routing
-- [ ] Implement batch execution (default 20)
-- [ ] Implement pause/continue semantics
-- [ ] Implement stop-now flag handling
+## Current State Snapshot
+- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts.
+- Not done: actual frontend app, backend orchestrator runtime, adapters, API, persistence, production UI.
 
-## Phase 2 - Workflow Phases and Gates
-- [ ] Implement phases: `DESIGN_DEBATE`, `TDD_PLANNING`, `IMPLEMENTATION`, `INTEGRATION`, `DOCS`, `MERGE`
-- [ ] Implement gate state: `OPEN`, `SATISFIED`, `APPROVED`
-- [ ] Implement phase transition rules and validation
-- [ ] Implement gate approval endpoint/action
-- [ ] Surface phase/gate status in UI timeline and header
+## Definition of Done (per task)
+- Design/spec links are updated if behavior changed.
+- Tests are added/updated and passing.
+- Implementation is merged in small commits.
+- Task board status moved to `Done` with evidence note.
 
-## Phase 3 - Prompt Contracts and Agreement
-- [ ] Define mandatory response markers:
-- [ ] `AGREEMENT_STATUS: AGREE|CONTINUE`
-- [ ] `PHASE_STATUS: READY_FOR_GATE|NEEDS_MORE_WORK`
-- [ ] `NEXT_ACTION: ...`
-- [ ] Implement robust parser for these markers
-- [ ] Implement all-agree detection logic
-- [ ] Implement gate-satisfied detection logic
+## Epic SETUP - Project Foundations
+- [ ] `SETUP-001` Create backend Python package layout (`backend/`, modules, lint/test config)
+- [ ] `SETUP-002` Create frontend TypeScript app shell (`frontend/`, build/test/lint)
+- [ ] `SETUP-003` Add shared dev commands (`make lint`, `make test`, `make run-backend`, `make run-frontend`)
 
-## Phase 4 - CLI Adapters
-- [ ] Implement `CodexAdapter` (`codex exec`, optional `exec resume`, session discovery)
-- [ ] Implement `ClaudeAdapter` (`claude -p`, optional `-r/--session-id`)
-- [ ] Add optional `OllamaManagerAdapter` scaffold
-- [ ] Add per-turn timeout and retry policy
-- [ ] Add structured adapter error reporting
+## Epic DATA - Persistence and Context Memory
+- [ ] `DATA-001` Implement SQLite schema v1 (conversations, agents, tasks, runs, checkpoints)
+- [ ] `DATA-002` Add migration/bootstrap loader for schema initialization
+- [ ] `DATA-003` Implement append-only JSONL event log writer/reader
+- [ ] `DATA-004` Implement checkpoint pack builder with token bounds and summary compaction
 
-## Phase 5 - API Surface
-- [ ] `GET /conversations` (history list metadata)
-- [ ] `POST /conversations/new`
-- [ ] `POST /conversations/select` (build smart resume pack)
-- [ ] `POST /conversations/delete`
-- [ ] `POST /conversations/clear-all`
-- [ ] `POST /moderate` (Ollama manager pass)
-- [ ] `POST /summarize` (batch summary generation)
-- [ ] `POST /gate-check` (phase gate recommendation)
-- [ ] `GET /state`
-- [ ] `GET /events?since=`
-- [ ] `POST /chat`
-- [ ] `POST /continue`
-- [ ] `POST /steer`
-- [ ] `POST /stop`
-- [ ] `POST /phase`
-- [ ] `POST /gate/approve`
-- [ ] `POST /agents`
-- [ ] `POST /settings`
-- [ ] `GET /personalities`
+## Epic ORCH - Orchestration Core
+- [ ] `ORCH-001` Implement domain models (Agent, Conversation, Task, RunWindow, Notification)
+- [ ] `ORCH-002` Implement conversation state machine (`Debate`, `Planning`, `Working`, `NeedsInput`, `Queued`, `Completed`, `Failed`)
+- [ ] `ORCH-003` Implement round-robin scheduler with strict agent order
+- [ ] `ORCH-004` Implement 20-turn batch runner with pause/continue/stop-now
+- [ ] `ORCH-005` Implement user steering note injection between windows
+- [ ] `ORCH-006` Implement capacity-aware throttle and queue/resume policy
 
-## Phase 6 - UI/UX (Group Chat)
-- [ ] Left pane conversation history list is scrollable
-- [ ] Row actions: rename, delete, and active highlight
-- [ ] Global action: clear all conversations (confirmed)
-- [ ] No-thread linear conversation UX
-- [ ] Batch artifact cards: `Agreements`, `Disagreements`, `Neutral Memo`
-- [ ] Disagreement table with per-topic `agent A vs agent B` positions
-- [ ] Chat bubble layout with per-agent avatars
-- [ ] Typing indicator for current active agent
-- [ ] Agent management panel (name/type/session/personality/order)
-- [ ] Composer with target-agent selector
-- [ ] Batch controls (`Run N`, `Continue N`, `Stop`)
-- [ ] Steering/preference controls between batches
-- [ ] Phase and gate dashboard
-- [ ] Working-directory selector/editor
-- [ ] Mobile-first responsive polish
+## Epic ADPT - CLI Agent Adapters
+- [ ] `ADPT-001` Implement Claude CLI adapter (prompt, session attach/resume hooks, timeout handling)
+- [ ] `ADPT-002` Implement Codex CLI adapter (prompt, session attach/resume hooks, timeout handling)
+- [ ] `ADPT-003` Implement Ollama memo adapter for neutral decision memo
+- [ ] `ADPT-004` Normalize adapter output into common message/event schema
 
-## Phase 7 - TDD Workflow Enforcement Features
-- [ ] Add TDD checklist card in `TDD_PLANNING` phase
-- [ ] Require test plan artifact before allowing `IMPLEMENTATION` gate approval
-- [ ] Add integration evidence checklist before `INTEGRATION` gate approval
-- [ ] Add docs evidence checklist before `DOCS` gate approval
+## Epic API - Backend Service
+- [ ] `API-001` Implement FastAPI app with health/config endpoints
+- [ ] `API-002` Implement conversation CRUD endpoints
+- [ ] `API-003` Implement orchestration control endpoints (`run`, `continue`, `stop`, `steer`)
+- [ ] `API-004` Implement agent config endpoints (name, role, personality, order, working dir)
+- [ ] `API-005` Implement events stream endpoint for UI live updates
 
-## Phase 8 - Memory and Persistence
-- [ ] Implement checkpoint save/restore per batch
-- [ ] Implement dual resume bootstrap modes (`continue-session`, `reconstruct`)
-- [ ] Persist `data/conversations.json` metadata index
-- [ ] Implement smart resume context-pack builder
-- [ ] Enforce resume token soft/hard caps with truncation strategy
-- [ ] Persist batch artifacts (`data/artifacts/*.json`)
-- [ ] Persist app state (`data/app_state.json`)
-- [ ] Persist transcripts (`data/transcripts/*.jsonl`)
-- [ ] Add SQLite index for fast query/filter
-- [ ] Add markdown batch summaries (`data/summaries/*.md`)
-- [ ] Add transcript export to Markdown
+## Epic UI - Slack-Like Web Experience
+- [ ] `UI-001` Implement app shell layout (history left, chat center, intelligence right, controls bottom)
+- [ ] `UI-002` Implement conversation history list (scroll, select, delete, clear all, status icon)
+- [ ] `UI-003` Implement chat timeline (avatar, bold name, timestamp, typing/thinking indicator)
+- [ ] `UI-004` Implement composer + target-agent routing + run controls
+- [ ] `UI-005` Implement agent roster editor (unique name, source, model, personality, order)
+- [ ] `UI-006` Implement intelligence pane (agreement/disagreement + neutral memo)
+- [ ] `UI-007` Implement run-window controls (next 20, continue 20, stop now, steering note)
 
-## Phase 9 - Security and LAN Deployment
-- [ ] Access-token auth for all control APIs
-- [ ] Input/request size limits and sanitization
-- [ ] Working-dir validation and safe fallback
-- [ ] LAN deployment runbook (phone/tablet/laptop access)
-- [ ] Optional systemd user service doc
+## Epic COORD - Parallel Delivery and Merge Safety
+- [ ] `COORD-001` Implement merge-coordinator queue model and serialized integration flow
+- [ ] `COORD-002` Implement branch/task lock policy to avoid multi-agent file conflicts
+- [ ] `COORD-003` Implement notifications for `Needs Input`, `Blocked`, `Completed`, `Queued`
 
-## Phase 10 - Testing and Hardening
-- [ ] Unit tests: scheduler order, batch pause, stop behavior
-- [ ] Unit tests: phase/gate transition validation
-- [ ] Unit tests: agreement/status parser
-- [ ] Validate resume behavior with missing/expired session IDs
-- [ ] API tests for orchestration endpoints
-- [ ] UI smoke tests for critical flows
-- [ ] End-to-end scenario test:
-- [ ] debate -> agreement -> TDD plan -> implementation tasks -> integration -> docs -> merge-ready
+## Epic TEST - Test and Quality Gates
+- [ ] `TEST-001` Backend unit tests for scheduler, batch runner, state transitions
+- [ ] `TEST-002` Adapter contract tests with mocked CLI responses
+- [ ] `TEST-003` Frontend component tests for history, timeline, controls
+- [ ] `TEST-004` End-to-end scenario: debate -> agreement -> task split -> completion notification
 
-## Stretch Goals
-- [ ] Configurable Ollama moderation policy (`always`, `on_conflict`, `manual`)
-- [ ] WebSocket realtime transport
-- [ ] Multi-room support
-- [ ] Per-agent model override from UI
-- [ ] Tool-call timeline and cost tracking
+## Epic OPS - Local Network and Security
+- [ ] `OPS-001` Add local auth token for control APIs and basic request limits
+- [ ] `OPS-002` Add LAN run profile and startup scripts for phone/tablet/laptop access
+- [ ] `OPS-003` Add capacity telemetry snapshot (CPU/RAM/active agent runs) surfaced to UI
 
-
-## Phase 11 - Background Execution and Scheduler
-- [ ] Implement conversation state machine (`Debate`, `Planning`, `Autonomous Work`, `Needs User Input`, `Completed`, `Failed`, `Queued`)
-- [ ] Implement auto-throttle scheduler using machine metrics + agent availability
-- [ ] If capacity unavailable, block start and queue notification for resource-free event
-- [ ] Implement resource-free notifier for queued conversations
-- [ ] Implement role split: worker agents vs single merge coordinator
-- [ ] Enforce serialized integration/merge pipeline with user-gated main merge
-- [ ] Allow unrelated subtasks to continue when one branch needs clarification
-- [ ] Enforce completion criteria (tasks + tests + docs + integration + user sign-off)
-- [ ] Implement notification priority ordering in history pane
+## Epic DOC - Living Engineering Record
+- [ ] `DOC-001` Add ADR entries for orchestration algorithm and resume strategy
+- [ ] `DOC-002` Add playbook templates for debugging and recovery drills
+- [ ] `DOC-003` Start project saga log with incremental milestone updates
