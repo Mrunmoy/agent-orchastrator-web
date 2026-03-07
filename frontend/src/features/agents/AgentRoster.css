@@ -1,0 +1,45 @@
+.agent-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.agent-roster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.agent-roster-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #cdd6f4;
+}
+
+.agent-roster-add-btn {
+  font-size: 13px;
+  padding: 6px 14px;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  background: transparent;
+  color: #cdd6f4;
+  cursor: pointer;
+}
+
+.agent-roster-add-btn:hover {
+  background: #313244;
+}
+
+.agent-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.agent-roster-empty {
+  color: #6c7086;
+  font-size: 14px;
+  text-align: center;
+  padding: 32px 0;
+}

@@ -1,0 +1,123 @@
+.agent-card {
+  background: #1e1e2e;
+  border: 1px solid #313244;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.agent-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-idle {
+  background: #a6e3a1;
+}
+
+.status-running {
+  background: #f9e2af;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-blocked {
+  background: #f38ba8;
+}
+
+.status-offline {
+  background: #6c7086;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.agent-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #cdd6f4;
+}
+
+.agent-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.provider-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: lowercase;
+}
+
+.provider-claude {
+  background: rgba(147, 103, 255, 0.2);
+  color: #b4a0ff;
+}
+
+.provider-codex {
+  background: rgba(96, 165, 250, 0.2);
+  color: #89b4fa;
+}
+
+.provider-ollama {
+  background: rgba(76, 175, 80, 0.2);
+  color: #a6e3a1;
+}
+
+.provider-gemini {
+  background: rgba(255, 152, 0, 0.2);
+  color: #fab387;
+}
+
+.role-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(205, 214, 244, 0.1);
+  color: #a6adc8;
+}
+
+.agent-card-model {
+  font-size: 12px;
+  color: #a6adc8;
+}
+
+.agent-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+.agent-card-edit-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  background: transparent;
+  color: #cdd6f4;
+  cursor: pointer;
+}
+
+.agent-card-edit-btn:hover {
+  background: #313244;
+}
