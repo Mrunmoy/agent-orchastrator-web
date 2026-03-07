@@ -25,6 +25,25 @@ import { BottomControls } from "./BottomControls";
 const WORKING_DIR_KEY = "ao_working_dir";
 const DEFAULT_WORKING_DIR = "/home/user/workspace";
 
+const PROVIDER_MODELS: Record<Provider, string[]> = {
+  claude: [
+    "claude-opus-4-5",
+    "claude-3-7-sonnet-20250219",
+    "claude-3-5-sonnet-latest",
+    "claude-3-5-haiku-latest",
+  ],
+  codex: ["codex-mini-latest", "gpt-4.1", "gpt-4.1-mini", "o4-mini"],
+  ollama: ["llama3.2", "llama3.1", "mistral", "codellama", "phi3"],
+  gemini: ["gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash"],
+};
+
+const PERSONALITY_OPTIONS: { key: string; label: string }[] = [
+  { key: "", label: "— none —" },
+  { key: "software_developer", label: "Software Developer" },
+  { key: "code_reviewer", label: "Code Reviewer" },
+  { key: "friendly_brainstormer", label: "Friendly Brainstormer" },
+];
+
 type AgentEditorState = {
   mode: "create" | "edit";
   agentId?: string;
@@ -32,6 +51,7 @@ type AgentEditorState = {
   provider: Provider;
   model: string;
   role: AgentRole;
+  personality_key: string;
 };
 
 type ConversationCreatorState = {
@@ -337,8 +357,9 @@ export function AppShell() {
       mode: "create",
       displayName: "",
       provider: "claude",
-      model: "",
+      model: PROVIDER_MODELS.claude[0],
       role: "worker",
+      personality_key: "",
     });
   };
 
@@ -352,6 +373,7 @@ export function AppShell() {
       provider: agent.provider,
       model: agent.model,
       role: agent.role,
+      personality_key: agent.personality_key ?? "",
     });
   };
 
@@ -360,8 +382,9 @@ export function AppShell() {
     const payload = {
       display_name: agentEditor.displayName.trim(),
       provider: agentEditor.provider,
-      model: agentEditor.model.trim(),
+      model: agentEditor.model,
       role: agentEditor.role,
+      ...(agentEditor.personality_key ? { personality_key: agentEditor.personality_key } : {}),
     };
     if (!payload.display_name || !payload.model) {
       setErrorText("Agent display name and model are required.");
@@ -507,14 +530,15 @@ export function AppShell() {
               <select
                 value={agentEditor.provider}
                 onChange={(event) =>
-                  setAgentEditor((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          provider: event.target.value as Provider,
-                        }
-                      : prev,
-                  )
+                  setAgentEditor((prev) => {
+                    if (!prev) return prev;
+                    const newProvider = event.target.value as Provider;
+                    return {
+                      ...prev,
+                      provider: newProvider,
+                      model: PROVIDER_MODELS[newProvider][0],
+                    };
+                  })
                 }
               >
                 <option value="claude">claude</option>
@@ -525,12 +549,24 @@ export function AppShell() {
             </label>
             <label>
               Model
-              <input
+              <select
                 value={agentEditor.model}
                 onChange={(event) =>
                   setAgentEditor((prev) => (prev ? { ...prev, model: event.target.value } : prev))
                 }
-              />
+              >
+                {PROVIDER_MODELS[agentEditor.provider].map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+                {!PROVIDER_MODELS[agentEditor.provider].includes(agentEditor.model) &&
+                  agentEditor.model && (
+                    <option key={agentEditor.model} value={agentEditor.model}>
+                      {agentEditor.model}
+                    </option>
+                  )}
+              </select>
             </label>
             <label>
               Role
@@ -550,6 +586,23 @@ export function AppShell() {
                 <option value="worker">worker</option>
                 <option value="coordinator">coordinator</option>
                 <option value="moderator">moderator</option>
+              </select>
+            </label>
+            <label>
+              Personality
+              <select
+                value={agentEditor.personality_key}
+                onChange={(event) =>
+                  setAgentEditor((prev) =>
+                    prev ? { ...prev, personality_key: event.target.value } : prev,
+                  )
+                }
+              >
+                {PERSONALITY_OPTIONS.map((p) => (
+                  <option key={p.key} value={p.key}>
+                    {p.label}
+                  </option>
+                ))}
               </select>
             </label>
           </div>

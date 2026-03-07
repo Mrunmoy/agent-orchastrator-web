@@ -158,12 +158,57 @@ describe("AppShell", () => {
     fireEvent.change(within(editor).getByLabelText("Name"), {
       target: { value: "Codex Worker" },
     });
+    // Model is a dropdown; select a valid claude model
     fireEvent.change(within(editor).getByLabelText("Model"), {
-      target: { value: "codex-1" },
+      target: { value: "claude-3-5-sonnet-latest" },
     });
     fireEvent.click(within(editor).getByRole("button", { name: /save agent/i }));
 
     await waitFor(() => expect(api.createAgent).toHaveBeenCalledOnce());
     expect(screen.getByText("Codex Worker")).toBeInTheDocument();
+  });
+
+  it("model dropdown resets to first model when provider changes", async () => {
+    render(<AppShell />);
+    await waitFor(() => expect(api.listAgents).toHaveBeenCalledOnce());
+
+    fireEvent.click(screen.getByRole("button", { name: /add agent/i }));
+    const editor = screen.getByTestId("agent-editor");
+
+    // Default is claude — first claude model should be selected
+    const modelSelect = within(editor).getByLabelText("Model") as HTMLSelectElement;
+    expect(modelSelect.value).toBe("claude-opus-4-5");
+
+    // Switch provider to ollama
+    fireEvent.change(within(editor).getByLabelText("Provider"), {
+      target: { value: "ollama" },
+    });
+
+    // Model should have reset to first ollama model
+    expect(modelSelect.value).toBe("llama3.2");
+    const ollamaOptions = Array.from(modelSelect.options).map((o) => o.value);
+    expect(ollamaOptions).toContain("llama3.2");
+    expect(ollamaOptions).not.toContain("claude-opus-4-5");
+  });
+
+  it("personality dropdown shows all options and can be selected", async () => {
+    render(<AppShell />);
+    await waitFor(() => expect(api.listAgents).toHaveBeenCalledOnce());
+
+    fireEvent.click(screen.getByRole("button", { name: /add agent/i }));
+    const editor = screen.getByTestId("agent-editor");
+
+    const personalitySelect = within(editor).getByLabelText("Personality") as HTMLSelectElement;
+    expect(personalitySelect).toBeInTheDocument();
+
+    const optionTexts = Array.from(personalitySelect.options).map((o) => o.text);
+    expect(optionTexts).toContain("— none —");
+    expect(optionTexts).toContain("Software Developer");
+    expect(optionTexts).toContain("Code Reviewer");
+    expect(optionTexts).toContain("Friendly Brainstormer");
+
+    // Select a personality
+    fireEvent.change(personalitySelect, { target: { value: "code_reviewer" } });
+    expect(personalitySelect.value).toBe("code_reviewer");
   });
 });
