@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: SQLite Schema v1</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1e2436; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>SQLite Schema v1</h1>
+    <div class="meta">Design Codex Entry &middot; 2026-03-07 &middot; DATA-001</div>
+
+    <h2>Context</h2>
+    <p>The orchestrator requires persistent state for conversations, agents, tasks, scheduler runs, and system resource snapshots. SQLite in WAL mode was chosen for local-first performance with concurrent read access.</p>
+
+    <h2>Schema Entities</h2>
+    <ul>
+      <li><strong>agent</strong> &mdash; registered CLI agent instances (provider, model, role, capabilities).</li>
+      <li><strong>conversation</strong> &mdash; long-lived orchestration workspaces with state machine phase tracking and soft delete.</li>
+      <li><strong>conversation_agent</strong> &mdash; join table binding agents to conversations with turn order and permission profiles.</li>
+      <li><strong>task</strong> &mdash; work items within conversations supporting dependency chains and ownership.</li>
+      <li><strong>artifact</strong> &mdash; agreement maps, conflict maps, neutral memos, and checkpoints for smart resume.</li>
+      <li><strong>message_event</strong> &mdash; ordered event stream with unique <code>event_id</code> and autoincrement primary key.</li>
+      <li><strong>scheduler_run</strong> &mdash; batch execution lifecycle records.</li>
+      <li><strong>resource_snapshot</strong> &mdash; CPU/RAM/GPU telemetry for capacity-aware throttling.</li>
+    </ul>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li>All IDs are <code>TEXT</code> (UUID-style) except autoincrement counters on <code>message_event</code> and <code>resource_snapshot</code>.</li>
+      <li>JSON fields use <code>_json</code> suffix convention for clarity (<code>capabilities_json</code>, <code>spec_json</code>, etc.).</li>
+      <li>Timestamps stored as ISO 8601 text for portability and human readability.</li>
+      <li>Six indexes match the recommended query patterns from the domain model spec.</li>
+      <li>Schema uses <code>CREATE TABLE IF NOT EXISTS</code> / <code>CREATE INDEX IF NOT EXISTS</code> for idempotent application.</li>
+    </ul>
+
+    <h2>Rationale</h2>
+    <ul>
+      <li>WAL mode enables concurrent readers without blocking the single writer path.</li>
+      <li><code>PRAGMA synchronous = NORMAL</code> balances durability with write performance for local-only operation.</li>
+      <li>Keeping JSON in text columns avoids schema rigidity for evolving capability/metadata payloads.</li>
+    </ul>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li><code>DATA-002</code>: Migration/bootstrap loader to apply schema on first run.</li>
+      <li><code>DATA-003</code>: JSONL event log companion for transcript/audit export.</li>
+      <li><code>ORCH-001</code>: Domain model Python classes mapped to these tables.</li>
+    </ul>
+  </article>
+</body>
+</html>

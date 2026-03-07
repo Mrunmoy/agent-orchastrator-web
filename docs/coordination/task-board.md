@@ -22,7 +22,7 @@ Execution board for active parallel slices.
 |---|---|---|---|---|---|---|---|
 | SETUP-001 | Backend Python package layout | `backend/*` | P0 | claude-backend | Done | none | claude/setup-backend-layout |
 | SETUP-002 | Frontend TypeScript app shell | `frontend/*` | P0 | claude-frontend | Done | none | claude/setup-frontend-shell |
-| DATA-001 | SQLite schema v1 | `backend/storage/schema.sql` | P0 | unassigned | Todo | SETUP-001 | - |
+| DATA-001 | SQLite schema v1 | `backend/storage/schema.sql` | P0 | claude-data | Review | SETUP-001 | claude/data-sqlite-schema-v1 |
 | ORCH-001 | Domain models | `backend/orchestrator/models.py` | P0 | unassigned | Todo | SETUP-001,DATA-001 | - |
 | ORCH-003 | Round-robin scheduler | `backend/orchestrator/scheduler.py` | P0 | unassigned | Todo | ORCH-001 | - |
 | ORCH-004 | 20-turn batch runner | `backend/orchestrator/batch_runner.py` | P0 | unassigned | Todo | ORCH-003,ADPT-001,ADPT-002 | - |
