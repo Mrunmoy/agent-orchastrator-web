@@ -1,5 +1,7 @@
 # Agent Orchestrator Web
 
+[![CI](https://github.com/Mrunmoy/agent-orchastrator-web/actions/workflows/ci.yml/badge.svg)](https://github.com/Mrunmoy/agent-orchastrator-web/actions/workflows/ci.yml)
+
 LAN-accessible, CLI-native multi-agent orchestration workspace.
 
 ## Toolchain
