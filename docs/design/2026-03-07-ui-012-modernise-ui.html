@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: UI Modernisation — Engineering Cockpit Theme (UI-012)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2f4c; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #5a4728; padding:8px; text-align:left; }
+    th { background:#2a2f4c; color:var(--gold); }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Design Codex: UI Modernisation — Engineering Cockpit Theme (UI-012)</h1>
+    <p class="meta">Date: 2026-03-07 · Slice: UI-012 · Status: Implemented</p>
+
+    <h2>Problem</h2>
+    <p>The original UI used a Slack-derived purple palette (<code>#6C5CE7</code>) mixed with light-background panels
+    and inconsistent hardcoded hex values scattered across 16+ CSS files. The result was a low-contrast, visually
+    noisy interface with no cohesive design language. The engineering cockpit metaphor demands a deep-navy base,
+    violet brand accents, and consistent surface layering to communicate depth and focus.</p>
+
+    <h2>Goals</h2>
+    <ul>
+      <li>Replace all hardcoded hex colours with CSS custom properties (tokens).</li>
+      <li>Establish a deep navy / indigo background system (<code>--bg</code>, <code>--surface</code>, <code>--surface-2</code>, <code>--surface-3</code>).</li>
+      <li>Adopt Inter as the primary typeface for a modern developer-tool aesthetic.</li>
+      <li>Add smooth 200 ms transitions on interactive elements.</li>
+      <li>Introduce brand-coloured focus rings using <code>box-shadow</code> for accessibility.</li>
+      <li>All existing tests must continue to pass; add 3–4 new structural smoke tests.</li>
+    </ul>
+
+    <h2>CSS Token System</h2>
+    <table>
+      <thead><tr><th>Token</th><th>Value</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>--bg</code></td><td><code>#0d0f18</code></td><td>Page background</td></tr>
+        <tr><td><code>--surface</code></td><td><code>#1a1d2e</code></td><td>Card / panel base</td></tr>
+        <tr><td><code>--surface-2</code></td><td><code>#232640</code></td><td>Input background, row hover</td></tr>
+        <tr><td><code>--surface-3</code></td><td><code>#2d3155</code></td><td>Active / selected states</td></tr>
+        <tr><td><code>--line</code></td><td><code>#323660</code></td><td>Borders and dividers</td></tr>
+        <tr><td><code>--ink</code></td><td><code>#e8eaf6</code></td><td>Primary text</td></tr>
+        <tr><td><code>--muted</code></td><td><code>#8892b0</code></td><td>Secondary text, labels</td></tr>
+        <tr><td><code>--brand</code></td><td><code>#7c6af7</code></td><td>Primary brand / CTA</td></tr>
+        <tr><td><code>--brand-light</code></td><td><code>#a89bf8</code></td><td>Hover / emphasis brand</td></tr>
+        <tr><td><code>--ok</code></td><td><code>#4ec994</code></td><td>Success / run action</td></tr>
+        <tr><td><code>--warn</code></td><td><code>#f5a623</code></td><td>Warning / idle status</td></tr>
+        <tr><td><code>--danger</code></td><td><code>#e06c75</code></td><td>Error / stop action</td></tr>
+        <tr><td><code>--teal</code></td><td><code>#62d7c8</code></td><td>Memo accent, codex provider</td></tr>
+        <tr><td><code>--gold</code></td><td><code>#d6b164</code></td><td>Order badge, design accent</td></tr>
+        <tr><td><code>--shadow</code></td><td><code>0 4px 16px rgba(0,0,0,0.4)</code></td><td>Panel depth</td></tr>
+        <tr><td><code>--radius</code></td><td><code>8px</code></td><td>Default border radius</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Panel Modernisation</h2>
+    <ul>
+      <li><strong>AppShell</strong> — <code>.app-shell</code> grid container; <code>.panel</code> shared class for all three column panels; font family set to Inter via Google Fonts <code>@import</code>.</li>
+      <li><strong>TopBar</strong> — deep-surface card (<code>var(--surface)</code>) replacing the old purple header; status pill with animated dot, brand-blue CTA buttons.</li>
+      <li><strong>HistoryPane</strong> — <code>conv-row</code> with left-border brand accent on active selection; conversation list uses <code>--surface-2</code> background.</li>
+      <li><strong>ChatPane</strong> — <code>--bg</code> stream area for maximum contrast against message bubbles; user bubbles in brand-tinted surface; agent bubbles in <code>--surface-2</code>.</li>
+      <li><strong>IntelligencePane</strong> — cards with <code>box-shadow</code> for depth; <code>--teal</code> left accent on memo cards, <code>--ok</code> on agreement, <code>--warn</code> on disagreement.</li>
+      <li><strong>BottomControls</strong> — grid layout with labelled field columns; textarea focus ring in brand colour.</li>
+      <li><strong>AgentCard</strong> — hover border highlight using <code>--brand</code>; gold order badge; gradient avatar backgrounds; provider-coloured badges.</li>
+      <li><strong>Composer</strong> — brand-coloured send button; consistent border-radius and transition timing.</li>
+    </ul>
+
+    <h2>Typography</h2>
+    <p>Inter is loaded via a single Google Fonts <code>@import</code> at the top of <code>AppShell.css</code> with weights 400, 500, 600, 700. The system-ui / -apple-system stack serves as fallback. Type hierarchy:</p>
+    <table>
+      <thead><tr><th>Use</th><th>Size</th><th>Weight</th></tr></thead>
+      <tbody>
+        <tr><td>Panel title / section heading</td><td>11 px</td><td>600, uppercase</td></tr>
+        <tr><td>Body / message text</td><td>13 px</td><td>400</td></tr>
+        <tr><td>Agent name / conv title</td><td>12–14 px</td><td>600</td></tr>
+        <tr><td>Badge / chip labels</td><td>10–11 px</td><td>600, uppercase</td></tr>
+        <tr><td>App title</td><td>15 px</td><td>700</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Testing Approach</h2>
+    <ul>
+      <li>All existing Vitest / Testing Library tests must pass unchanged — only CSS is modified, no TSX structure changes.</li>
+      <li>New smoke tests in <code>ThemeSmoke.test.tsx</code> verify that <code>app-shell</code>, <code>top-bar</code>, <code>history-pane</code>, and <code>run-status</code> testids are present and carry the correct CSS classes.</li>
+      <li>Existing <code>AppShell.test.tsx</code> receives two additional structural assertions about <code>app-shell</code> and <code>top-bar</code> classes.</li>
+      <li>Run <code>make test</code>, <code>make lint</code>, <code>make format-check</code> to confirm green.</li>
+    </ul>
+  </article>
+</body>
+</html>

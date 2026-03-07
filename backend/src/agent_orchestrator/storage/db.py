@@ -20,9 +20,7 @@ _SCHEMA_VERSION = 2
 # that bring the schema from (version - 1) to version.
 _MIGRATIONS: dict[int, list[str]] = {
     2: [
-        (
-            "ALTER TABLE agent ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"
-        ),
+        ("ALTER TABLE agent ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"),
     ],
 }
 

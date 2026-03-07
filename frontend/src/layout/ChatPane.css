@@ -8,44 +8,45 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
-  padding: 8px 10px;
-  border-bottom: 1px solid #d6d9e3;
-  background: #ffffff;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
   font-size: 12px;
-  color: #6b6f76;
+  color: var(--muted);
 }
 
 .chat-pane__stream {
   overflow: auto;
   padding: 6px 0;
-  background: #ffffff;
+  background: var(--bg);
 }
 
 .chat-message {
-  padding: 8px 12px;
-  border-bottom: 1px solid #eceef5;
-  color: #1d1c1d;
-  font-size: 14px;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(50, 54, 96, 0.4);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .chat-message strong {
-  color: #1d1c1d;
+  color: var(--ink);
 }
 
 .chat-pane__empty {
-  padding: 40px 12px;
+  padding: 40px 14px;
   text-align: center;
-  color: #6b6f76;
-  font-size: 14px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .chat-pane__composer {
-  border-top: 1px solid #d6d9e3;
+  border-top: 1px solid var(--line);
   display: grid;
-  grid-template-columns: 170px 1fr auto;
+  grid-template-columns: 1fr auto;
   gap: 8px;
-  padding: 9px;
-  background: #f8f8fb;
+  padding: 10px;
+  background: var(--surface);
 }
 
 @media (max-width: 930px) {

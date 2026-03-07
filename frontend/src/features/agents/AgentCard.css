@@ -1,29 +1,38 @@
 .agent-card {
-  background: #1e1e2e;
-  border: 1px solid #313244;
-  border-radius: 8px;
-  padding: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   position: relative;
+  transition:
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+
+.agent-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border-color: var(--brand);
 }
 
 .order-badge {
   position: absolute;
   top: 8px;
   left: 8px;
-  width: 18px;
+  min-width: 18px;
   height: 18px;
-  border-radius: 50%;
-  background: #d6b164;
-  color: #111521;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--badge-ink);
   font-size: 10px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
+  padding: 0 5px;
   pointer-events: none;
 }
 
@@ -31,6 +40,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-left: 24px;
 }
 
 .status-indicator {
@@ -41,20 +51,20 @@
 }
 
 .status-idle {
-  background: #a6e3a1;
+  background: var(--ok);
 }
 
 .status-running {
-  background: #f9e2af;
+  background: var(--warn);
   animation: pulse 1.5s ease-in-out infinite;
 }
 
 .status-blocked {
-  background: #f38ba8;
+  background: var(--danger);
 }
 
 .status-offline {
-  background: #6c7086;
+  background: var(--muted);
 }
 
 @keyframes pulse {
@@ -70,13 +80,13 @@
 .agent-card-name {
   font-size: 14px;
   font-weight: 600;
-  color: #cdd6f4;
+  color: var(--ink);
 }
 
 .agent-card-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -84,49 +94,49 @@
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: 999px;
   text-transform: lowercase;
 }
 
 .provider-claude {
-  background: rgba(147, 103, 255, 0.2);
-  color: #b4a0ff;
+  background: rgba(107, 91, 214, 0.2);
+  color: var(--brand-light);
 }
 
 .provider-codex {
-  background: rgba(96, 165, 250, 0.2);
-  color: #89b4fa;
+  background: rgba(98, 215, 200, 0.15);
+  color: var(--teal);
 }
 
 .provider-ollama {
-  background: rgba(76, 175, 80, 0.2);
-  color: #a6e3a1;
+  background: rgba(78, 201, 148, 0.15);
+  color: var(--ok);
 }
 
 .provider-gemini {
-  background: rgba(255, 152, 0, 0.2);
-  color: #fab387;
+  background: rgba(245, 166, 35, 0.15);
+  color: var(--warn);
 }
 
 .role-badge {
   font-size: 11px;
   padding: 2px 8px;
-  border-radius: 10px;
-  background: rgba(205, 214, 244, 0.1);
-  color: #a6adc8;
+  border-radius: 999px;
+  background: rgba(136, 146, 176, 0.15);
+  color: var(--muted);
 }
 
 .personality-badge {
   font-size: 11px;
   padding: 2px 8px;
-  border-radius: 10px;
-  background: rgba(147, 103, 255, 0.15);
-  color: #b4a0ff;
+  border-radius: 999px;
+  background: rgba(107, 91, 214, 0.12);
+  color: var(--brand-light);
 }
 
 .agent-card-model {
   font-size: 12px;
-  color: #a6adc8;
+  color: var(--muted);
 }
 
 .agent-card-footer {
@@ -138,13 +148,17 @@
 .agent-card-edit-btn {
   font-size: 12px;
   padding: 4px 12px;
-  border: 1px solid #45475a;
+  border: 1px solid var(--line);
   border-radius: 6px;
   background: transparent;
-  color: #cdd6f4;
+  color: var(--ink);
   cursor: pointer;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease;
 }
 
 .agent-card-edit-btn:hover {
-  background: #313244;
+  background: var(--surface-3);
+  border-color: var(--brand);
 }

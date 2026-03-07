@@ -16,15 +16,15 @@
 .conversation-list__items {
   max-height: 320px;
   overflow: auto;
-  border: 1px solid #5b2d5c;
-  border-radius: 8px;
-  background: #4a154b;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
 }
 
 .conversation-list__empty {
   padding: 16px;
   text-align: center;
-  color: #6b6f76;
+  color: var(--muted);
   font-size: 13px;
   margin: 0;
 }

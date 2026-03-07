@@ -215,4 +215,18 @@ describe("AppShell", () => {
     fireEvent.change(personalitySelect, { target: { value: "code_reviewer" } });
     expect(personalitySelect.value).toBe("code_reviewer");
   });
+
+  it("app-shell has dark theme root element", () => {
+    render(<AppShell />);
+    const shell = screen.getByTestId("app-shell");
+    expect(shell).toBeInTheDocument();
+    expect(shell).toHaveClass("app-shell");
+  });
+
+  it("top bar has data-testid=top-bar with correct structure", async () => {
+    render(<AppShell />);
+    const topBar = screen.getByTestId("top-bar");
+    expect(topBar).toBeInTheDocument();
+    expect(topBar).toHaveClass("top-bar");
+  });
 });

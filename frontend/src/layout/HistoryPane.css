@@ -14,30 +14,35 @@
   max-height: 320px;
   overflow: auto;
   padding-right: 2px;
-  border: 1px solid #5b2d5c;
-  border-radius: 8px;
-  background: #4a154b;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
 }
 
 .conv-row {
   width: 100%;
-  padding: 8px;
-  border-bottom: 1px solid #272c4d;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
   cursor: pointer;
   display: grid;
-  gap: 4px;
-  color: #d7c6d8;
+  gap: 3px;
+  color: var(--muted);
   font-size: 13px;
   text-align: left;
-  border-left: none;
+  border-left: 3px solid transparent;
   border-right: none;
   border-top: none;
   border-radius: 0;
   background: transparent;
+  transition:
+    background 150ms ease,
+    border-left-color 150ms ease;
 }
 
 .conv-row[data-selected="true"] {
-  background: #1a2040;
+  background: var(--surface-3);
+  border-left-color: var(--brand);
+  color: var(--ink);
 }
 
 .conv-row:last-child {
@@ -45,7 +50,8 @@
 }
 
 .conv-row:hover {
-  background: #1a2040;
+  background: var(--surface-3);
+  color: var(--ink);
 }
 
 .conv-head {
@@ -54,5 +60,5 @@
   gap: 6px;
   align-items: center;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }

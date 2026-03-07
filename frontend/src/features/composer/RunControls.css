@@ -1,56 +1,66 @@
 .run-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 10px 12px;
-  border-top: 1px solid var(--border-color, #333);
-  background: var(--surface-color, #1e1e1e);
+  border-top: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .run-controls__status {
-  font-size: 13px;
-  color: var(--text-secondary, #999);
+  font-size: 12px;
+  color: var(--muted);
   text-transform: capitalize;
   min-width: 60px;
+  font-weight: 500;
 }
 
 .run-controls__buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .run-controls__button {
-  padding: 6px 16px;
-  border-radius: 4px;
+  padding: 5px 14px;
+  border-radius: 6px;
   border: none;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   color: #fff;
+  transition:
+    background 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.run-controls__button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .run-controls__button--run {
-  background: var(--success-color, #2ea043);
+  background: var(--ok);
+  color: var(--ok-contrast);
 }
 
-.run-controls__button--run:hover {
-  background: #3cb853;
+.run-controls__button--run:hover:not(:disabled) {
+  background: var(--ok-light);
 }
 
 .run-controls__button--continue {
-  background: var(--primary-color, #4a9eff);
+  background: var(--brand);
 }
 
-.run-controls__button--continue:hover {
-  background: var(--primary-hover, #3a8eef);
+.run-controls__button--continue:hover:not(:disabled) {
+  background: var(--brand-light);
 }
 
 .run-controls__button--stop {
-  background: var(--danger-color, #da3633);
+  background: var(--danger);
 }
 
-.run-controls__button--stop:hover {
-  background: #e04848;
+.run-controls__button--stop:hover:not(:disabled) {
+  background: var(--danger-light);
 }
 
 .run-controls__steering {
@@ -60,25 +70,37 @@
 }
 
 .run-controls__steer-input {
-  padding: 6px 10px;
-  border-radius: 4px;
-  border: 1px solid var(--border-color, #444);
-  background: var(--input-bg, #2a2a2a);
-  color: var(--text-color, #e0e0e0);
-  font-size: 13px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 12px;
   min-width: 180px;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.run-controls__steer-input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px var(--brand-glow);
 }
 
 .run-controls__steer-button {
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: 1px solid var(--border-color, #444);
-  background: var(--surface-color, #2a2a2a);
-  color: var(--text-color, #e0e0e0);
-  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 12px;
   cursor: pointer;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease;
 }
 
 .run-controls__steer-button:hover {
-  background: var(--surface-hover, #333);
+  background: var(--surface-3);
+  border-color: var(--brand);
 }

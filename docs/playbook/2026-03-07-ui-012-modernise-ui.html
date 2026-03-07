@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: UI Modernisation — Engineering Cockpit Theme (UI-012)</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1e3640; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+    pre { background:#1e3640; padding:12px 16px; border-radius:8px; overflow-x:auto; font-size:0.88em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #2f7b72; padding:8px; text-align:left; }
+    th { background:#1e3640; color:var(--teal); }
+    .tip { background:rgba(98,215,200,0.08); border-left:3px solid var(--teal); padding:10px 14px; border-radius:0 6px 6px 0; margin:12px 0; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook: UI Modernisation — Engineering Cockpit Theme (UI-012)</h1>
+    <p class="meta">Date: 2026-03-07 · Slice: UI-012</p>
+
+    <h2>What Was Changed</h2>
+    <p>The following CSS files were completely replaced with the new token-driven engineering cockpit theme:</p>
+    <ul>
+      <li><code>frontend/src/layout/AppShell.css</code> — root tokens, body, shared components (.btn, .panel, .chip)</li>
+      <li><code>frontend/src/layout/TopBar.css</code> — top bar grid, status pill, working dir row</li>
+      <li><code>frontend/src/layout/HistoryPane.css</code> — conv-row with brand left-border, conversation list</li>
+      <li><code>frontend/src/layout/ChatPane.css</code> — chat stream on --bg, message bubbles</li>
+      <li><code>frontend/src/layout/IntelligencePane.css</code> — intel-card with box-shadow and accent borders</li>
+      <li><code>frontend/src/layout/BottomControls.css</code> — grid layout with labelled fields</li>
+      <li><code>frontend/src/features/agents/AgentCard.css</code> — hover border, gradient order badge</li>
+      <li><code>frontend/src/features/agents/AgentRoster.css</code> — roster grid, drag handle</li>
+      <li><code>frontend/src/features/composer/Composer.css</code> — brand send button, focus rings</li>
+      <li><code>frontend/src/features/composer/RunControls.css</code> — run/stop/continue buttons</li>
+      <li><code>frontend/src/features/history/ConversationItem.css</code> — active left-border, phase badges</li>
+      <li><code>frontend/src/features/history/ConversationList.css</code> — container and empty state</li>
+      <li><code>frontend/src/features/intelligence/AgreementBar.css</code> — segmented bar with semantic colours</li>
+      <li><code>frontend/src/features/intelligence/IntelligencePane.css</code> — pane flex layout</li>
+      <li><code>frontend/src/features/intelligence/MemoCard.css</code> — memo card with surface-2 background</li>
+      <li><code>frontend/src/features/run-controls/RunWindow.css</code> — run window with progress bar</li>
+      <li><code>frontend/src/features/run-controls/SteeringPanel.css</code> — steering textarea and submit button</li>
+      <li><code>frontend/src/features/chat/ChatMessage.css</code> — gradient avatars, bubble layout</li>
+      <li><code>frontend/src/features/chat/ChatTimeline.css</code> — timeline with --bg background</li>
+    </ul>
+
+    <h2>CSS Variable Reference</h2>
+    <table>
+      <thead><tr><th>Variable</th><th>Value</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td><code>--bg</code></td><td><code>#0d0f18</code></td><td>Page / stream background</td></tr>
+        <tr><td><code>--surface</code></td><td><code>#1a1d2e</code></td><td>Cards, panels, bars</td></tr>
+        <tr><td><code>--surface-2</code></td><td><code>#232640</code></td><td>Input backgrounds, row fill</td></tr>
+        <tr><td><code>--surface-3</code></td><td><code>#2d3155</code></td><td>Active/selected states</td></tr>
+        <tr><td><code>--line</code></td><td><code>#323660</code></td><td>All borders and dividers</td></tr>
+        <tr><td><code>--ink</code></td><td><code>#e8eaf6</code></td><td>Primary text</td></tr>
+        <tr><td><code>--muted</code></td><td><code>#8892b0</code></td><td>Labels, secondary text</td></tr>
+        <tr><td><code>--brand</code></td><td><code>#7c6af7</code></td><td>CTA buttons, active borders</td></tr>
+        <tr><td><code>--brand-light</code></td><td><code>#a89bf8</code></td><td>Hover state, agent name</td></tr>
+        <tr><td><code>--ok</code></td><td><code>#4ec994</code></td><td>Run button, idle status</td></tr>
+        <tr><td><code>--warn</code></td><td><code>#f5a623</code></td><td>Warning, run-status pill</td></tr>
+        <tr><td><code>--danger</code></td><td><code>#e06c75</code></td><td>Stop, error, delete</td></tr>
+        <tr><td><code>--teal</code></td><td><code>#62d7c8</code></td><td>Memo card accent, codex badge</td></tr>
+        <tr><td><code>--gold</code></td><td><code>#d6b164</code></td><td>Order badge in AgentCard</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Typography</h2>
+    <p>Inter is loaded via <code>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap')</code>
+    at the top of <code>AppShell.css</code>. The body <code>font-family</code> falls back through <code>-apple-system</code>,
+    <code>BlinkMacSystemFont</code>, <code>Segoe UI</code>, and <code>system-ui</code>.</p>
+
+    <h2>Running Tests</h2>
+    <pre>cd frontend &amp;&amp; npx vitest run</pre>
+    <p>Or via project root:</p>
+    <pre>nix develop --command make test</pre>
+
+    <div class="tip">
+      <strong>ThemeSmoke.test.tsx</strong> verifies that <code>app-shell</code>, <code>top-bar</code>, <code>history-pane</code>,
+      and <code>run-status</code> testids are present and carry the expected CSS classes. These tests serve as regression guards
+      against accidental removal of structural class names.
+    </div>
+
+    <h2>Troubleshooting</h2>
+    <ul>
+      <li><strong>Hardcoded colours appearing:</strong> Search for hex literals in CSS files: <code>grep -r '#[0-9a-fA-F]\{6\}' frontend/src --include='*.css'</code>. Replace with appropriate token.</li>
+      <li><strong>Token not resolving:</strong> Ensure the component's CSS file is imported in its TSX file, and that <code>AppShell.css</code> (which defines <code>:root</code> tokens) is loaded before any component CSS.</li>
+      <li><strong>Prettier failures:</strong> Run <code>cd frontend &amp;&amp; npx prettier --write 'src/**/*.css'</code> to auto-fix formatting.</li>
+      <li><strong>Inter font not loading (offline):</strong> The Google Fonts import is best-effort; the system-ui fallback stack covers all functional scenarios.</li>
+    </ul>
+  </article>
+</body>
+</html>
