@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Schema Testing Notes</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1a2b2f; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Schema Testing Notes</h1>
+    <div class="meta">Playbook Entry &middot; 2026-03-07 &middot; DATA-001</div>
+
+    <h2>Insight: WAL mode vs in-memory databases</h2>
+    <p><strong>Symptom:</strong> <code>PRAGMA journal_mode</code> returns <code>memory</code> on <code>:memory:</code> databases even after applying <code>PRAGMA journal_mode = WAL</code>.</p>
+    <p><strong>Cause:</strong> SQLite in-memory databases always use the <code>memory</code> journal mode; WAL requires a file-backed database.</p>
+    <p><strong>Resolution:</strong> Split WAL tests into two: one checks the pragma is present in the SQL text, the other uses <code>tmp_path</code> for a file-backed database to verify actual WAL activation.</p>
+
+    <h2>Pattern: Schema test structure</h2>
+    <p>The test suite validates schema at multiple levels:</p>
+    <ul>
+      <li><strong>Existence:</strong> all 8 tables present after schema application.</li>
+      <li><strong>Structure:</strong> column names and order match spec exactly (parametrized).</li>
+      <li><strong>Indexes:</strong> all 6 recommended indexes exist (parametrized).</li>
+      <li><strong>Idempotency:</strong> schema can be applied twice without error.</li>
+      <li><strong>Constraints:</strong> unique <code>event_id</code> enforced, autoincrement works.</li>
+      <li><strong>Integration:</strong> cross-table insert/query works (agent + conversation + join).</li>
+    </ul>
+
+    <h2>Recommendation</h2>
+    <p>When adding columns in future migrations, extend the parametrized <code>EXPECTED_COLUMNS</code> dict in <code>test_schema.py</code> so column drift is caught immediately.</p>
+  </article>
+</body>
+</html>
