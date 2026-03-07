@@ -6,12 +6,9 @@ from typing import Any
 
 from fastapi import APIRouter
 
+from agent_orchestrator.api.responses import ok_response
+
 router = APIRouter()
-
-
-def ok_response(data: dict[str, Any]) -> dict[str, Any]:
-    """Wrap data in the standard ok envelope."""
-    return {"ok": True, "data": data}
 
 
 @router.get("/health")

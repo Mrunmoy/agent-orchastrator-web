@@ -112,9 +112,7 @@ def check_capacity(
     if snapshot.cpu_load_1m >= cpu_max_percent:
         return CapacityVerdict(
             allowed=False,
-            reason=(
-                f"CPU load {snapshot.cpu_load_1m:.1f}% >= " f"threshold {cpu_max_percent:.1f}%"
-            ),
+            reason=f"CPU load {snapshot.cpu_load_1m:.1f}% >= threshold {cpu_max_percent:.1f}%",
         )
 
     # Gate 2: RAM
@@ -122,14 +120,14 @@ def check_capacity(
     if free_mb <= ram_min_free_mb:
         return CapacityVerdict(
             allowed=False,
-            reason=(f"RAM free {free_mb} MB <= " f"threshold {ram_min_free_mb} MB"),
+            reason=f"RAM free {free_mb} MB <= threshold {ram_min_free_mb} MB",
         )
 
     # Gate 3: active runs
     if active_runs >= max_active_runs:
         return CapacityVerdict(
             allowed=False,
-            reason=(f"Active runs {active_runs} >= " f"max {max_active_runs}"),
+            reason=f"Active runs {active_runs} >= max {max_active_runs}",
         )
 
     return CapacityVerdict(allowed=True, reason=None)

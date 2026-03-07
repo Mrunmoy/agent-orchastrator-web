@@ -113,6 +113,44 @@ def test_wal_mode_on_file_db(tmp_path):
     assert mode == "wal"
 
 
+# --- Foreign keys after initialize ---
+
+
+def test_foreign_keys_enabled_after_initialize():
+    """Foreign keys must remain on after initialize() (executescript resets them)."""
+    mgr = DatabaseManager(":memory:")
+    mgr.initialize()
+    with mgr.connection() as conn:
+        cur = conn.execute("PRAGMA foreign_keys")
+        assert cur.fetchone()[0] == 1
+    mgr.close()
+
+
+# --- Context manager protocol ---
+
+
+def test_context_manager_closes_on_exit():
+    """DatabaseManager can be used as a context manager."""
+    with DatabaseManager(":memory:") as mgr:
+        mgr.initialize()
+        assert mgr.schema_version == 1
+    with pytest.raises(Exception):
+        with mgr.connection() as conn:
+            conn.execute("SELECT 1")
+
+
+# --- Path object acceptance ---
+
+
+def test_accepts_path_object(tmp_path):
+    """DatabaseManager should accept pathlib.Path, not just str."""
+    db_path = tmp_path / "test_path.db"
+    mgr = DatabaseManager(db_path)
+    mgr.initialize()
+    assert mgr.schema_version == 1
+    mgr.close()
+
+
 # --- Close ---
 
 

@@ -27,9 +27,9 @@ class DatabaseManager:
         in-memory database.
     """
 
-    def __init__(self, db_path: str) -> None:
-        self._db_path = db_path
-        self._conn: sqlite3.Connection = sqlite3.connect(db_path)
+    def __init__(self, db_path: str | Path) -> None:
+        self._db_path = str(db_path)
+        self._conn: sqlite3.Connection = sqlite3.connect(self._db_path)
         self._conn.execute("PRAGMA foreign_keys = ON")
 
     # ------------------------------------------------------------------
@@ -80,6 +80,12 @@ class DatabaseManager:
     def close(self) -> None:
         """Close the underlying database connection."""
         self._conn.close()
+
+    def __enter__(self) -> DatabaseManager:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.close()
 
     # ------------------------------------------------------------------
     # Internal helpers
