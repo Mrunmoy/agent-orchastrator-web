@@ -114,10 +114,11 @@ echo "======================================================="
 echo ""
 
 # Start backend
+# WARNING: DEV_MODE=1 sets CORS allow-all origins. LAN use only — never expose to the internet.
 echo "[backend] Starting uvicorn on 0.0.0.0:${BACKEND_PORT} ..."
 (
   cd "${REPO_ROOT}/backend"
-  python3 -m uvicorn agent_orchestrator.api.app:app \
+  PYTHONPATH="src${PYTHONPATH:+:$PYTHONPATH}" DEV_MODE=1 python3 -m uvicorn agent_orchestrator.api:app \
     --host 0.0.0.0 \
     --port "${BACKEND_PORT}" \
     --reload
