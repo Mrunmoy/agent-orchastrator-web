@@ -50,6 +50,26 @@ This creates:
 - worktree: `../agent-orchestrator-worktrees/<task-slug>`
 - context file: `.agent-context.md` inside the worktree
 
+### 4.1) Recommended first parallel batch (real tasks)
+Start these first:
+```bash
+# Worker 1 (Claude): backend foundation
+make task-worktree TASK_ID=SETUP-001 PREFIX=claude
+
+# Worker 2 (Codex): frontend foundation
+make task-worktree TASK_ID=SETUP-002 PREFIX=codex
+
+# Worker 3 (Claude): first backend adapter (starts after SETUP-001 is ready)
+make task-worktree TASK_ID=ADPT-001 PREFIX=claude
+```
+
+Worktree paths created:
+```bash
+/home/mrumoy/sandbox/agent-orchestrator-worktrees/setup-backend-layout
+/home/mrumoy/sandbox/agent-orchestrator-worktrees/setup-frontend-shell
+/home/mrumoy/sandbox/agent-orchestrator-worktrees/adpt-claude-cli
+```
+
 ### 5) Start CLI agents in each worktree
 Example (Claude workers):
 ```bash
