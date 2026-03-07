@@ -16,9 +16,9 @@
 .conversation-list__items {
   max-height: 320px;
   overflow: auto;
-  border: 1px solid var(--line);
+  border: 1px solid var(--sidebar-line);
   border-radius: 6px;
-  background: var(--surface-2);
+  background: var(--sidebar-bg);
 }
 
 .conversation-list__empty {

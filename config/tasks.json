@@ -629,13 +629,26 @@
     {
       "id": "UI-012",
       "slug": "modernise-ui",
-      "title": "UI modernisation — engineering cockpit theme (deep navy/violet tokens, Inter font, 200ms transitions)",
+      "title": "UI modernisation \u2014 engineering cockpit theme (deep navy/violet tokens, Inter font, 200ms transitions)",
       "scope": "frontend/src/**/*.css,frontend/src/layout/ThemeSmoke.test.tsx,frontend/src/layout/AppShell.test.tsx",
       "epic": "UI",
       "priority": "P1",
       "status": "Done",
       "depends_on": [
         "UI-010"
+      ],
+      "default_owner": "copilot"
+    },
+    {
+      "id": "UI-015",
+      "slug": "slack-theme",
+      "title": "Slack-like retheme \u2014 aubergine sidebar + light content area",
+      "scope": "frontend/src/layout/*.css,frontend/src/features/history/*.css,frontend/src/features/agents/*.css",
+      "epic": "UI",
+      "priority": "P1",
+      "status": "In Progress",
+      "depends_on": [
+        "UI-012"
       ],
       "default_owner": "copilot"
     }

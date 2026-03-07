@@ -20,3 +20,4 @@ artifacts/screenshots/*.webp
 # Local agent configs/secrets
 .claude/
 .codex/
+.agent-context.md

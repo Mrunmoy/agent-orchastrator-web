@@ -2,33 +2,49 @@
 
 /* Shared tokens */
 :root {
-  --bg: #0d0f18;
-  --surface: #1a1d2e;
-  --surface-2: #232640;
-  --surface-3: #2d3155;
-  --line: #323660;
-  --ink: #e8eaf6;
-  --muted: #8892b0;
-  --brand: #6b5bd6;
-  --brand-light: #a89bf8;
-  --brand-glow: rgba(107, 91, 214, 0.25);
-  --brand-glow-strong: rgba(107, 91, 214, 0.35);
-  --ok: #4ec994;
-  --warn: #f5a623;
-  --danger: #e06c75;
-  --teal: #62d7c8;
+  /* Content area — light */
+  --bg: #ffffff;
+  --surface: #f8f8f8;
+  --surface-2: #f0f0f0;
+  --surface-3: #e8e8e8;
+  --line: #dddddd;
+  --ink: #1d1c1d;
+  --muted: #616061;
+
+  /* Sidebar — dark aubergine */
+  --sidebar-bg: #3f0e40;
+  --sidebar-bg-hover: #350d36;
+  --sidebar-bg-active: #1164a3;
+  --sidebar-text: #cfc3cf;
+  --sidebar-text-active: #ffffff;
+  --sidebar-line: rgba(255, 255, 255, 0.1);
+
+  /* Brand */
+  --brand: #611f69;
+  --brand-light: #8a5195;
+  --brand-glow: rgba(97, 31, 105, 0.25);
+  --brand-glow-strong: rgba(97, 31, 105, 0.35);
+
+  /* Status */
+  --ok: #2bac76;
+  --warn: #ecb22e;
+  --danger: #e01e5a;
+  --teal: #00b8d9;
   --gold: #d6b164;
-  --ok-light: #5ee4a8;
-  --danger-light: #ea8890;
-  --ok-contrast: #0d1a14;
-  --disagree: #e09060;
+
+  /* Extended */
+  --ok-light: #57d9a3;
+  --danger-light: #ff7452;
+  --ok-contrast: #0a2e1e;
+  --disagree: #c97d4e;
   --neutral-contrast: #1a1200;
-  --user-avatar-start: #2a4a6e;
-  --user-avatar-end: #1264a3;
-  --error-ink: #ffd1dd;
-  --badge-ink: #111521;
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --radius: 8px;
+  --user-avatar-start: #611f69;
+  --user-avatar-end: #8a5195;
+  --error-ink: #ff7452;
+  --badge-ink: #1d1c1d;
+
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+  --radius: 4px;
 }
 
 * {
@@ -210,7 +226,7 @@ textarea::placeholder {
 
 .app-shell__error {
   border: 1px solid var(--danger);
-  background: rgba(224, 108, 117, 0.12);
+  background: rgba(224, 30, 90, 0.08);
   color: var(--error-ink);
   border-radius: 6px;
   padding: 10px 12px;
@@ -240,7 +256,7 @@ textarea::placeholder {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--brand-light);
+  color: var(--brand);
 }
 
 .agent-editor__grid {
@@ -281,7 +297,7 @@ textarea::placeholder {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--brand-light);
+  color: var(--brand);
 }
 
 .conversation-creator__grid {
