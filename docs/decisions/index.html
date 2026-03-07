@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture Decision Records</title>
+  <style>
+    :root { --bg:#0f1016; --panel:#1a1a24; --ink:#e8e0d0; --amber:#e8a848; --muted:#a89e8e; }
+    body { margin:0; font-family: Georgia, serif; color:var(--ink); background:radial-gradient(circle at top,#2a2418 0,#0f1016 60%); }
+    .wrap { max-width:960px; margin:40px auto; padding:28px; background:linear-gradient(180deg,#1a1a24,#12121a); border:1px solid #6a5a2e; border-radius:14px; box-shadow:0 12px 40px #0008; }
+    h1 { margin:0 0 12px; color:var(--amber); letter-spacing:.04em; }
+    p { color:var(--muted); }
+    a { color:#f0c878; text-decoration:none; }
+    li { margin:10px 0; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>Architecture Decision Records</h1>
+    <p>Key design decisions that shaped the orchestration engine.</p>
+    <ul>
+      <li><a href="001-round-robin-scheduling.md">ADR-001: Round-Robin Scheduling</a></li>
+      <li><a href="002-batch-execution-model.md">ADR-002: Batch Execution Model</a></li>
+      <li><a href="003-checkpoint-resume-strategy.md">ADR-003: Checkpoint Resume Strategy</a></li>
+      <li><a href="004-adapter-pattern.md">ADR-004: Adapter Pattern</a></li>
+      <li><a href="005-state-machine-transitions.md">ADR-005: State Machine Transitions</a></li>
+      <li><a href="006-capacity-throttle-and-queuing.md">ADR-006: Capacity Throttle and Queuing</a></li>
+      <li><a href="007-merge-serialization.md">ADR-007: Merge Serialization</a></li>
+    </ul>
+  </main>
+</body>
+</html>
