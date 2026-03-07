@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: JSONL Event Log Writer/Reader (DATA-003)</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1a2a2e; padding:2px 6px; border-radius:4px; }
+    pre { background:#0f1a1e; padding:16px; border-radius:8px; overflow-x:auto; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>JSONL Event Log Writer/Reader</h1>
+    <div class="meta">Playbook Entry &middot; 2026-03-07 &middot; DATA-003</div>
+
+    <h2>Quick start</h2>
+    <pre><code>from agent_orchestrator.storage import EventLogWriter, EventLogReader
+from agent_orchestrator.storage.event_log import conversation_log_path
+
+# Write events
+log_path = conversation_log_path("conv-123")
+with EventLogWriter(log_path) as writer:
+    writer.append({
+        "event_id": "evt-001",
+        "event_type": "agent_message",
+        "payload": {"text": "Hello from Codex"}
+    })
+    # timestamp is auto-added in UTC ISO-8601
+
+# Read events
+reader = EventLogReader(log_path)
+all_events = reader.read_all()
+recent = reader.tail(5)
+since = reader.read_since("evt-001")</code></pre>
+
+    <h2>Scheduler audit log</h2>
+    <pre><code>from agent_orchestrator.storage.event_log import scheduler_log_path
+
+with EventLogWriter(scheduler_log_path()) as w:
+    w.append({
+        "event_id": "sched-001",
+        "event_type": "batch_start",
+        "payload": {"conversation_id": "conv-123", "batch_size": 20}
+    })</code></pre>
+
+    <h2>Key behaviours</h2>
+    <ul>
+      <li><strong>Auto-timestamp:</strong> If the event dict has no <code>timestamp</code> key, one is injected as ISO-8601 UTC.</li>
+      <li><strong>Atomic writes:</strong> Each <code>append()</code> call flushes to disk immediately. Data is readable without closing the writer.</li>
+      <li><strong>Directory creation:</strong> Parent directories are created on writer init.</li>
+      <li><strong>Missing file safety:</strong> Reader methods return empty lists if the JSONL file does not exist.</li>
+      <li><strong>read_since():</strong> Returns events <em>after</em> the matching event_id. Returns all events if the id is not found.</li>
+      <li><strong>Path types:</strong> Both <code>str</code> and <code>pathlib.Path</code> accepted.</li>
+    </ul>
+
+    <h2>Gotcha: compact JSON separators</h2>
+    <p>The writer uses <code>separators=(",", ":")</code> for compact output (no extra spaces). This keeps log files smaller but means manually reading them is slightly less pretty. Use <code>python -m json.tool</code> to pretty-print individual lines.</p>
+
+    <h2>Files</h2>
+    <ul>
+      <li><code>backend/src/agent_orchestrator/storage/event_log.py</code> &mdash; Implementation</li>
+      <li><code>backend/src/agent_orchestrator/storage/__init__.py</code> &mdash; Re-exports</li>
+      <li><code>backend/tests/test_event_log.py</code> &mdash; 17 tests</li>
+    </ul>
+
+    <h2>How to run tests</h2>
+    <pre><code>nix develop
+cd backend && python -m pytest tests/test_event_log.py -q</code></pre>
+  </article>
+</body>
+</html>

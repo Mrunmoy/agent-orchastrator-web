@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: JSONL Event Log Writer/Reader (DATA-003)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2d3a; padding:2px 6px; border-radius:4px; }
+    pre { background:#1a1d28; padding:16px; border-radius:8px; overflow-x:auto; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>JSONL Event Log Writer/Reader</h1>
+    <div class="meta">Design Codex Entry &middot; 2026-03-07 &middot; DATA-003</div>
+
+    <h2>Context</h2>
+    <p>The domain model spec (<code>docs/specs/12-domain-model.md</code>) defines JSONL companion logs that live alongside the SQLite database. These append-only logs at <code>data/transcripts/&lt;conversation_id&gt;.jsonl</code> and <code>data/audit/scheduler.jsonl</code> serve transcript, debug, and audit export use cases. Each line is a self-contained JSON object with at minimum: <code>event_id</code>, <code>timestamp</code>, <code>event_type</code>, and <code>payload</code>.</p>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li><strong>EventLogWriter</strong> &mdash; append-only writer that opens a file handle, creates parent directories on init, and flushes after every write for atomicity.</li>
+      <li><strong>EventLogReader</strong> &mdash; stateless reader with <code>read_all()</code>, <code>read_since(event_id)</code>, and <code>tail(n)</code> methods. Returns empty list if the file does not exist.</li>
+      <li><strong>Automatic timestamps</strong> &mdash; <code>append()</code> injects an ISO 8601 UTC timestamp if the event dict does not already contain one.</li>
+      <li><strong>Context manager protocol</strong> &mdash; <code>EventLogWriter</code> supports <code>with</code> blocks via <code>__enter__</code>/<code>__exit__</code>.</li>
+      <li><strong>Path helpers</strong> &mdash; <code>conversation_log_path(conversation_id)</code> and <code>scheduler_log_path()</code> return canonical <code>Path</code> objects.</li>
+      <li>Both writer and reader accept <code>str</code> or <code>pathlib.Path</code> for the log path.</li>
+    </ul>
+
+    <h2>Rationale</h2>
+    <ul>
+      <li>JSONL is human-readable, streamable, and trivially appendable &mdash; ideal for append-only event logs.</li>
+      <li>Flush-after-write ensures crash safety at the cost of minor I/O overhead, acceptable for event-rate workloads.</li>
+      <li>Separating writer and reader keeps responsibilities clear and allows independent evolution.</li>
+      <li><code>read_since()</code> uses a linear scan; this is sufficient for local-first workloads where log files stay small. If performance becomes an issue, an index file can be added later.</li>
+    </ul>
+
+    <h2>Interface</h2>
+    <pre><code>class EventLogWriter:
+    def __init__(self, log_path: str | Path) -> None: ...
+    def append(self, event: dict) -> None: ...
+    def close(self) -> None: ...
+    def __enter__(self) -> "EventLogWriter": ...
+    def __exit__(self, *exc) -> None: ...
+
+class EventLogReader:
+    def __init__(self, log_path: str | Path) -> None: ...
+    def read_all(self) -> list[dict]: ...
+    def read_since(self, event_id: str) -> list[dict]: ...
+    def tail(self, n: int = 10) -> list[dict]: ...
+
+def conversation_log_path(conversation_id: str) -> Path: ...
+def scheduler_log_path() -> Path: ...</code></pre>
+
+    <h2>Test Strategy</h2>
+    <p>14 tests in <code>test_event_log.py</code> covering: file/directory creation, JSON line validity, automatic and preserved timestamps, multi-append ordering, reader methods (read_all, read_since, tail), empty-list on missing file, context manager lifecycle, path helper correctness, flush atomicity, and Path object acceptance.</p>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li>Log rotation deferred until file sizes warrant it.</li>
+      <li>Indexed seek for <code>read_since()</code> deferred until performance profiling shows need.</li>
+    </ul>
+  </article>
+</body>
+</html>
