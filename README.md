@@ -1,8 +1,10 @@
 # Agent Orchestrator Web
 
 [![CI](https://github.com/Mrunmoy/agent-orchastrator-web/actions/workflows/ci.yml/badge.svg)](https://github.com/Mrunmoy/agent-orchastrator-web/actions/workflows/ci.yml)
+[![Status: WIP](https://img.shields.io/badge/status-work%20in%20progress-orange)](#)
 
 LAN-accessible, CLI-native multi-agent orchestration workspace.
+**Work In Progress:** active development in progress; interfaces and behavior may change frequently.
 
 ## License
 This project is licensed under the custom [Mrunmoy + Claude + Codex Appreciation License v1.0](./LICENSE).
