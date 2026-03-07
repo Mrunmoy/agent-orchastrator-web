@@ -19,6 +19,7 @@ from agent_orchestrator.orchestrator.models import (
     Task,
     TaskStatus,
 )
+from agent_orchestrator.orchestrator.scheduler import RoundRobinScheduler
 
 __all__ = [
     "Agent",
@@ -34,6 +35,7 @@ __all__ = [
     "Phase",
     "Provider",
     "ResourceSnapshot",
+    "RoundRobinScheduler",
     "RunStatus",
     "SchedulerRun",
     "Task",
