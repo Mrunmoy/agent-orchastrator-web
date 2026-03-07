@@ -25,18 +25,10 @@ export function ConversationList({
   return (
     <div className="conversation-list-container" data-testid="conversation-list-container">
       <div className="conversation-list__actions">
-        <button
-          className="btn btn--primary"
-          onClick={onCreate}
-          type="button"
-        >
+        <button className="btn btn--primary" onClick={onCreate} type="button">
           + New Conversation
         </button>
-        <button
-          className="btn btn--danger"
-          onClick={handleClearAll}
-          type="button"
-        >
+        <button className="btn btn--danger" onClick={handleClearAll} type="button">
           Clear All
         </button>
       </div>
@@ -46,11 +38,7 @@ export function ConversationList({
           <p className="conversation-list__empty">No conversations yet</p>
         ) : (
           conversations.map((conv) => (
-            <ConversationItem
-              key={conv.id}
-              conversation={conv}
-              onSelect={onSelect}
-            />
+            <ConversationItem key={conv.id} conversation={conv} onSelect={onSelect} />
           ))
         )}
       </div>

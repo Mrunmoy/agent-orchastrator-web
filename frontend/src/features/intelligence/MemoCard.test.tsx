@@ -18,24 +18,20 @@ const mockMemo: NeutralMemo = {
 describe("MemoCard", () => {
   it("renders memo summary", () => {
     render(<MemoCard memo={mockMemo} />);
-    expect(
-      screen.getByText("The team mostly agrees on the approach.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("The team mostly agrees on the approach.")).toBeInTheDocument();
   });
 
   it("renders all key points as list items", () => {
     render(<MemoCard memo={mockMemo} />);
     expect(screen.getByText("Architecture is sound")).toBeInTheDocument();
-    expect(
-      screen.getByText("Performance needs benchmarking")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Performance needs benchmarking")).toBeInTheDocument();
     expect(screen.getByText("Security review pending")).toBeInTheDocument();
   });
 
   it("renders recommendation", () => {
     render(<MemoCard memo={mockMemo} />);
     expect(
-      screen.getByText("Proceed with implementation after security review.")
+      screen.getByText("Proceed with implementation after security review."),
     ).toBeInTheDocument();
   });
 

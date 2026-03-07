@@ -2,13 +2,7 @@ import React, { useState } from "react";
 import type { RunControlsProps } from "./types";
 import "./RunControls.css";
 
-export function RunControls({
-  status,
-  onRun,
-  onContinue,
-  onStop,
-  onSteer,
-}: RunControlsProps) {
+export function RunControls({ status, onRun, onContinue, onStop, onSteer }: RunControlsProps) {
   const [steerNote, setSteerNote] = useState("");
 
   const showSteering = status === "running" || status === "paused";

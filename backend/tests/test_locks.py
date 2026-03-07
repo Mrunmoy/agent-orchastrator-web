@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 
 import pytest
 
@@ -27,9 +27,7 @@ class TestLockType:
 
 class TestLockConflictError:
     def test_attributes(self):
-        err = LockConflictError(
-            resource="main", owner="agent-2", existing_owner="agent-1"
-        )
+        err = LockConflictError(resource="main", owner="agent-2", existing_owner="agent-1")
         assert err.resource == "main"
         assert err.owner == "agent-2"
         assert err.existing_owner == "agent-1"
@@ -143,7 +141,7 @@ class TestLockManagerLocksByOwner:
 
         agent1_locks = mgr.locks_by_owner("agent-1")
         assert len(agent1_locks) == 2
-        resources = {l.resource for l in agent1_locks}
+        resources = {lock.resource for lock in agent1_locks}
         assert resources == {"main", "src/app.py"}
 
         agent2_locks = mgr.locks_by_owner("agent-2")

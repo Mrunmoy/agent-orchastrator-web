@@ -135,9 +135,7 @@ def start_run(conversation_id: str, body: RunBody | None = None) -> Any:
             (run_id, conversation_id, "queued", batch_size, now),
         )
         conn.commit()
-        row = conn.execute(
-            "SELECT * FROM scheduler_run WHERE id = ?", (run_id,)
-        ).fetchone()
+        row = conn.execute("SELECT * FROM scheduler_run WHERE id = ?", (run_id,)).fetchone()
     return ok_response({"run": _run_row_to_dict(row)})
 
 
@@ -170,9 +168,7 @@ def continue_run(conversation_id: str) -> Any:
             (run_id,),
         )
         conn.commit()
-        row = conn.execute(
-            "SELECT * FROM scheduler_run WHERE id = ?", (run_id,)
-        ).fetchone()
+        row = conn.execute("SELECT * FROM scheduler_run WHERE id = ?", (run_id,)).fetchone()
     return ok_response({"run": _run_row_to_dict(row)})
 
 
@@ -206,9 +202,7 @@ def stop_run(conversation_id: str) -> Any:
             (now, run_id),
         )
         conn.commit()
-        row = conn.execute(
-            "SELECT * FROM scheduler_run WHERE id = ?", (run_id,)
-        ).fetchone()
+        row = conn.execute("SELECT * FROM scheduler_run WHERE id = ?", (run_id,)).fetchone()
     return ok_response({"run": _run_row_to_dict(row)})
 
 

@@ -18,9 +18,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       <div className="chat-bubble">
         <div className="chat-bubble__header">
           <span className="chat-bubble__name">{agentName}</span>
-          <span className="chat-bubble__time">
-            {new Date(timestamp).toLocaleTimeString()}
-          </span>
+          <span className="chat-bubble__time">{new Date(timestamp).toLocaleTimeString()}</span>
         </div>
         {isThinking ? (
           <div className="thinking-indicator" data-testid="thinking-indicator">

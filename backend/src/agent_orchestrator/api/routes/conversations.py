@@ -116,9 +116,7 @@ def select_conversation(body: ConversationIdBody) -> Any:
             )
         now = datetime.now(UTC).isoformat()
         conn.execute(
-            "UPDATE conversation "
-            "SET active = 0 "
-            "WHERE deleted_at IS NULL AND id != ?",
+            "UPDATE conversation " "SET active = 0 " "WHERE deleted_at IS NULL AND id != ?",
             (body.conversation_id,),
         )
         conn.execute(

@@ -51,9 +51,7 @@ describe("AgreementBar", () => {
 
     // neutral and strong_disagree should not be present
     expect(bar.querySelector(".segment-neutral")).not.toBeInTheDocument();
-    expect(
-      bar.querySelector(".segment-strong_disagree")
-    ).not.toBeInTheDocument();
+    expect(bar.querySelector(".segment-strong_disagree")).not.toBeInTheDocument();
   });
 
   it("shows agent count in each segment", () => {

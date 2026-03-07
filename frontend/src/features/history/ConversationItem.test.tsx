@@ -4,9 +4,7 @@ import { describe, it, expect } from "vitest";
 import { ConversationItem } from "./ConversationItem";
 import type { ConversationSummary } from "./types";
 
-function makeConversation(
-  overrides: Partial<ConversationSummary> = {},
-): ConversationSummary {
+function makeConversation(overrides: Partial<ConversationSummary> = {}): ConversationSummary {
   return {
     id: "conv-1",
     title: "Test conversation",
@@ -19,9 +17,7 @@ function makeConversation(
 
 describe("ConversationItem", () => {
   it("shows the conversation title", () => {
-    render(
-      <ConversationItem conversation={makeConversation()} onSelect={() => {}} />,
-    );
+    render(<ConversationItem conversation={makeConversation()} onSelect={() => {}} />);
     expect(screen.getByText("Test conversation")).toBeInTheDocument();
   });
 
@@ -40,10 +36,7 @@ describe("ConversationItem", () => {
 
   it("shows state badge with correct color class for queued", () => {
     render(
-      <ConversationItem
-        conversation={makeConversation({ state: "queued" })}
-        onSelect={() => {}}
-      />,
+      <ConversationItem conversation={makeConversation({ state: "queued" })} onSelect={() => {}} />,
     );
     const badge = screen.getByTestId("state-badge");
     expect(badge).toHaveTextContent("queued");
@@ -52,10 +45,7 @@ describe("ConversationItem", () => {
 
   it("shows state badge with correct color class for debate", () => {
     render(
-      <ConversationItem
-        conversation={makeConversation({ state: "debate" })}
-        onSelect={() => {}}
-      />,
+      <ConversationItem conversation={makeConversation({ state: "debate" })} onSelect={() => {}} />,
     );
     const badge = screen.getByTestId("state-badge");
     expect(badge).toHaveTextContent("debate");
@@ -110,10 +100,7 @@ describe("ConversationItem", () => {
 
   it("shows state badge with correct color class for failed", () => {
     render(
-      <ConversationItem
-        conversation={makeConversation({ state: "failed" })}
-        onSelect={() => {}}
-      />,
+      <ConversationItem conversation={makeConversation({ state: "failed" })} onSelect={() => {}} />,
     );
     const badge = screen.getByTestId("state-badge");
     expect(badge.className).toContain("badge--failed");
@@ -132,10 +119,7 @@ describe("ConversationItem", () => {
 
   it("highlights active conversation", () => {
     render(
-      <ConversationItem
-        conversation={makeConversation({ active: true })}
-        onSelect={() => {}}
-      />,
+      <ConversationItem conversation={makeConversation({ active: true })} onSelect={() => {}} />,
     );
     const row = screen.getByTestId("conv-item");
     expect(row.className).toContain("conv-item--active");
@@ -143,10 +127,7 @@ describe("ConversationItem", () => {
 
   it("does not highlight inactive conversation", () => {
     render(
-      <ConversationItem
-        conversation={makeConversation({ active: false })}
-        onSelect={() => {}}
-      />,
+      <ConversationItem conversation={makeConversation({ active: false })} onSelect={() => {}} />,
     );
     const row = screen.getByTestId("conv-item");
     expect(row.className).not.toContain("conv-item--active");

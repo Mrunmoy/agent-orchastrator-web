@@ -5,8 +5,8 @@ Ensures branches are integrated one at a time in FIFO order to avoid conflicts.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from enum import Enum
 
 
@@ -34,7 +34,7 @@ class MergeRequest:
 
 
 def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 class MergeCoordinator:

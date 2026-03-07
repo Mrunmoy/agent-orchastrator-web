@@ -45,9 +45,7 @@ describe("RunControls", () => {
 
   it("calls onContinue when Continue button is clicked", () => {
     const onContinue = vi.fn();
-    render(
-      <RunControls {...defaultProps} status="paused" onContinue={onContinue} />,
-    );
+    render(<RunControls {...defaultProps} status="paused" onContinue={onContinue} />);
     fireEvent.click(screen.getByTestId("continue-button"));
     expect(onContinue).toHaveBeenCalledOnce();
   });
@@ -91,9 +89,7 @@ describe("RunControls", () => {
 
   it("calls onSteer with note text and clears input", () => {
     const onSteer = vi.fn();
-    render(
-      <RunControls {...defaultProps} status="running" onSteer={onSteer} />,
-    );
+    render(<RunControls {...defaultProps} status="running" onSteer={onSteer} />);
     const input = screen.getByTestId("steer-input") as HTMLInputElement;
     fireEvent.change(input, { target: { value: "Focus on tests" } });
     fireEvent.click(screen.getByTestId("steer-button"));
@@ -103,9 +99,7 @@ describe("RunControls", () => {
 
   it("does not call onSteer with empty note", () => {
     const onSteer = vi.fn();
-    render(
-      <RunControls {...defaultProps} status="running" onSteer={onSteer} />,
-    );
+    render(<RunControls {...defaultProps} status="running" onSteer={onSteer} />);
     fireEvent.click(screen.getByTestId("steer-button"));
     expect(onSteer).not.toHaveBeenCalled();
   });

@@ -7,11 +7,10 @@ events and dispatches them to pluggable handlers.
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Protocol, runtime_checkable
-
 
 # ---------------------------------------------------------------------------
 # Enum
@@ -109,7 +108,7 @@ class NotificationPipeline:
             notification_type=notification_type,
             conversation_id=conversation_id,
             message=message,
-            created_at=datetime.now(timezone.utc).isoformat(),
+            created_at=datetime.now(UTC).isoformat(),
             metadata=metadata,
         )
         self._history.append(notification)

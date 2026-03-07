@@ -149,9 +149,7 @@ class CheckpointBuilder:
         )
 
     @staticmethod
-    def _pack_text(
-        summary: str, key_decisions: list[str], events: list[dict]
-    ) -> str:
+    def _pack_text(summary: str, key_decisions: list[str], events: list[dict]) -> str:
         """Combine all pack content into a single string for token estimation."""
         parts = [summary]
         parts.extend(key_decisions)

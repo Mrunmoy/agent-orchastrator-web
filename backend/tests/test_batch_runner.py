@@ -25,6 +25,7 @@ from agent_orchestrator.orchestrator.state_machine import StateMachine
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_agent(agent_id: str, status: AgentStatus = AgentStatus.IDLE) -> Agent:
     return Agent(
         id=agent_id,

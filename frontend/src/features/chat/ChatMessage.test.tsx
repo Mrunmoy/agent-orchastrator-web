@@ -4,9 +4,7 @@ import { describe, it, expect } from "vitest";
 import { ChatMessage } from "./ChatMessage";
 import type { ChatMessageData } from "./types";
 
-function makeMessage(
-  overrides: Partial<ChatMessageData> = {},
-): ChatMessageData {
+function makeMessage(overrides: Partial<ChatMessageData> = {}): ChatMessageData {
   return {
     id: "msg-1",
     agentName: "Claude",

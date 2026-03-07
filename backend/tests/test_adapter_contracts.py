@@ -23,10 +23,10 @@ from agent_orchestrator.adapters.claude_adapter import ClaudeAdapter
 from agent_orchestrator.adapters.codex_adapter import CodexAdapter
 from agent_orchestrator.adapters.normalize import NormalizedMessage, normalize, normalize_batch
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _run(coro):
     """Run an async coroutine synchronously."""
@@ -38,16 +38,18 @@ def _claude_success_json(text: str = "Hello", session_id: str = "sess-1") -> str
 
 
 def _codex_success_json(text: str = "Hello", resp_id: str = "resp-1") -> str:
-    return json.dumps({
-        "id": resp_id,
-        "output": [
-            {
-                "type": "message",
-                "role": "assistant",
-                "content": [{"type": "output_text", "text": text}],
-            }
-        ],
-    })
+    return json.dumps(
+        {
+            "id": resp_id,
+            "output": [
+                {
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [{"type": "output_text", "text": text}],
+                }
+            ],
+        }
+    )
 
 
 # Pairs of (AdapterClass, mock_success_output_factory)
@@ -148,9 +150,7 @@ class TestSendPromptContract:
         adapter = cls()
         with patch.object(adapter, "_run_cli", new_callable=AsyncMock) as mock_run:
             mock_run.side_effect = TimeoutError()
-            result = _run(
-                adapter.send_prompt("Hello", working_dir="/tmp", timeout_seconds=0.5)
-            )
+            result = _run(adapter.send_prompt("Hello", working_dir="/tmp", timeout_seconds=0.5))
         assert result.status == AdapterStatus.TIMED_OUT
         assert "timed out" in result.text.lower()
 
@@ -174,7 +174,10 @@ class TestSendPromptContract:
     def test_session_id_is_populated_on_success(self, cls, factory):
         adapter = cls()
         with patch.object(adapter, "_run_cli", new_callable=AsyncMock) as mock_run:
-            mock_run.return_value = (factory("ok", "sid-42" if cls is ClaudeAdapter else "sid-42"), 0)
+            mock_run.return_value = (
+                factory("ok", "sid-42" if cls is ClaudeAdapter else "sid-42"),
+                0,
+            )
             result = _run(adapter.send_prompt("Hello", working_dir="/tmp"))
         assert result.session_id is not None
 
@@ -192,9 +195,7 @@ class TestSendPromptContract:
         adapter = cls()
         with patch.object(adapter, "_run_cli", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = (factory(), 0)
-            result = _run(
-                adapter.send_prompt("Hello", working_dir="/tmp", timeout_seconds=30.0)
-            )
+            result = _run(adapter.send_prompt("Hello", working_dir="/tmp", timeout_seconds=30.0))
         assert isinstance(result, AdapterResult)
 
 
@@ -211,9 +212,7 @@ class TestResumeSessionContract:
         adapter = cls()
         with patch.object(adapter, "_run_cli", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = (factory("resumed"), 0)
-            result = _run(
-                adapter.resume_session("sid-1", "Continue", working_dir="/tmp")
-            )
+            result = _run(adapter.resume_session("sid-1", "Continue", working_dir="/tmp"))
         assert isinstance(result, AdapterResult)
         assert result.status == AdapterStatus.IDLE
 
@@ -234,9 +233,7 @@ class TestResumeSessionContract:
         adapter = cls()
         with patch.object(adapter, "_run_cli", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = ("cli error", 1)
-            result = _run(
-                adapter.resume_session("sid-1", "Continue", working_dir="/tmp")
-            )
+            result = _run(adapter.resume_session("sid-1", "Continue", working_dir="/tmp"))
         assert result.status == AdapterStatus.ERROR
 
 
@@ -428,9 +425,7 @@ class TestNormalizeIntegration:
         assert msgs == []
 
     def test_normalize_preserves_session_id(self):
-        result = AdapterResult(
-            text="data", session_id="sess-xyz", status=AdapterStatus.IDLE
-        )
+        result = AdapterResult(text="data", session_id="sess-xyz", status=AdapterStatus.IDLE)
         msg = normalize(result, agent_id="a1")
         assert msg.session_id == "sess-xyz"
 
@@ -504,7 +499,9 @@ class TestCrossAdapterContract:
         mock_proc.kill = MagicMock()
         mock_proc.wait = AsyncMock()
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            timeout_results.append(_run(run("test", config=OllamaAdapterConfig(timeout_seconds=1))))
+            timeout_results.append(
+                _run(run("test", config=OllamaAdapterConfig(timeout_seconds=1)))
+            )
 
         for r in timeout_results:
             assert r.status == AdapterStatus.TIMED_OUT

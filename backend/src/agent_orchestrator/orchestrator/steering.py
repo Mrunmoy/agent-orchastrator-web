@@ -7,7 +7,7 @@ per conversation and builds a prompt prefix consumed by the batch runner.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 
@@ -60,10 +60,7 @@ class SteeringManager:
         if not pending:
             return ""
         lines = "".join(f"- {n.note_text}\n" for n in pending)
-        return (
-            "[Steering] The user has provided the following guidance:\n"
-            f"{lines}"
-        )
+        return "[Steering] The user has provided the following guidance:\n" f"{lines}"
 
     def clear(self) -> None:
         """Remove all notes (applied and pending)."""
