@@ -9,6 +9,12 @@ This project uses **Nix** for reproducible development.
 nix develop
 ```
 
+The dev shell now bootstraps frontend dependencies automatically (runs `npm ci --prefix frontend` if `frontend/node_modules` is missing).
+If frontend tests still fail with `vitest: not found`, run:
+```bash
+npm ci --prefix frontend
+```
+
 Optional:
 ```bash
 direnv allow

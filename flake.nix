@@ -36,6 +36,10 @@
             export PYTHONDONTWRITEBYTECODE=1
             export PYTHONUNBUFFERED=1
             export CHROMIUM_PATH="$(command -v chromium || true)"
+            if [ -f frontend/package-lock.json ] && [ ! -d frontend/node_modules ]; then
+              echo "Bootstrapping frontend deps: npm ci --prefix frontend"
+              npm ci --prefix frontend --no-fund --no-audit || true
+            fi
             echo "Agent Orchestrator Web dev shell ready (Nix)"
             echo "Commands: make serve | make ui-shot | make test-ui | make verify"
           '';
