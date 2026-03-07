@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Ollama Memo Adapter Notes</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1a2a30; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Ollama Memo Adapter Notes</h1>
+    <div class="meta">Playbook Entry &middot; ADPT-003 &middot; 2026-03-07</div>
+
+    <h2>Key Difference: Module Functions vs. Class</h2>
+    <p>The Ollama adapter uses module-level <code>run()</code> and <code>check_available()</code> functions with an <code>OllamaAdapterConfig</code> dataclass, rather than inheriting from <code>BaseAdapter</code>. This reflects its stateless memo role &mdash; no session tracking, no instance state.</p>
+
+    <h2>Key Difference: Prompt via stdin</h2>
+    <p>Claude and Codex pass the prompt as a CLI argument. Ollama receives the prompt via <strong>stdin pipe</strong> (<code>proc.communicate(input=prompt.encode())</code>). This avoids shell escaping issues with large debate transcripts containing special characters.</p>
+
+    <h2>Key Difference: Plain Text Output</h2>
+    <p>Claude and Codex return JSON that must be parsed. Ollama returns <strong>plain text</strong> directly from stdout. No JSON parsing is needed.</p>
+
+    <h2>Host Configuration</h2>
+    <p>The <code>OLLAMA_HOST</code> environment variable is passed to the subprocess, allowing connection to remote Ollama instances without modifying global environment.</p>
+
+    <h2>Key Files</h2>
+    <ul>
+      <li><code>backend/src/agent_orchestrator/adapters/ollama_adapter.py</code> &mdash; implementation</li>
+      <li><code>backend/tests/test_ollama_adapter.py</code> &mdash; 15 tests covering config, run, timeout, errors, stdin piping, availability</li>
+    </ul>
+
+    <h2>Running Tests</h2>
+    <ul>
+      <li><code>cd backend && python -m pytest tests/test_ollama_adapter.py -q</code></li>
+      <li>All tests mock <code>asyncio.create_subprocess_exec</code> &mdash; no real Ollama install required.</li>
+    </ul>
+
+    <h2>Gotchas</h2>
+    <ul>
+      <li>Use <code>TimeoutError</code> (builtin), not <code>asyncio.TimeoutError</code> &mdash; ruff UP041 flags the alias.</li>
+      <li>The <code>check_available()</code> function catches both <code>FileNotFoundError</code> and <code>OSError</code> to handle cases where the binary is missing or the system call fails for other reasons.</li>
+      <li>The <code>run()</code> function also catches <code>FileNotFoundError</code> from <code>create_subprocess_exec</code> itself (before communicate), returning an error result rather than raising.</li>
+    </ul>
+  </article>
+</body>
+</html>

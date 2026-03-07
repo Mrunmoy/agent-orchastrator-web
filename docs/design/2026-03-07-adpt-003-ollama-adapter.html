@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: Ollama Memo Adapter</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2f42; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Ollama Memo Adapter</h1>
+    <div class="meta">Design Codex Entry &middot; ADPT-003 &middot; 2026-03-07</div>
+
+    <h2>Context</h2>
+    <p>The Ollama adapter (<code>ADPT-003</code>) is the third adapter bridge. Unlike the Claude and Codex adapters, which serve as debate participants, the Ollama adapter generates <strong>neutral decision memos</strong> &mdash; summaries and analyses of debate progress from a neutral perspective. It calls the Ollama CLI to produce these memos using local LLM models.</p>
+
+    <h2>Interface Design</h2>
+    <p>Because Ollama serves a different role (stateless memo generation, not session-based debate), it uses a different pattern from the class-based Claude/Codex adapters:</p>
+    <ul>
+      <li><code>OllamaAdapterConfig</code> dataclass with fields: <code>model</code> (default <code>"llama3.2"</code>), <code>host</code> (default <code>"http://localhost:11434"</code>), <code>timeout_seconds</code> (default <code>120</code>).</li>
+      <li><code>AdapterResult</code> reuses the shared <code>AdapterResult</code> from <code>adapters.base</code>, always returning <code>session_id=None</code> (stateless).</li>
+      <li><code>async def run(prompt, *, config=None) -> AdapterResult</code> &mdash; Invokes <code>ollama run &lt;model&gt;</code> via <code>asyncio.create_subprocess_exec</code>, passing the prompt via stdin pipe.</li>
+      <li><code>async def check_available(*, config=None) -> bool</code> &mdash; Runs <code>ollama list</code> to verify Ollama is reachable.</li>
+    </ul>
+
+    <h2>Key Differences from Claude/Codex</h2>
+    <ul>
+      <li><strong>No session concept</strong> &mdash; each call is stateless; <code>session_id</code> is always <code>None</code>.</li>
+      <li><strong>Prompt via stdin</strong> &mdash; prompt is piped to <code>ollama run</code> via stdin, not passed as a CLI argument.</li>
+      <li><strong>Module-level functions</strong> &mdash; uses <code>run()</code> and <code>check_available()</code> functions with a config dataclass, rather than inheriting <code>BaseAdapter</code>.</li>
+      <li><strong>Plain text output</strong> &mdash; Ollama returns plain text, not JSON. No parsing required.</li>
+      <li><strong>OLLAMA_HOST environment variable</strong> &mdash; the <code>host</code> config is passed via the <code>OLLAMA_HOST</code> environment variable to the subprocess.</li>
+    </ul>
+
+    <h2>Rationale</h2>
+    <ul>
+      <li>Module-level functions suit the stateless memo role &mdash; no instance state to track between calls.</li>
+      <li>Piping prompt via stdin avoids shell escaping issues with complex debate transcripts that may contain special characters.</li>
+      <li>Reusing <code>AdapterResult</code> from <code>base.py</code> keeps the result contract uniform across all adapters.</li>
+      <li>The <code>check_available()</code> function enables the orchestrator to gracefully skip memo generation when Ollama is not installed.</li>
+    </ul>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li>Wire memo generation into the orchestrator's batch pause cycle (<code>ORCH-004</code>).</li>
+      <li>Normalize all adapter outputs into common event schema (<code>ADPT-004</code>).</li>
+    </ul>
+  </article>
+</body>
+</html>
