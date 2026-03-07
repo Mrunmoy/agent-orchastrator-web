@@ -14,13 +14,29 @@ from pathlib import Path
 _SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 
 # Schema version embedded by this loader.  Bump when schema.sql changes.
-_SCHEMA_VERSION = 2
+_SCHEMA_VERSION = 3
 
 # Migrations keyed by target version.  Each entry is a list of SQL statements
 # that bring the schema from (version - 1) to version.
 _MIGRATIONS: dict[int, list[str]] = {
     2: [
         ("ALTER TABLE agent ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"),
+    ],
+    3: [
+        # Recreate conversation_agent with FK constraints and UNIQUE.
+        # DROP + CREATE is safe because the table was unused before UI-014.
+        "DROP TABLE IF EXISTS conversation_agent",
+        """CREATE TABLE IF NOT EXISTS conversation_agent (
+            id TEXT PRIMARY KEY,
+            conversation_id TEXT NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
+            agent_id TEXT NOT NULL REFERENCES agent(id) ON DELETE CASCADE,
+            turn_order INTEGER NOT NULL DEFAULT 0,
+            enabled INTEGER NOT NULL DEFAULT 1,
+            permission_profile TEXT NOT NULL DEFAULT 'default',
+            is_merge_coordinator INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT '',
+            UNIQUE (conversation_id, agent_id)
+        )""",
     ],
 }
 

@@ -37,13 +37,14 @@ CREATE TABLE IF NOT EXISTS conversation (
 
 CREATE TABLE IF NOT EXISTS conversation_agent (
   id TEXT PRIMARY KEY,
-  conversation_id TEXT NOT NULL,
-  agent_id TEXT NOT NULL,
-  turn_order INTEGER NOT NULL,
+  conversation_id TEXT NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
+  agent_id TEXT NOT NULL REFERENCES agent(id) ON DELETE CASCADE,
+  turn_order INTEGER NOT NULL DEFAULT 0,
   enabled INTEGER NOT NULL DEFAULT 1,
   permission_profile TEXT NOT NULL,
   is_merge_coordinator INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  UNIQUE (conversation_id, agent_id)
 );
 
 CREATE TABLE IF NOT EXISTS task (
