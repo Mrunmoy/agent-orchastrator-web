@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Playbook 05: Merge Conflicts</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2,h3 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.3rem; margin-top:28px; }
+    h3 { font-size:1.1rem; margin-top:18px; }
+    p,li { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#0c2028; padding:2px 6px; border-radius:4px; font-size:0.9em; font-family: monospace; }
+    pre { background:#0c2028; border:1px solid #2f7b72; border-radius:8px; padding:16px; overflow-x:auto; margin:12px 0; }
+    pre code { background:none; padding:0; font-size:0.88em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #2f7b72; padding:8px; text-align:left; }
+    th { background:#0c2028; color:var(--teal); }
+    ul,ol { padding-left:1.5em; }
+    a { color:#7fead6; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook 05: Merge Conflicts</h1>
+    <div class="meta">Playbook Entry</div>
+<p>Branch merges fail in the merge coordinator queue.</p>
+<h2>Symptoms</h2>
+<ul>
+  <li>A <code>MergeRequest</code> has <code>status=MergeStatus.FAILED</code>.</li>
+  <li>The <code>error_message</code> field on the failed request contains details about the failure.</li>
+  <li>The merge queue is blocked because the <code>MergeCoordinator</code> enforces single-merge-at-a-time semantics -- a failed merge prevents subsequent pending merges from starting if not properly resolved.</li>
+  <li><code>MergeCoordinator.active()</code> returns a request with <code>MergeStatus.IN_PROGRESS</code> that is no longer being processed.</li>
+</ul>
+<h2>Diagnosis</h2>
+<h3>1. Check the failed merge request</h3>
+<pre><code>coordinator = MergeCoordinator()
+for req in coordinator.history():
+    if req.status == MergeStatus.FAILED:
+        print(f"Task: {req.task_id}")
+        print(f"Branch: {req.branch_name}")
+        print(f"Error: {req.error_message}")
+        print(f"Failed at: {req.completed_at}")</code></pre>
+<h3>2. Check for a stuck active merge</h3>
+<p>The <code>MergeCoordinator.next()</code> method will return the currently active (IN_PROGRESS) request if one exists, rather than advancing to the next pending request. This enforces one-at-a-time semantics:</p>
+<pre><code>active = coordinator.active()
+if active is not None:
+    print(f"Stuck merge: {active.task_id} on branch {active.branch_name}")
+    print(f"Started at: {active.started_at}")</code></pre>
+<h3>3. Identify conflicting files</h3>
+<p>The <code>error_message</code> on a failed merge typically describes which files conflict. Common conflict sources:</p>
+<ul>
+  <li>Two agents editing the same source file from different task branches.</li>
+  <li>Schema changes in <code>backend/storage/schema.sql</code> from concurrent data tasks.</li>
+  <li>Shared configuration files (<code>config/tasks.json</code>, <code>docs/coordination/task-board.md</code>).</li>
+</ul>
+<h3>4. Check the queue state</h3>
+<pre><code>for req in coordinator.pending():
+    print(f"Waiting: {req.task_id} ({req.branch_name})")
+
+for req in coordinator.history():
+    print(f"{req.task_id}: {req.status.value}")</code></pre>
+<h2>Recovery</h2>
+<h3>Fix 1: Resolve conflicts and complete the merge</h3>
+<ol>
+  <li>Check out the conflicting branch locally.</li>
+  <li>Merge or rebase against the target branch.</li>
+  <li>Resolve conflicts in the affected files.</li>
+  <li>Complete the merge and mark it in the coordinator:</li>
+</ol>
+<pre><code>coordinator.complete(task_id)  # marks as MERGED, sets completed_at</code></pre>
+<h3>Fix 2: Fail and resubmit</h3>
+<p>If the merge cannot be resolved immediately:</p>
+<ol>
+  <li>Mark the current merge as failed (if not already):</li>
+</ol>
+<p>```python</p>
+<p>coordinator.fail(task_id, "Conflicts in src/foo.py -- needs manual resolution")</p>
+<p>```</p>
+<ol>
+  <li>After resolving conflicts on the branch, submit a new merge request:</li>
+</ol>
+<p>```python</p>
+<p>coordinator.submit(task_id + "-v2", branch_name)</p>
+<p>```</p>
+<h3>Fix 3: Cancel and re-branch</h3>
+<p>If the branch is too diverged to merge cleanly:</p>
+<ol>
+  <li>Cancel the merge request:</li>
+</ol>
+<p>```python</p>
+<p>coordinator.cancel(task_id)  # marks as CANCELLED, sets completed_at</p>
+<p>```</p>
+<ol>
+  <li>Create a fresh branch from the current main.</li>
+  <li>Cherry-pick or reapply the changes.</li>
+  <li>Submit a new merge request.</li>
+</ol>
+<h3>Fix 4: Unblock the queue</h3>
+<p>After resolving or cancelling the failed/stuck merge, the queue can advance. Call <code>coordinator.next()</code> to start the next pending request:</p>
+<pre><code>next_req = coordinator.next()
+if next_req:
+    print(f"Now processing: {next_req.task_id}")</code></pre>
+<h2>Prevention</h2>
+<ul>
+  <li>Assign non-overlapping file scopes to concurrent tasks (see task board <code>Scope</code> column).</li>
+  <li>Use the lock policy (COORD-002, when implemented) to prevent agents from editing the same files simultaneously.</li>
+  <li>Keep task branches short-lived -- merge frequently to reduce divergence.</li>
+</ul>
+<h2>Code References</h2>
+<ul>
+  <li><code>backend/src/agent_orchestrator/orchestrator/merge_queue.py</code> -- <code>MergeCoordinator</code>, <code>MergeRequest</code>, <code>MergeStatus</code> enum.</li>
+  <li><code>docs/coordination/task-board.md</code> -- task scope assignments and merge queue status.</li>
+</ul>
+  </article>
+</body>
+</html>

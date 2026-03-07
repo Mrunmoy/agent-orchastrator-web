@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Playbook 03: Capacity Overload</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2,h3 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.3rem; margin-top:28px; }
+    h3 { font-size:1.1rem; margin-top:18px; }
+    p,li { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#0c2028; padding:2px 6px; border-radius:4px; font-size:0.9em; font-family: monospace; }
+    pre { background:#0c2028; border:1px solid #2f7b72; border-radius:8px; padding:16px; overflow-x:auto; margin:12px 0; }
+    pre code { background:none; padding:0; font-size:0.88em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #2f7b72; padding:8px; text-align:left; }
+    th { background:#0c2028; color:var(--teal); }
+    ul,ol { padding-left:1.5em; }
+    a { color:#7fead6; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook 03: Capacity Overload</h1>
+    <div class="meta">Playbook Entry</div>
+<p>The system is resource-constrained and rejecting new agent runs.</p>
+<h2>Symptoms</h2>
+<ul>
+  <li><code>ThrottleDecision.allowed</code> is <code>False</code> when calling <code>CapacityThrottle.check()</code>.</li>
+  <li><code>ThrottleDecision.reason</code> contains a message about exceeding concurrent run limits, CPU, or memory thresholds.</li>
+  <li>New conversations are being enqueued in <code>RunQueue</code> instead of starting immediately.</li>
+  <li>The queue (<code>RunQueue.pending()</code>) is growing.</li>
+</ul>
+<h2>Diagnosis</h2>
+<h3>1. Check the ThrottleDecision reason</h3>
+<p>The <code>CapacityThrottle.check()</code> method returns a <code>ThrottleDecision</code> with a human-readable <code>reason</code> explaining the denial. There are three possible rejection causes:</p>
+<p><strong>Concurrent run limit exceeded:</strong></p>
+<pre><code>"Active concurrent runs (3) &gt;= max (3)"</code></pre>
+<p><strong>CPU threshold exceeded:</strong></p>
+<pre><code>"CPU usage (87.5%) &gt;= threshold (85.0%)"</code></pre>
+<p><strong>Memory threshold exceeded:</strong></p>
+<pre><code>"Memory usage (92.3%) &gt;= threshold (90.0%)"</code></pre>
+<h3>2. Check active runs</h3>
+<p>Call <code>throttle.active_runs()</code> to see which conversation IDs are currently tracked as active. The throttle uses an <code>OrderedDict</code> for deterministic iteration order.</p>
+<h3>3. Review the ThrottlePolicy thresholds</h3>
+<p>The default <code>ThrottlePolicy</code> values are:</p>
+<table>
+  <thead><tr><th>Threshold</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>`max_cpu_percent`</td><td>85.0</td><td>CPU usage ceiling</td></tr>
+    <tr><td>`max_memory_percent`</td><td>90.0</td><td>Memory usage ceiling</td></tr>
+  </tbody>
+</table>
+<p>These are set at construction time via <code>ThrottlePolicy</code> and are frozen (immutable).</p>
+<h3>4. Check the RunQueue</h3>
+<p>The <code>RunQueue</code> is a FIFO queue for conversations waiting on capacity:</p>
+<ul>
+  <li><code>queue.pending()</code> -- list of waiting conversation IDs in order.</li>
+  <li><code>queue.position(conversation_id)</code> -- 0-indexed position of a specific conversation, or <code>None</code> if not queued.</li>
+</ul>
+<h2>Recovery</h2>
+<h3>Fix 1: Wait for active runs to complete</h3>
+<p>The simplest fix. When a batch run finishes, call <code>throttle.release_run(conversation_id)</code> to free the slot. Then <code>queue.dequeue()</code> to get the next waiting conversation.</p>
+<h3>Fix 2: Stop lower-priority runs</h3>
+<p>If a high-priority conversation is blocked, stop a lower-priority active run:</p>
+<ol>
+  <li>Identify active runs: <code>throttle.active_runs()</code>.</li>
+  <li>Call <code>batch_runner.stop()</code> on the lower-priority run.</li>
+  <li>After it completes, call <code>throttle.release_run(conversation_id)</code>.</li>
+  <li>The capacity slot is now free for the high-priority run.</li>
+</ol>
+<h3>Fix 3: Adjust ThrottlePolicy thresholds</h3>
+<p>Create a new <code>CapacityThrottle</code> with relaxed limits:</p>
+<pre><code>from agent_orchestrator.orchestrator.throttle import ThrottlePolicy, CapacityThrottle
+
+relaxed_policy = ThrottlePolicy(
+    max_concurrent_runs=5,    # was 3
+    max_cpu_percent=95.0,     # was 85.0
+    max_memory_percent=95.0,  # was 90.0
+)
+throttle = CapacityThrottle(policy=relaxed_policy)</code></pre>
+<p><strong>Warning:</strong> Raising thresholds too high risks system instability. CLI agents (especially local Ollama models) consume significant CPU and memory.</p>
+<h3>Fix 4: Remove stale active runs</h3>
+<p>If a batch runner crashed without calling <code>release_run()</code>, the throttle will still count it as active. Manually release it:</p>
+<pre><code>throttle.release_run("stale-conversation-id")</code></pre>
+<h3>Fix 5: Drain the queue</h3>
+<p>To cancel all queued runs:</p>
+<pre><code>while True:
+    cid = queue.dequeue()
+    if cid is None:
+        break
+    # Handle or discard each conversation</code></pre>
+<p>Or remove a specific conversation: <code>queue.remove(conversation_id)</code>.</p>
+<h2>Code References</h2>
+<ul>
+  <li><code>backend/src/agent_orchestrator/orchestrator/throttle.py</code> -- <code>CapacityThrottle</code>, <code>ThrottlePolicy</code>, <code>ThrottleDecision</code>, <code>RunQueue</code>.</li>
+  <li><code>backend/src/agent_orchestrator/orchestrator/models.py</code> -- <code>RunStatus.WAITING_RESOURCES</code>.</li>
+  <li><code>backend/src/agent_orchestrator/orchestrator/batch_runner.py</code> -- how <code>WAITING_RESOURCES</code> is set when no agents are available.</li>
+</ul>
+  </article>
+</body>
+</html>

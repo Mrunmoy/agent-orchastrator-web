@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Playbook 02: Adapter Failures</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2,h3 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.3rem; margin-top:28px; }
+    h3 { font-size:1.1rem; margin-top:18px; }
+    p,li { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#0c2028; padding:2px 6px; border-radius:4px; font-size:0.9em; font-family: monospace; }
+    pre { background:#0c2028; border:1px solid #2f7b72; border-radius:8px; padding:16px; overflow-x:auto; margin:12px 0; }
+    pre code { background:none; padding:0; font-size:0.88em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #2f7b72; padding:8px; text-align:left; }
+    th { background:#0c2028; color:var(--teal); }
+    ul,ol { padding-left:1.5em; }
+    a { color:#7fead6; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook 02: Adapter Failures</h1>
+    <div class="meta">Playbook Entry</div>
+<p>CLI adapters (Claude, Codex, Ollama) fail consistently when invoked by the batch runner.</p>
+<h2>Symptoms</h2>
+<ul>
+  <li><code>TurnRecord.status</code> is <code>AdapterStatus.ERROR</code> or <code>AdapterStatus.TIMED_OUT</code> for one or more turns.</li>
+  <li><code>TurnRecord.response_text</code> is empty (<code>""</code>) on error turns.</li>
+  <li>The batch completes all its turns but every response is an error, producing no useful output.</li>
+  <li><code>adapter.is_available()</code> returns <code>False</code>.</li>
+</ul>
+<h2>Diagnosis</h2>
+<h3>1. Check adapter availability</h3>
+<p>Every adapter implements <code>BaseAdapter.is_available() -> bool</code>. This checks whether the underlying CLI tool (e.g., <code>claude</code>, <code>codex</code>) is installed and reachable on the system.</p>
+<pre><code>@abc.abstractmethod
+def is_available(self) -&gt; bool:
+    """Check if the CLI tool is available on the system."""</code></pre>
+<p>Call <code>adapter.is_available()</code> for each adapter in the <code>adapter_map</code> to identify which ones are failing.</p>
+<h3>2. Check the AdapterResult status</h3>
+<p>Successful calls return an <code>AdapterResult</code> with <code>status=AdapterStatus.IDLE</code>. The possible values are:</p>
+<table>
+  <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td>`RUNNING`</td><td>Adapter is still processing (should not appear in turn records)</td></tr>
+    <tr><td>`TIMED_OUT`</td><td>CLI agent exceeded `timeout_seconds` (default 120s)</td></tr>
+    <tr><td>`ERROR`</td><td>Exception during `send_prompt()` or `resume_session()`</td></tr>
+  </tbody>
+</table>
+<h3>3. Verify the CLI binary is installed</h3>
+<p>The adapters shell out to CLI tools. Verify the binary exists:</p>
+<pre><code>which claude    # for Claude adapter
+which codex     # for Codex adapter
+which ollama    # for Ollama adapter</code></pre>
+<h3>4. Check the working directory</h3>
+<p><code>send_prompt()</code> accepts a <code>working_dir</code> parameter. The batch runner passes <code>"."</code> by default. If the adapter's working directory does not exist or lacks permissions, the CLI invocation will fail.</p>
+<pre><code>result = await adapter.send_prompt(
+    prompt,
+    working_dir=".",
+)</code></pre>
+<h3>5. Check timeout configuration</h3>
+<p>The default timeout is 120 seconds (defined in <code>BaseAdapter.send_prompt</code> signature). Complex prompts or slow models may exceed this. Ollama running large local models is particularly susceptible.</p>
+<h2>Recovery</h2>
+<h3>Fix 1: Install or reinstall the CLI tool</h3>
+<p>Ensure the CLI binary is on <code>$PATH</code> and functional:</p>
+<pre><code>claude --version
+
+codex --version
+
+ollama list</code></pre>
+<h3>Fix 2: Adjust timeout</h3>
+<p>If <code>TIMED_OUT</code> errors are frequent, increase <code>timeout_seconds</code> when constructing adapter calls. The <code>BaseAdapter.send_prompt()</code> signature accepts this:</p>
+<pre><code>await adapter.send_prompt(
+    prompt,
+    working_dir="/path/to/project",
+    timeout_seconds=300.0,  # 5 minutes instead of default 2
+)</code></pre>
+<h3>Fix 3: Verify working directory</h3>
+<p>Ensure the <code>working_dir</code> passed to <code>send_prompt()</code> is a valid, accessible directory. For the batch runner, this is currently hardcoded to <code>"."</code>.</p>
+<h3>Fix 4: Check session state</h3>
+<p>For <code>resume_session()</code> calls, verify the <code>session_id</code> is valid. If a session has expired or was cleaned up by the CLI tool, the adapter will error. Fall back to <code>send_prompt()</code> with a fresh session.</p>
+<h3>Fix 5: Restart after fix</h3>
+<p>After resolving the underlying issue, create a new <code>BatchRunner</code> with fresh adapters. The batch runner does not retry failed turns -- each turn is attempted once and the result (success or error) is recorded in <code>turn_log</code>.</p>
+<h2>Code References</h2>
+<ul>
+  <li><code>backend/src/agent_orchestrator/adapters/base.py</code> -- <code>BaseAdapter</code> ABC, <code>AdapterResult</code>, <code>AdapterStatus</code> enum.</li>
+  <li><code>backend/src/agent_orchestrator/orchestrator/batch_runner.py</code> -- exception handling in <code>run()</code> (lines 116-141), <code>TurnRecord</code> dataclass.</li>
+  <li><code>backend/src/agent_orchestrator/adapters/claude_adapter.py</code> -- Claude CLI adapter implementation.</li>
+  <li><code>backend/src/agent_orchestrator/adapters/codex_adapter.py</code> -- Codex CLI adapter implementation.</li>
+</ul>
+  </article>
+</body>
+</html>
