@@ -54,15 +54,9 @@ This is the source-of-truth backlog for current known scope.
 - [ ] `UI-007` Implement run-window controls (next 20, continue 20, stop now, steering note)
 
 ## Epic COORD - Parallel Delivery and Merge Safety
-<<<<<<< HEAD
-- [ ] `COORD-001` Implement merge-coordinator queue model and serialized integration flow
-- [x] `COORD-002` Implement branch/task lock policy to avoid multi-agent file conflicts
-- [ ] `COORD-003` Implement notifications for `Needs Input`, `Blocked`, `Completed`, `Queued`
-=======
 - [x] `COORD-001` Implement merge-coordinator queue model and serialized integration flow
-- [ ] `COORD-002` Implement branch/task lock policy to avoid multi-agent file conflicts
+- [x] `COORD-002` Implement branch/task lock policy to avoid multi-agent file conflicts
 - [x] `COORD-003` Implement notifications for `Needs Input`, `Blocked`, `Completed`, `Queued`
->>>>>>> origin/main
 
 ## Epic TEST - Test and Quality Gates
 - [x] `TEST-001` Backend unit tests for scheduler, batch runner, state transitions
