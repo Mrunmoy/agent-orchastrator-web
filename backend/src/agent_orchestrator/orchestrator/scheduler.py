@@ -1,7 +1,7 @@
 """Round-robin scheduler for agent turn management (ORCH-003).
 
 Pure logic — no async, no DB. Cycles through a roster of agents in order,
-skipping BLOCKED and OFFLINE agents.
+skipping non-IDLE agents (RUNNING, BLOCKED, OFFLINE).
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from agent_orchestrator.orchestrator.models import Agent, AgentStatus
 class RoundRobinScheduler:
     """Cycle through agents in round-robin order, skipping unavailable ones."""
 
-    _AVAILABLE_STATUSES = frozenset({AgentStatus.IDLE, AgentStatus.RUNNING})
+    _AVAILABLE_STATUSES = frozenset({AgentStatus.IDLE})
 
     def __init__(self, roster: list[Agent]) -> None:
         self._roster = list(roster)
@@ -45,7 +45,7 @@ class RoundRobinScheduler:
 
     @property
     def available_agents(self) -> list[Agent]:
-        """Agents whose status is IDLE or RUNNING."""
+        """Agents whose status is IDLE."""
         return [a for a in self._roster if a.status in self._AVAILABLE_STATUSES]
 
     def mark_agent_status(self, agent_id: str, status: AgentStatus) -> None:

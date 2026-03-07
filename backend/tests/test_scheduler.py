@@ -127,7 +127,16 @@ class TestAvailableAgents:
 
         available = sched.available_agents
         available_ids = [a.id for a in available]
-        assert available_ids == ["a", "b"]
+        assert available_ids == ["a"]
+
+    def test_running_agents_are_not_available(self) -> None:
+        agents = [
+            _make_agent("a", AgentStatus.RUNNING),
+            _make_agent("b", AgentStatus.IDLE),
+        ]
+        sched = RoundRobinScheduler(agents)
+
+        assert sched.next_agent().id == "b"  # type: ignore[union-attr]
 
 
 # ── mark_agent_status ──────────────────────────────────────────────────
