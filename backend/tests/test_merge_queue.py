@@ -59,9 +59,23 @@ class TestMergeCoordinator:
         first = self.coord.next()
         assert first is not None
         assert first.task_id == "T-1"
+        # Must complete T-1 before T-2 can be advanced
+        self.coord.complete("T-1")
         second = self.coord.next()
         assert second is not None
         assert second.task_id == "T-2"
+
+    def test_next_returns_active_if_in_progress(self) -> None:
+        self.coord.submit("T-1", "branch-1")
+        self.coord.submit("T-2", "branch-2")
+        first = self.coord.next()
+        assert first is not None
+        assert first.task_id == "T-1"
+        # Calling next() again should return the same active request, not T-2
+        second = self.coord.next()
+        assert second is not None
+        assert second.task_id == "T-1"
+        assert second.status == MergeStatus.IN_PROGRESS
 
     def test_next_returns_none_when_empty(self) -> None:
         assert self.coord.next() is None

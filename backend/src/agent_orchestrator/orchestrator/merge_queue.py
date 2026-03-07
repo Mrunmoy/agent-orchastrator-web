@@ -58,7 +58,15 @@ class MergeCoordinator:
         return req
 
     def next(self) -> MergeRequest | None:
-        """Get the next PENDING request (FIFO) and mark it IN_PROGRESS."""
+        """Get the next PENDING request (FIFO) and mark it IN_PROGRESS.
+
+        Returns the active IN_PROGRESS request if one already exists,
+        enforcing single-merge-at-a-time semantics.
+        """
+        # If there's already an active merge, return it instead of advancing
+        current = self.active()
+        if current is not None:
+            return current
         for req in self._requests:
             if req.status == MergeStatus.PENDING:
                 req.status = MergeStatus.IN_PROGRESS
