@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saga: The Order of the Forge (UI-011)</title>
+  <style>
+    :root { --ink:#ffe8f0; --muted:#b89aa5; --rose:#ffa3bf; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#3a1020,#0f1016 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #6a2040; border-radius:16px; background:linear-gradient(180deg,#1f1016,#120d10); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--rose); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.7; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    em { color:var(--rose); font-style:normal; }
+    blockquote { border-left:3px solid #6a2040; padding:8px 16px; margin:16px 0; color:var(--muted); font-style:italic; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>The Order of the Forge</h1>
+    <div class="meta">Saga Chapter · UI-011 · 2026-03-07</div>
+
+    <h2>Prologue: The Voice Without Direction</h2>
+    <p>In the Hall of Debate, where agents traded arguments like swords in the lamplight, there sat an old and cumbersome relic: the <em>Target First</em> selector. A hardcoded scroll of three names — All Agents, Codex, Claude — it pointed at agents who might not even be present, and ignored the real roster entirely. The adventurers had long since stopped trusting it.</p>
+    <p>And beyond the selector, a more fundamental question hung in the air: <em>who speaks first?</em> The orchestrator ran agents in turn order, but the forge had no way to let the user set that order. Agents appeared alphabetically, like books on a shelf nobody had arranged.</p>
+
+    <h2>The Decision in the Tavern</h2>
+    <p>The decision came quietly, over a rough-hewn table strewn with task cards. Two things needed to happen in this chapter: the old selector had to be cut loose, and a new mechanism had to be forged — one that let the user grip agents by the scruff and drag them into place.</p>
+    <blockquote>"Cut the dropdown. Give them handles."</blockquote>
+    <p>It was a clean mandate. The chronicler sharpened the quill.</p>
+
+    <h2>The Reckoning of the Schema</h2>
+    <p>First, the deep work: the <em>schema</em> needed a new column. The <code>agent</code> table had always known an agent's name, provider, and role — but never its place in line. A new field, <code>sort_order</code>, was carved into the stone of <code>schema.sql</code>, defaulting to zero for all who came before this chapter.</p>
+    <p>The migration wizard in <code>db.py</code> was given a new spell — <code>_apply_migrations()</code> — that checked each existing vault before adding the column, so old databases would not crumble. New ones would find the column waiting. The spell was idempotent: harmless if cast twice.</p>
+
+    <h2>The New Decree</h2>
+    <p>A fresh PATCH route was hammered onto the gate of the backend: <em>/agents/{id}/order</em>. Send it a sort order, and the agent's place in the queue would shift. A negative number? The gate held firm and returned a 400. A ghost's name? The gate held firm and returned a 404. Success was rewarded with the full record of the changed agent.</p>
+    <p>The listing of agents changed too — no longer alphabetical, but ordered by <code>sort_order</code> first, name second. The roster at last reflected the will of the commander.</p>
+
+    <h2>The Forging of the Badge</h2>
+    <p>On each agent card in the left pane, a small golden disc now gleamed — a tiny circle stamped with a number. <em>1. 2. 3.</em> One-indexed, as any artisan would count: the first in line wears the crown. The badge sat in the top-left corner of each card, catching the eye before the name.</p>
+    <p>It was a small detail, the kind that separates a workshop from a cockpit.</p>
+
+    <h2>The Drag</h2>
+    <p>Then came the drag-to-reorder. No new library was summoned to the project's dependencies — the adventurers already had the ancient HTML5 drag scroll in hand. A drag handle appeared on each card row: the Braille character <em>⠿</em>, a quiet invitation. Grip it. Drag. Drop.</p>
+    <p>When an agent was dropped into a new slot, the roster reordered itself instantly — an optimistic move. Behind the scenes, a call to <code>reorderAgent()</code> began racing to the backend to cement the change. If it failed, the console would record the loss, but the view would not flinch.</p>
+    <p>The state sync was subtle. The roster now kept a local copy of the agents in the order the user had set. When the parent added a new agent, the roster updated without a flicker — using a render-phase ref comparison rather than an effect, keeping the timing clean across test and production alike.</p>
+
+    <h2>The Silencing of the Selector</h2>
+    <p>The old agent-selector dropdown was removed from the Composer, quietly and without ceremony. The <code>onSend</code> signature shed its second argument — no more <code>targetAgentId</code> trailing behind like an unwanted shadow. A message was simply a message.</p>
+    <p>The "Target First" dropdown in ChatPane was cut too. The hall grew quieter. The composers were simpler. The agents would be reached through their order in the roster, not through a dropdown nobody trusted.</p>
+
+    <h2>The Tests That Went Before</h2>
+    <p>In the tradition of the forge, the test-smiths worked first. Eight failing tests were hammered out before a single line of implementation was written: backend tests for the new endpoint, frontend tests for the badge, for the sorted roster, for the drag, and for the absence of the selector.</p>
+    <p>They all glowed red in the test runner. Then came the implementation. One by one, they turned green. When the full suite of 534 backend tests and 150 frontend tests ran without fault, the chronicler recorded it and moved on.</p>
+
+    <h2>Epilogue: A Forge in Order</h2>
+    <p>The cockpit grew more deliberate. An engineer could now look at the agent pane and know at a glance who would speak first, and could drag the order into alignment before the next batch began. The schema remembered. The badge announced. The selector was gone.</p>
+    <p>It was one chapter in a long campaign. The next would come soon enough. For now, the forge was in order.</p>
+  </article>
+</body>
+</html>

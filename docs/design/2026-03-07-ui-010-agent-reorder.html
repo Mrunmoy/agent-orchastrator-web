@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: Agent Drag-to-Reorder &amp; Composer Cleanup (UI-010)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2f4c; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #5a4728; padding:8px; text-align:left; }
+    th { background:#2a2f4c; color:var(--gold); }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Agent Drag-to-Reorder &amp; Composer Cleanup (UI-010)</h1>
+    <div class="meta">Design Codex Entry · 2026-03-07</div>
+
+    <h2>Problem</h2>
+    <p>Two related UX issues existed in the orchestrator interface:</p>
+    <ol>
+      <li><strong>The "Target First" agent-selector dropdown in the Composer</strong> — a static, hardcoded dropdown that bore no relationship to the actual configured agents and served no useful purpose in the current phase-gate orchestration model where agents reply in round-robin order.</li>
+      <li><strong>No way to reorder agents</strong> — agents appeared in alphabetical order only. The orchestrator processes agents in <code>turn_order</code>, so users needed a way to visually control and persist agent ordering in the left pane.</li>
+    </ol>
+
+    <h2>Solution Overview</h2>
+    <table>
+      <thead><tr><th>Change</th><th>Location</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Remove "Target First" dropdown</td><td><code>Composer.tsx</code>, <code>ChatPane.tsx</code></td><td>Removes the agent-selector <code>&lt;select&gt;</code> and <code>targetAgentId</code> state. <code>onSend</code> signature simplified to <code>(message: string) =&gt; void</code>.</td></tr>
+        <tr><td>Add <code>sort_order</code> column</td><td><code>schema.sql</code></td><td><code>sort_order INTEGER NOT NULL DEFAULT 0</code> on the <code>agent</code> table. Existing rows default to 0.</td></tr>
+        <tr><td>Schema migration</td><td><code>db.py</code></td><td>ALTER TABLE migration in <code>initialize()</code> guards with PRAGMA table_info to add column only if missing.</td></tr>
+        <tr><td>PATCH /agents/{id}/order</td><td><code>agents.py</code></td><td>New endpoint accepting <code>{"sort_order": int}</code>. Validates non-negative. Returns updated agent.</td></tr>
+        <tr><td>GET /agents includes sort_order</td><td><code>agents.py</code></td><td>Updated <code>_AGENT_KEYS</code> and SELECT query. Ordered by <code>sort_order ASC, display_name ASC</code>.</td></tr>
+        <tr><td>Order badge on AgentCard</td><td><code>AgentCard.tsx</code>, <code>AgentCard.css</code></td><td>Circular badge (1-indexed <code>sort_order + 1</code>) positioned absolute top-left of card. Brand gold colour.</td></tr>
+        <tr><td>Drag-to-reorder in AgentRoster</td><td><code>AgentRoster.tsx</code>, <code>AgentRoster.css</code></td><td>HTML5 native DnD. Local state tracks array order (optimistic). On drop, all agents' new sort_order values persisted via <code>reorderAgent()</code>.</td></tr>
+        <tr><td>reorderAgent() API function</td><td><code>client.ts</code></td><td><code>PATCH /agents/{id}/order</code> call.</td></tr>
+        <tr><td>Type updates</td><td><code>types.ts</code>, <code>client.ts</code>, <code>AppShell.tsx</code></td><td><code>sort_order: number</code> added to <code>AgentData</code> and <code>Agent</code>. <code>toAgentData</code> mapper updated.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Backend: New Endpoint</h2>
+    <table>
+      <thead><tr><th>Method</th><th>Path</th><th>Body</th><th>Success</th><th>Errors</th></tr></thead>
+      <tbody>
+        <tr><td>PATCH</td><td><code>/agents/{agent_id}/order</code></td><td><code>{"sort_order": int}</code></td><td>200 + updated agent</td><td>400 if negative, 404 if not found</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Frontend: Drag-and-Drop Design</h2>
+    <p>Uses the browser's native HTML5 drag-and-drop API — no third-party library dependency:</p>
+    <ul>
+      <li><strong>dragstart</strong>: records the dragged agent ID in a <code>useRef</code> (avoids stale closure issues).</li>
+      <li><strong>dragover</strong>: calls <code>preventDefault()</code> to allow drop.</li>
+      <li><strong>drop</strong>: splices array locally (optimistic update), reassigns <code>sort_order</code> by index, fires <code>reorderAgent()</code> for each agent asynchronously.</li>
+      <li>A visual drag handle <code>⠿</code> is shown at the left of each card wrapper.</li>
+      <li><code>reorderAgent</code> is an injectable prop for testability (defaults to the imported client function).</li>
+    </ul>
+
+    <h2>Order Badge Design</h2>
+    <ul>
+      <li>Positioned <code>absolute</code> top-left of <code>.agent-card</code> (which gains <code>position: relative</code>).</li>
+      <li>18×18 px filled circle, <code>background: #d6b164</code> (brand gold), white bold text, font-size 10px.</li>
+      <li>Shows <code>agent.sort_order + 1</code> so display is 1-indexed (first agent shows "1").</li>
+      <li><code>data-testid="order-badge"</code> for reliable test selection.</li>
+    </ul>
+
+    <h2>Composer Changes</h2>
+    <p>The <code>ComposerProps</code> interface loses <code>agents</code> as a meaningful input and <code>onSend</code> simplifies to <code>(message: string) =&gt; void</code>. The <code>agents</code> prop is retained as an empty optional array for backward compatibility but renders nothing. <code>ChatPane</code>'s inline composer also drops its hardcoded <code>&lt;select&gt;</code>.</p>
+
+    <h2>Migration Safety</h2>
+    <p>The schema migration uses <code>PRAGMA table_info(agent)</code> to check whether <code>sort_order</code> already exists before issuing <code>ALTER TABLE</code>. This makes the migration idempotent — safe to run on both new and existing databases.</p>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li>Native DnD preferred over libraries (dnd-kit, react-beautiful-dnd) to keep the bundle lean and avoid React 19 compatibility concerns.</li>
+      <li>Optimistic local reorder gives instant visual feedback; API failures are logged to console (no rollback in this slice — a follow-up can add error toast + rollback).</li>
+      <li>All agents' sort_orders are updated on drop (N calls) rather than attempting a complex swap algorithm. With a typical roster of 2–8 agents this is not a concern.</li>
+      <li>1-indexed display ("1", "2", …) is more natural for users; 0-indexed storage is conventional for arrays.</li>
+    </ul>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li>Rollback on API failure: display an error toast and restore previous order if <code>reorderAgent</code> rejects.</li>
+      <li>Sync <code>sort_order</code> with <code>conversation_agent.turn_order</code> so orchestration respects the user-defined sequence.</li>
+      <li>Consider a bulk <code>PATCH /agents/reorder</code> endpoint to update all sort orders in one round-trip.</li>
+    </ul>
+  </article>
+</body>
+</html>

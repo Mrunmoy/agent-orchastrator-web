@@ -3,9 +3,10 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  border: 1px solid var(--border-color, #333);
+  border: 1px solid var(--line);
   border-radius: 6px;
-  background: var(--surface-color, #1e1e1e);
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .run-window__info {
@@ -18,29 +19,31 @@
 .run-window__status {
   text-transform: capitalize;
   font-weight: 600;
-  color: var(--text-color, #e0e0e0);
+  color: var(--ink);
 }
 
 .run-window__turn {
-  color: var(--text-secondary, #999);
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .run-window__elapsed {
-  color: var(--text-secondary, #999);
+  color: var(--muted);
   margin-left: auto;
   font-variant-numeric: tabular-nums;
+  font-size: 12px;
 }
 
 .run-window__progress {
-  height: 4px;
-  background: var(--surface-alt, #2a2a2a);
+  height: 3px;
+  background: var(--surface-2);
   border-radius: 2px;
   overflow: hidden;
 }
 
 .run-window__progress-fill {
   height: 100%;
-  background: var(--primary-color, #4a9eff);
+  background: var(--brand);
   border-radius: 2px;
   transition: width 0.3s ease;
 }
@@ -51,35 +54,44 @@
 }
 
 .run-window__button {
-  padding: 6px 16px;
-  border-radius: 4px;
+  padding: 5px 14px;
+  border-radius: 6px;
   border: none;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   color: #fff;
+  transition:
+    background 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.run-window__button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .run-window__button--next {
-  background: var(--success-color, #2ea043);
+  background: var(--ok);
+  color: #0d1a14;
 }
 
-.run-window__button--next:hover {
-  background: #3cb853;
+.run-window__button--next:hover:not(:disabled) {
+  background: #5ee4a8;
 }
 
 .run-window__button--continue {
-  background: var(--primary-color, #4a9eff);
+  background: var(--brand);
 }
 
-.run-window__button--continue:hover {
-  background: var(--primary-hover, #3a8eef);
+.run-window__button--continue:hover:not(:disabled) {
+  background: var(--brand-light);
 }
 
 .run-window__button--stop {
-  background: var(--danger-color, #da3633);
+  background: var(--danger);
 }
 
-.run-window__button--stop:hover {
-  background: #e04848;
+.run-window__button--stop:hover:not(:disabled) {
+  background: #ea8890;
 }

@@ -1,6 +1,6 @@
 export interface ComposerProps {
   agents: { id: string; display_name: string }[];
-  onSend: (message: string, targetAgentId: string | null) => void;
+  onSend: (message: string) => void;
   disabled?: boolean;
 }
 

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Agent Drag-to-Reorder &amp; Composer Cleanup (UI-011)</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1e3640; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+    pre { background:#1e3640; padding:12px 16px; border-radius:8px; overflow-x:auto; font-size:0.88em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #2f7b72; padding:8px; text-align:left; }
+    th { background:#1e3640; color:var(--teal); }
+    .tip { background:rgba(98,215,200,0.08); border-left:3px solid var(--teal); padding:10px 14px; border-radius:0 6px 6px 0; margin:12px 0; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook: Agent Drag-to-Reorder &amp; Composer Cleanup (UI-011)</h1>
+    <div class="meta">Playbook Entry · 2026-03-07</div>
+
+    <h2>What Was Implemented</h2>
+    <ul>
+      <li>Removed the "Target First" agent-selector <code>&lt;select&gt;</code> from <code>Composer.tsx</code> and <code>ChatPane.tsx</code>.</li>
+      <li>Added <code>sort_order INTEGER NOT NULL DEFAULT 0</code> column to the <code>agent</code> table in <code>schema.sql</code>.</li>
+      <li>Added an idempotent ALTER TABLE migration in <code>db.py::_apply_migrations()</code>.</li>
+      <li>Added <code>PATCH /agents/{agent_id}/order</code> REST endpoint.</li>
+      <li>Added circular order badge (1-indexed) to <code>AgentCard</code>.</li>
+      <li>Implemented HTML5 native drag-to-reorder in <code>AgentRoster</code> with render-phase state sync.</li>
+      <li>Added <code>reorderAgent()</code> to the API client.</li>
+    </ul>
+
+    <h2>Running the Tests</h2>
+    <pre>cd /home/mrumoy/sandbox/agent-orchestrator-web
+make test          # all backend + frontend tests
+make lint          # ruff + eslint
+make format-check  # black + prettier</pre>
+
+    <h2>Backend: Testing the New Endpoint Manually</h2>
+    <pre>curl -X GET http://127.0.0.1:8000/agents
+# Lists agents with sort_order field
+
+curl -X PATCH http://127.0.0.1:8000/agents/{id}/order \
+  -H 'Content-Type: application/json' \
+  -d '{"sort_order": 2}'
+# Returns updated agent; 400 if negative; 404 if not found</pre>
+
+    <h2>Schema Migration Behaviour</h2>
+    <p>The migration in <code>db.py::_apply_migrations()</code> checks <code>PRAGMA table_info(agent)</code> before issuing <code>ALTER TABLE</code>:</p>
+    <pre>existing = {row[1] for row in conn.execute("PRAGMA table_info(agent)").fetchall()}
+if "sort_order" not in existing:
+    conn.execute("ALTER TABLE agent ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0")
+    conn.commit()</pre>
+    <div class="tip">This migration is safe to run multiple times. New databases created from <code>schema.sql</code> already have the column; the migration skips for them.</div>
+
+    <h2>Troubleshooting: Drag-Drop Not Working</h2>
+    <table>
+      <thead><tr><th>Symptom</th><th>Likely Cause</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Drop doesn't reorder</td><td><code>dragId.current</code> is null</td><td>Ensure <code>draggable</code> is on the wrapper div, not <code>AgentCard</code>'s inner div</td></tr>
+        <tr><td>Order reverts on refresh</td><td><code>reorderAgent</code> API call failed</td><td>Check backend logs; verify <code>PATCH /agents/{id}/order</code> returns 200</td></tr>
+        <tr><td>Order badge shows NaN</td><td><code>sort_order</code> is undefined in <code>AgentData</code></td><td>Check <code>toAgentData</code> in AppShell.tsx returns <code>sort_order: row.sort_order ?? 0</code></td></tr>
+        <tr><td>All agents show badge "1"</td><td>All agents have <code>sort_order: 0</code></td><td>Normal on first load; reorder to persist distinct values</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Troubleshooting: Render-Phase State Sync</h2>
+    <p>AgentRoster uses a render-phase update pattern (<code>prevAgentsRef</code> comparison) rather than <code>useEffect</code> to sync prop changes to local state. This prevents a missed re-render cycle when a new agent is added via the editor. If you see stale display after agent creation:</p>
+    <ol>
+      <li>Verify <code>prevAgentsRef.current !== agents</code> triggers on the new render.</li>
+      <li>Ensure <code>setAgents</code> in AppShell produces a new array reference (it does via spread).</li>
+    </ol>
+
+    <h2>Adding a Bulk Reorder Endpoint (Follow-Up)</h2>
+    <p>The current implementation calls <code>PATCH /agents/{id}/order</code> once per agent on each drop. For rosters larger than ~10 agents, a bulk endpoint is preferred:</p>
+    <pre>PATCH /agents/reorder
+Body: {"order": ["id-1", "id-2", "id-3"]}</pre>
+    <p>The backend would UPDATE all agents' sort_orders in a single transaction. The frontend would call this once per drop event.</p>
+
+    <h2>Files Changed</h2>
+    <table>
+      <thead><tr><th>File</th><th>Change</th></tr></thead>
+      <tbody>
+        <tr><td><code>backend/src/agent_orchestrator/storage/schema.sql</code></td><td>Added <code>sort_order</code> column</td></tr>
+        <tr><td><code>backend/src/agent_orchestrator/storage/db.py</code></td><td>Added <code>_apply_migrations()</code></td></tr>
+        <tr><td><code>backend/src/agent_orchestrator/api/routes/agents.py</code></td><td>PATCH endpoint, updated keys and ordering</td></tr>
+        <tr><td><code>frontend/src/features/agents/types.ts</code></td><td>Added <code>sort_order</code> to AgentData</td></tr>
+        <tr><td><code>frontend/src/api/client.ts</code></td><td>Added <code>sort_order</code> to Agent, added <code>reorderAgent()</code></td></tr>
+        <tr><td><code>frontend/src/features/agents/AgentCard.tsx/.css</code></td><td>Order badge</td></tr>
+        <tr><td><code>frontend/src/features/agents/AgentRoster.tsx/.css</code></td><td>Drag-to-reorder, drag handle</td></tr>
+        <tr><td><code>frontend/src/features/composer/Composer.tsx</code></td><td>Removed dropdown, simplified onSend</td></tr>
+        <tr><td><code>frontend/src/features/composer/types.ts</code></td><td>Updated ComposerProps</td></tr>
+        <tr><td><code>frontend/src/layout/ChatPane.tsx</code></td><td>Removed Target First select</td></tr>
+        <tr><td><code>frontend/src/layout/AppShell.tsx</code></td><td>Updated toAgentData, onSend wiring</td></tr>
+      </tbody>
+    </table>
+  </article>
+</body>
+</html>

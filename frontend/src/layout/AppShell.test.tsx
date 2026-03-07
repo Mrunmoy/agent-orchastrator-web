@@ -11,6 +11,7 @@ const api = vi.hoisted(() => ({
   createAgent: vi.fn(),
   updateAgent: vi.fn(),
   deleteAgent: vi.fn(),
+  reorderAgent: vi.fn(),
   runBatch: vi.fn(),
   continueBatch: vi.fn(),
   stopBatch: vi.fn(),
@@ -49,6 +50,7 @@ describe("AppShell", () => {
       model: "codex-1",
       role: "worker",
       status: "idle",
+      sort_order: 0,
     });
     api.updateAgent.mockResolvedValue({
       id: "agent-1",
@@ -57,8 +59,10 @@ describe("AppShell", () => {
       model: "codex-1",
       role: "worker",
       status: "idle",
+      sort_order: 0,
     });
     api.deleteAgent.mockResolvedValue(undefined);
+    api.reorderAgent.mockResolvedValue(undefined);
   });
 
   it("renders the root layout container", async () => {

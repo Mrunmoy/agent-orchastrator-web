@@ -63,7 +63,6 @@ class DatabaseManager:
         self._conn.executescript(schema_sql)
         # Re-enable foreign keys after executescript (implicit COMMIT resets)
         self._conn.execute("PRAGMA foreign_keys = ON")
-
         current = self._read_user_version()
         if current < _SCHEMA_VERSION:
             self._apply_migrations(current)

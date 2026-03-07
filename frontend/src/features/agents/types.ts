@@ -10,4 +10,5 @@ export interface AgentData {
   role: AgentRole;
   status: AgentStatusType;
   personality_key?: string;
+  sort_order: number;
 }
