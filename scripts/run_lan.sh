@@ -114,6 +114,7 @@ echo "======================================================="
 echo ""
 
 # Start backend
+# WARNING: DEV_MODE=1 sets CORS allow-all origins. LAN use only — never expose to the internet.
 echo "[backend] Starting uvicorn on 0.0.0.0:${BACKEND_PORT} ..."
 (
   cd "${REPO_ROOT}/backend"
