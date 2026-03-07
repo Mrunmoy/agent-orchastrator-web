@@ -27,9 +27,16 @@ class DatabaseManager:
         in-memory database.
     """
 
-    def __init__(self, db_path: str | Path) -> None:
+    def __init__(
+        self,
+        db_path: str | Path,
+        *,
+        check_same_thread: bool = True,
+    ) -> None:
         self._db_path = str(db_path)
-        self._conn: sqlite3.Connection = sqlite3.connect(self._db_path)
+        self._conn: sqlite3.Connection = sqlite3.connect(
+            self._db_path, check_same_thread=check_same_thread
+        )
         self._conn.execute("PRAGMA foreign_keys = ON")
 
     # ------------------------------------------------------------------

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Conversation CRUD Endpoints (API-002)</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1a2a2e; padding:2px 6px; border-radius:4px; }
+    pre { background:#0f1a1e; padding:16px; border-radius:8px; overflow-x:auto; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Conversation CRUD Endpoints</h1>
+    <div class="meta">Playbook Entry &middot; 2026-03-07 &middot; API-002</div>
+
+    <h2>How to run</h2>
+    <pre><code>nix develop
+cd backend
+uvicorn agent_orchestrator.api:app --reload
+
+# List conversations
+curl http://localhost:8000/conversations
+
+# Create a conversation
+curl -X POST http://localhost:8000/conversations/new \
+  -H "Content-Type: application/json" \
+  -d '{"title": "My Debate", "project_path": "/tmp/project"}'
+
+# Select a conversation
+curl -X POST http://localhost:8000/conversations/select \
+  -H "Content-Type: application/json" \
+  -d '{"conversation_id": "UUID_HERE"}'
+
+# Soft-delete a conversation
+curl -X POST http://localhost:8000/conversations/delete \
+  -H "Content-Type: application/json" \
+  -d '{"conversation_id": "UUID_HERE"}'
+
+# Clear all conversations
+curl -X POST http://localhost:8000/conversations/clear-all</code></pre>
+
+    <h2>How to test</h2>
+    <pre><code>nix develop
+cd backend
+python -m pytest tests/test_api_conversations.py -q</code></pre>
+
+    <h2>Key files</h2>
+    <ul>
+      <li><code>backend/src/agent_orchestrator/api/routes/conversations.py</code> &mdash; All five CRUD endpoints</li>
+      <li><code>backend/src/agent_orchestrator/api/__init__.py</code> &mdash; Router registration</li>
+      <li><code>backend/tests/test_api_conversations.py</code> &mdash; 21 endpoint tests</li>
+      <li><code>backend/src/agent_orchestrator/storage/db.py</code> &mdash; Added <code>check_same_thread</code> parameter</li>
+    </ul>
+
+    <h2>Gotcha: SQLite thread safety</h2>
+    <p><strong>Symptom:</strong> <code>sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread</code></p>
+    <p><strong>Cause:</strong> FastAPI runs sync endpoint functions in a threadpool worker, but the <code>DatabaseManager</code> connection was created on the main thread.</p>
+    <p><strong>Fix:</strong> Added <code>check_same_thread</code> keyword parameter to <code>DatabaseManager.__init__</code>. The conversations module passes <code>check_same_thread=False</code> when creating its in-memory database. This is safe for single-writer use with WAL mode.</p>
+
+    <h2>Gotcha: test isolation</h2>
+    <p><strong>Symptom:</strong> Tests pass individually but fail when run together because conversations from earlier tests leak.</p>
+    <p><strong>Fix:</strong> An <code>autouse</code> fixture calls <code>_init_db()</code> before each test, which creates a fresh in-memory database. Each test also creates its own <code>TestClient</code> via fixture to get a clean app instance.</p>
+
+    <h2>Design decisions to revisit</h2>
+    <ul>
+      <li>Module-level database should be replaced with FastAPI dependency injection for proper lifecycle management.</li>
+      <li>No input validation on title length or project_path format yet.</li>
+      <li>No pagination on <code>GET /conversations</code>.</li>
+    </ul>
+  </article>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: Conversation CRUD Endpoints (API-002)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2d3a; padding:2px 6px; border-radius:4px; }
+    pre { background:#1a1d2a; padding:16px; border-radius:8px; overflow-x:auto; }
+    table { border-collapse:collapse; width:100%; margin:12px 0; }
+    th,td { border:1px solid #5a4728; padding:6px 10px; text-align:left; }
+    th { background:#2a2d3a; color:var(--gold); }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Conversation CRUD Endpoints</h1>
+    <div class="meta">Design Codex Entry &middot; 2026-03-07 &middot; API-002</div>
+
+    <h2>Context</h2>
+    <p>The FastAPI app shell (API-001) and SQLite schema (DATA-001) are in place. The frontend needs endpoints to create, list, select, and delete conversations. This is the first feature that wires the API layer to the persistence layer.</p>
+
+    <h2>Scope</h2>
+    <p>Five endpoints covering full conversation lifecycle management. All operate on the existing <code>conversation</code> table.</p>
+
+    <h2>Non-Goals</h2>
+    <ul>
+      <li>No pagination on <code>GET /conversations</code> (few conversations expected initially).</li>
+      <li>No WebSocket push for real-time updates.</li>
+      <li>No hard-delete &mdash; all deletes are soft (set <code>deleted_at</code>).</li>
+    </ul>
+
+    <h2>Endpoint Specification</h2>
+    <table>
+      <tr><th>Method</th><th>Path</th><th>Body</th><th>Response</th></tr>
+      <tr><td>GET</td><td>/conversations</td><td>&mdash;</td><td><code>{"ok": true, "data": {"conversations": [...]}}</code></td></tr>
+      <tr><td>POST</td><td>/conversations/new</td><td><code>{"title", "project_path"}</code></td><td>Created conversation object</td></tr>
+      <tr><td>POST</td><td>/conversations/select</td><td><code>{"conversation_id"}</code></td><td>Updated conversation object</td></tr>
+      <tr><td>POST</td><td>/conversations/delete</td><td><code>{"conversation_id"}</code></td><td>Deleted conversation object</td></tr>
+      <tr><td>POST</td><td>/conversations/clear-all</td><td>&mdash;</td><td><code>{"ok": true, "data": {"deleted_count": N}}</code></td></tr>
+    </table>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li>New conversations default to: <code>state="debate"</code>, <code>phase="design_debate"</code>, <code>gate_status="open"</code>, <code>priority=100</code>, <code>active=0</code>.</li>
+      <li>IDs generated via <code>uuid.uuid4()</code>; timestamps via <code>datetime.now(UTC).isoformat()</code>.</li>
+      <li>Router lives in <code>api/routes/conversations.py</code>, registered in <code>api/__init__.py</code>.</li>
+      <li>Module-level <code>DatabaseManager(":memory:")</code> for now; will be replaced by proper dependency injection later.</li>
+      <li><code>GET /conversations</code> excludes soft-deleted rows (<code>WHERE deleted_at IS NULL</code>), ordered by <code>updated_at DESC</code>.</li>
+      <li><code>POST /conversations/select</code> deactivates all conversations first, then activates the target.</li>
+      <li>404 errors use <code>error_response()</code> with HTTP status 404.</li>
+    </ul>
+
+    <h2>Test Strategy</h2>
+    <p>Integration tests using <code>fastapi.testclient.TestClient</code> with an in-memory SQLite database. Tests cover: empty list, create, list after create, select, delete, clear-all, 404 cases, and envelope format on every response.</p>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li>Replace module-level DB with FastAPI dependency injection.</li>
+      <li>Add pagination when conversation counts grow.</li>
+      <li>Add input validation (title length, project_path existence).</li>
+    </ul>
+  </article>
+</body>
+</html>
