@@ -59,7 +59,7 @@ Execution board for active parallel slices.
 | TEST-002 | Adapter contract tests | `backend/tests/adapters/*` | P1 | claude-agent | Done | ADPT-001,ADPT-002 | claude/test-002-adapter-contracts |
 | TEST-003 | Frontend component tests | `frontend/tests/*` | P1 | claude-agent | Done | UI-002,UI-003,UI-004 | (inline with impl) |
 | TEST-004 | E2E scenario test | `tests/e2e/*` | P2 | unassigned | Todo | API-003,UI-004,COORD-003 | - |
-| DOC-001 | ADR entries | `docs/decisions/*` | P2 | unassigned | Todo | ORCH-004 | - |
+| DOC-001 | ADR entries | `docs/decisions/*` | P2 | claude-agent | Done | ORCH-004 | claude/doc-001-adr-entries |
 | DOC-002 | Playbook recovery | `docs/playbook/*` | P2 | claude-agent | Done | TEST-001 | claude/doc-002-playbooks |
 | DOC-003 | Project saga milestones | `docs/saga/*` | P2 | unassigned | Todo | SETUP-002 | - |
 
