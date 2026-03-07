@@ -20,6 +20,7 @@
 }
 
 .conv-row {
+  width: 100%;
   padding: 8px;
   border-bottom: 1px solid #272c4d;
   cursor: pointer;
@@ -27,6 +28,16 @@
   gap: 4px;
   color: #d7c6d8;
   font-size: 13px;
+  text-align: left;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.conv-row[data-selected="true"] {
+  background: #1a2040;
 }
 
 .conv-row:last-child {
