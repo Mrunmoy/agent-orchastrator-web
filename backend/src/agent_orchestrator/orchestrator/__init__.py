@@ -19,9 +19,17 @@ from agent_orchestrator.orchestrator.models import (
     Task,
     TaskStatus,
 )
+from agent_orchestrator.orchestrator.state_machine import (
+    TRANSITIONS,
+    InvalidTransition,
+    StateMachine,
+)
 
 __all__ = [
     "Agent",
+    "InvalidTransition",
+    "StateMachine",
+    "TRANSITIONS",
     "AgentRole",
     "AgentStatus",
     "Artifact",
