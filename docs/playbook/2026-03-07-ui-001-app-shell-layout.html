@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: App Shell Layout (UI-001)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2f4c; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook: App Shell Layout (UI-001)</h1>
+    <div class="meta">Playbook Entry · 2026-03-07</div>
+
+    <h2>TDD Notes</h2>
+    <ul>
+      <li>Tests written first covering: component presence via <code>data-testid</code>, heading text, interactive elements (buttons, inputs), and class name assertions.</li>
+      <li>jsdom does not apply CSS from file imports, so <code>getComputedStyle</code> tests were replaced with className assertions. This is a known limitation — visual layout must be verified via the dev server or screenshot capture.</li>
+    </ul>
+
+    <h2>Key Files</h2>
+    <ul>
+      <li><code>frontend/src/layout/AppShell.tsx</code> — root grid container, composes all zones.</li>
+      <li><code>frontend/src/layout/AppShell.css</code> — shared design tokens and grid definition.</li>
+      <li><code>frontend/src/layout/index.ts</code> — barrel export for clean imports.</li>
+      <li>Each zone: <code>TopBar</code>, <code>HistoryPane</code>, <code>ChatPane</code>, <code>IntelligencePane</code>, <code>BottomControls</code> with co-located <code>.css</code> files.</li>
+    </ul>
+
+    <h2>Debug Tips</h2>
+    <ul>
+      <li>If layout breaks at a breakpoint, check <code>AppShell.css</code> media queries (1280px and 930px).</li>
+      <li>The <code>.panel</code> class uses <code>grid-template-rows: auto 1fr</code> — child elements must follow heading + content order.</li>
+      <li>Use <code>make mockup</code> to compare the original static mockup against the React implementation.</li>
+    </ul>
+
+    <h2>Testing</h2>
+    <ul>
+      <li>Run tests: <code>nix develop --command bash -c "cd frontend && npx vitest run"</code></li>
+      <li>36 tests across 7 test files, all passing.</li>
+    </ul>
+  </article>
+</body>
+</html>

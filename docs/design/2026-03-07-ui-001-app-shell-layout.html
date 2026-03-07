@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: App Shell Layout (UI-001)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2f4c; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #5a4728; padding:8px; text-align:left; }
+    th { background:#2a2f4c; color:var(--gold); }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>App Shell Layout (UI-001)</h1>
+    <div class="meta">Design Codex Entry · 2026-03-07</div>
+
+    <h2>Context</h2>
+    <p>UI-001 implements the foundational Slack-like app shell layout that all subsequent UI features (UI-002 through UI-007) will build upon. The layout defines five structural zones using CSS Grid.</p>
+
+    <h2>Layout Structure</h2>
+    <table>
+      <thead><tr><th>Zone</th><th>Component</th><th>Grid Position</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Top</td><td><code>TopBar</code></td><td>Row 1</td><td>Title, working directory, run status, batch controls</td></tr>
+        <tr><td>Left</td><td><code>HistoryPane</code></td><td>Row 2, Col 1 (340px)</td><td>Conversation list, agent roster</td></tr>
+        <tr><td>Center</td><td><code>ChatPane</code></td><td>Row 2, Col 2 (1fr)</td><td>Message stream, composer</td></tr>
+        <tr><td>Right</td><td><code>IntelligencePane</code></td><td>Row 2, Col 3 (360px)</td><td>Agreement/conflict maps, neutral memo</td></tr>
+        <tr><td>Bottom</td><td><code>BottomControls</code></td><td>Row 3</td><td>Steering notes, preference notes, batch continue</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li>CSS Grid with <code>grid-template-rows: auto 1fr auto</code> for the outer shell, and a 3-column grid for the main content area.</li>
+      <li>Components use BEM-style CSS class naming (<code>.top-bar__title</code>, <code>.chat-pane__composer</code>).</li>
+      <li>Each component has its own CSS file; shared tokens live in <code>AppShell.css</code>.</li>
+      <li>Responsive breakpoints: 3-column above 1280px, 2-column at 930-1280px, 1-column below 930px.</li>
+      <li>Color palette matches the Slack-like mockup (<code>src/mockup.html</code>): purple sidebar, white chat, light intelligence pane.</li>
+    </ul>
+
+    <h2>Rationale</h2>
+    <ul>
+      <li>CSS Grid chosen over flexbox for predictable 2D layout with fixed sidebars and fluid center.</li>
+      <li>Separate CSS files per component keep styles co-located and reduce merge conflicts when parallel UI tasks land.</li>
+      <li>Barrel export (<code>index.ts</code>) provides clean import path for downstream features.</li>
+    </ul>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li><code>UI-002</code>: Fill <code>HistoryPane</code> with real conversation list and selection logic.</li>
+      <li><code>UI-003</code>: Fill <code>ChatPane</code> with message timeline rendering.</li>
+      <li><code>UI-004</code>: Fill composer with target routing and run controls.</li>
+      <li><code>UI-006</code>: Fill <code>IntelligencePane</code> with agreement/disagreement data.</li>
+    </ul>
+  </article>
+</body>
+</html>
