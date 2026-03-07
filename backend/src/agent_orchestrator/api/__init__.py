@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
+from agent_orchestrator.api.routes.agents import router as agents_router
 from agent_orchestrator.api.routes.conversations import router as conversations_router
 from agent_orchestrator.api.routes.health import router as health_router
 
@@ -16,6 +17,7 @@ def create_app() -> FastAPI:
     )
     application.include_router(health_router)
     application.include_router(conversations_router)
+    application.include_router(agents_router)
     return application
 
 
