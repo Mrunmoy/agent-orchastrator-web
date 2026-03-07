@@ -71,5 +71,5 @@ This is the source-of-truth backlog for current known scope.
 
 ## Epic DOC - Living Engineering Record
 - [ ] `DOC-001` Add ADR entries for orchestration algorithm and resume strategy
-- [ ] `DOC-002` Add playbook templates for debugging and recovery drills
+- [x] `DOC-002` Add playbook templates for debugging and recovery drills
 - [ ] `DOC-003` Start project saga log with incremental milestone updates

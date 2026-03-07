@@ -42,6 +42,7 @@ Execution board for active parallel slices.
 | OPS-003 | Capacity telemetry snapshot | `backend/runtime/capacity.py` | P1 | claude-parallel | Done | SETUP-001 | master (merged) |
 | TEST-001 | Scheduler and batch unit tests | `backend/tests/orchestrator/*` | P1 | unassigned | Todo | ORCH-003,ORCH-004 | - |
 | TEST-003 | Frontend component tests | `frontend/tests/*` | P1 | unassigned | Todo | UI-002,UI-003,UI-004 | - |
+| DOC-002 | Playbook recovery/debug entries | `docs/playbook/*` | P2 | claude-agent | Done | TEST-001 | claude/doc-002-playbooks |
 
 ## Merge Queue
 
