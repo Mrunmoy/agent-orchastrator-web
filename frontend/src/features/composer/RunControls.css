@@ -1,0 +1,84 @@
+.run-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-color, #333);
+  background: var(--surface-color, #1e1e1e);
+}
+
+.run-controls__status {
+  font-size: 13px;
+  color: var(--text-secondary, #999);
+  text-transform: capitalize;
+  min-width: 60px;
+}
+
+.run-controls__buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.run-controls__button {
+  padding: 6px 16px;
+  border-radius: 4px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+}
+
+.run-controls__button--run {
+  background: var(--success-color, #2ea043);
+}
+
+.run-controls__button--run:hover {
+  background: #3cb853;
+}
+
+.run-controls__button--continue {
+  background: var(--primary-color, #4a9eff);
+}
+
+.run-controls__button--continue:hover {
+  background: var(--primary-hover, #3a8eef);
+}
+
+.run-controls__button--stop {
+  background: var(--danger-color, #da3633);
+}
+
+.run-controls__button--stop:hover {
+  background: #e04848;
+}
+
+.run-controls__steering {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.run-controls__steer-input {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #444);
+  background: var(--input-bg, #2a2a2a);
+  color: var(--text-color, #e0e0e0);
+  font-size: 13px;
+  min-width: 180px;
+}
+
+.run-controls__steer-button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #444);
+  background: var(--surface-color, #2a2a2a);
+  color: var(--text-color, #e0e0e0);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.run-controls__steer-button:hover {
+  background: var(--surface-hover, #333);
+}
