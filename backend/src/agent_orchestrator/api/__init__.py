@@ -8,6 +8,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from agent_orchestrator.api.routes.agents import router as agents_router
+from agent_orchestrator.api.routes.conversation_agents import (
+    router as conversation_agents_router,
+)
 from agent_orchestrator.api.routes.conversations import router as conversations_router
 from agent_orchestrator.api.routes.events import router as events_router
 from agent_orchestrator.api.routes.health import router as health_router
@@ -47,6 +50,7 @@ def create_app() -> FastAPI:
     application.include_router(conversations_router, prefix="/api")
     application.include_router(events_router, prefix="/api")
     application.include_router(agents_router, prefix="/api")
+    application.include_router(conversation_agents_router, prefix="/api")
     application.include_router(orchestration_router, prefix="/api")
     return application
 

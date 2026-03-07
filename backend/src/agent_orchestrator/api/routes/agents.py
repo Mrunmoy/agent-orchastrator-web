@@ -29,6 +29,7 @@ class NewAgentBody(BaseModel):
     role: str
     personality_key: str | None = None
     capabilities_json: str | None = None
+    conversation_id: str | None = None
 
 
 class UpdateAgentBody(BaseModel):
@@ -47,6 +48,10 @@ class AgentIdBody(BaseModel):
 
 class PatchAgentOrderBody(BaseModel):
     sort_order: int
+
+
+class ReorderAgentsBody(BaseModel):
+    agent_ids: list[str]
 
 
 # ---------------------------------------------------------------------------
@@ -119,6 +124,18 @@ def create_agent(body: NewAgentBody) -> Any:
 
     db = get_db()
     with db.connection() as conn:
+        # Validate conversation_id if provided
+        if body.conversation_id is not None:
+            conv_row = conn.execute(
+                "SELECT id FROM conversation WHERE id = ? AND deleted_at IS NULL",
+                (body.conversation_id,),
+            ).fetchone()
+            if conv_row is None:
+                return JSONResponse(
+                    status_code=404,
+                    content=error_response("Conversation not found"),
+                )
+
         conn.execute(
             "INSERT INTO agent "
             "(id, display_name, provider, model, personality_key, role, "
@@ -139,9 +156,41 @@ def create_agent(body: NewAgentBody) -> Any:
                 now,
             ),
         )
+
+        turn_order = None
+        if body.conversation_id is not None:
+            # Get max turn_order for this conversation
+            max_row = conn.execute(
+                "SELECT COALESCE(MAX(turn_order), 0) FROM conversation_agent "
+                "WHERE conversation_id = ?",
+                (body.conversation_id,),
+            ).fetchone()
+            turn_order = max_row[0] + 1
+            ca_id = str(uuid.uuid4())
+            conn.execute(
+                "INSERT INTO conversation_agent "
+                "(id, conversation_id, agent_id, turn_order, enabled, "
+                " permission_profile, is_merge_coordinator, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    ca_id,
+                    body.conversation_id,
+                    agent_id,
+                    turn_order,
+                    1,
+                    "default",
+                    0,
+                    now,
+                ),
+            )
+
         conn.commit()
         row = conn.execute("SELECT * FROM agent WHERE id = ?", (agent_id,)).fetchone()
-    return ok_response({"agent": _row_to_dict(row)})
+
+    agent = _row_to_dict(row)
+    if turn_order is not None:
+        agent["turn_order"] = turn_order
+    return ok_response({"agent": agent})
 
 
 @router.post("/agents/update")
@@ -225,6 +274,7 @@ def delete_agent(body: AgentIdBody) -> Any:
                 status_code=404,
                 content=error_response("Agent not found"),
             )
+        conn.execute("DELETE FROM conversation_agent WHERE agent_id = ?", (body.agent_id,))
         conn.execute("DELETE FROM agent WHERE id = ?", (body.agent_id,))
         conn.commit()
     return ok_response({"deleted_id": body.agent_id})
