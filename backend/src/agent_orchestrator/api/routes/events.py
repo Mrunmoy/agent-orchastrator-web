@@ -55,6 +55,12 @@ def get_latest_events(
             content=error_response("conversation_id query parameter is required"),
         )
 
+    if n <= 0:
+        return JSONResponse(
+            status_code=400,
+            content=error_response("n must be a positive integer"),
+        )
+
     log_path = conversation_log_path(conversation_id)
     reader = EventLogReader(log_path)
     events = reader.tail(n)

@@ -151,3 +151,17 @@ class TestLatestEndpoint:
         # Should be events e6 through e15
         assert body["data"]["events"][0]["event_id"] == "e6"
         assert body["data"]["events"][9]["event_id"] == "e15"
+
+    def test_n_zero_returns_error(self):
+        resp = client.get("/events/latest?conversation_id=conv-1&n=0")
+        assert resp.status_code == 400
+        body = resp.json()
+        assert body["ok"] is False
+        assert "positive" in body["error"].lower()
+
+    def test_n_negative_returns_error(self):
+        resp = client.get("/events/latest?conversation_id=conv-1&n=-5")
+        assert resp.status_code == 400
+        body = resp.json()
+        assert body["ok"] is False
+        assert "positive" in body["error"].lower()
