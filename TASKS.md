@@ -3,7 +3,7 @@
 This is the source-of-truth backlog for current known scope.
 
 ## Current State Snapshot
-- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex adapter baselines.
+- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex adapter baselines, shared dev commands (make test/lint/format-check/run-backend/run-frontend).
 - Not done: full orchestrator runtime, API surface completion, persistence features beyond schema, production workflow integration.
 
 ## Definition of Done (per task)

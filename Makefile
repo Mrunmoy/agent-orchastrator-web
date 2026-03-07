@@ -3,7 +3,8 @@ ROOT := $(CURDIR)
 PORT ?= 8080
 AGENTS ?=
 
-.PHONY: help serve ui-shot test-ui verify parallel-init parallel-status handoff-packs task-worktree task-prompt task-ready task-shell
+.PHONY: help serve ui-shot test-ui verify parallel-init parallel-status handoff-packs task-worktree task-prompt task-ready task-shell \
+	test test-backend test-frontend lint lint-backend lint-frontend format-check run-backend run-frontend
 
 help:
 	@echo "Targets:"
@@ -18,6 +19,49 @@ help:
 	@echo "  make task-prompt TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-1 - print worker prompt"
 	@echo "  make task-ready TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-1 - create worktree + write TASK_PROMPT.md"
 	@echo "  make task-shell TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-1 - create worktree + prompt + enter shell"
+	@echo ""
+	@echo "Dev commands:"
+	@echo "  make test           - run backend + frontend tests"
+	@echo "  make test-backend   - run backend tests (pytest)"
+	@echo "  make test-frontend  - run frontend tests (vitest)"
+	@echo "  make lint           - run backend + frontend linters"
+	@echo "  make lint-backend   - run ruff on backend"
+	@echo "  make lint-frontend  - run eslint on frontend"
+	@echo "  make format-check   - check formatting (black + prettier)"
+	@echo "  make run-backend    - start uvicorn dev server"
+	@echo "  make run-frontend   - start vite dev server"
+
+# ---------------------------------------------------------------------------
+# Dev commands (SETUP-003)
+# ---------------------------------------------------------------------------
+
+test: test-backend test-frontend
+
+test-backend:
+	cd $(ROOT)/backend && python -m pytest -q
+
+test-frontend:
+	cd $(ROOT)/frontend && npm test
+
+lint: lint-backend lint-frontend
+
+lint-backend:
+	cd $(ROOT)/backend && python -m ruff check src/ tests/
+
+lint-frontend:
+	cd $(ROOT)/frontend && npm run lint
+
+format-check:
+	cd $(ROOT)/backend && python -m black --check src/ tests/
+	cd $(ROOT)/frontend && npm run format:check
+
+run-backend:
+	cd $(ROOT)/backend && python -m uvicorn agent_orchestrator.api:app --reload --host 0.0.0.0 --port 8000
+
+run-frontend:
+	cd $(ROOT)/frontend && npm run dev
+
+# ---------------------------------------------------------------------------
 
 serve:
 	python3 -m http.server $(PORT) --directory $(ROOT)

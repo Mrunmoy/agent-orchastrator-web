@@ -8,9 +8,7 @@ export function ChatPane() {
         <span>No active conversation</span>
       </div>
       <div className="chat-pane__stream" data-testid="message-stream">
-        <div className="chat-pane__empty">
-          Select or create a conversation to begin.
-        </div>
+        <div className="chat-pane__empty">Select or create a conversation to begin.</div>
       </div>
       <div className="chat-pane__composer" data-testid="composer">
         <select>

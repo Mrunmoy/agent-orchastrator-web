@@ -26,7 +26,7 @@ class CodexAdapter(BaseAdapter):
         cmd = self._build_command(prompt, session_id=session_id)
         try:
             stdout, returncode = await self._run_cli(cmd, working_dir, timeout_seconds)
-        except (asyncio.TimeoutError, TimeoutError):
+        except TimeoutError:
             return AdapterResult(
                 text="Codex CLI timed out",
                 status=AdapterStatus.TIMED_OUT,
@@ -44,7 +44,7 @@ class CodexAdapter(BaseAdapter):
         cmd = self._build_command(prompt, session_id=session_id)
         try:
             stdout, returncode = await self._run_cli(cmd, working_dir, timeout_seconds)
-        except (asyncio.TimeoutError, TimeoutError):
+        except TimeoutError:
             return AdapterResult(
                 text="Codex CLI timed out",
                 session_id=session_id,
@@ -52,9 +52,7 @@ class CodexAdapter(BaseAdapter):
             )
         return self._parse_output(stdout, returncode)
 
-    def _build_command(
-        self, prompt: str, *, session_id: str | None = None
-    ) -> list[str]:
+    def _build_command(self, prompt: str, *, session_id: str | None = None) -> list[str]:
         cmd = ["codex", "--json"]
         if session_id:
             cmd.extend(["--session", session_id])
@@ -102,10 +100,8 @@ class CodexAdapter(BaseAdapter):
             stderr=asyncio.subprocess.PIPE,
         )
         try:
-            stdout_bytes, _ = await asyncio.wait_for(
-                proc.communicate(), timeout=timeout_seconds
-            )
-        except (asyncio.TimeoutError, TimeoutError):
+            stdout_bytes, _ = await asyncio.wait_for(proc.communicate(), timeout=timeout_seconds)
+        except TimeoutError:
             proc.kill()
             await proc.wait()
             raise

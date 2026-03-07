@@ -45,14 +45,20 @@ class TestSendPrompt:
 
     def test_send_prompt_returns_adapter_result(self):
         adapter = self._adapter()
-        mock_output = json.dumps({
-            "id": "resp-abc123",
-            "output": [
-                {"type": "message", "role": "assistant", "content": [
-                    {"type": "output_text", "text": "Hello, I can help with that."}
-                ]}
-            ],
-        })
+        mock_output = json.dumps(
+            {
+                "id": "resp-abc123",
+                "output": [
+                    {
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [
+                            {"type": "output_text", "text": "Hello, I can help with that."}
+                        ],
+                    }
+                ],
+            }
+        )
         with patch.object(adapter, "_run_cli", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = (mock_output, 0)
             result = _run(adapter.send_prompt("Hello", working_dir="/tmp/test"))
@@ -63,14 +69,18 @@ class TestSendPrompt:
 
     def test_send_prompt_builds_correct_command(self):
         adapter = self._adapter()
-        mock_output = json.dumps({
-            "id": "resp-1",
-            "output": [
-                {"type": "message", "role": "assistant", "content": [
-                    {"type": "output_text", "text": "ok"}
-                ]}
-            ],
-        })
+        mock_output = json.dumps(
+            {
+                "id": "resp-1",
+                "output": [
+                    {
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [{"type": "output_text", "text": "ok"}],
+                    }
+                ],
+            }
+        )
         with patch.object(adapter, "_run_cli", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = (mock_output, 0)
             _run(adapter.send_prompt("Fix the bug", working_dir="/home/user/project"))
@@ -81,14 +91,18 @@ class TestSendPrompt:
 
     def test_send_prompt_with_session_id(self):
         adapter = self._adapter()
-        mock_output = json.dumps({
-            "id": "resp-existing",
-            "output": [
-                {"type": "message", "role": "assistant", "content": [
-                    {"type": "output_text", "text": "continued"}
-                ]}
-            ],
-        })
+        mock_output = json.dumps(
+            {
+                "id": "resp-existing",
+                "output": [
+                    {
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [{"type": "output_text", "text": "continued"}],
+                    }
+                ],
+            }
+        )
         with patch.object(adapter, "_run_cli", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = (mock_output, 0)
             _run(
@@ -127,15 +141,21 @@ class TestSendPrompt:
 
     def test_send_prompt_extracts_multiple_output_texts(self):
         adapter = self._adapter()
-        mock_output = json.dumps({
-            "id": "resp-multi",
-            "output": [
-                {"type": "message", "role": "assistant", "content": [
-                    {"type": "output_text", "text": "Part one."},
-                    {"type": "output_text", "text": " Part two."},
-                ]},
-            ],
-        })
+        mock_output = json.dumps(
+            {
+                "id": "resp-multi",
+                "output": [
+                    {
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [
+                            {"type": "output_text", "text": "Part one."},
+                            {"type": "output_text", "text": " Part two."},
+                        ],
+                    },
+                ],
+            }
+        )
         with patch.object(adapter, "_run_cli", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = (mock_output, 0)
             result = _run(adapter.send_prompt("Hello", working_dir="/tmp/test"))
@@ -157,14 +177,18 @@ class TestResumeSession:
 
     def test_resume_session_uses_session_flag(self):
         adapter = self._adapter()
-        mock_output = json.dumps({
-            "id": "resp-abc",
-            "output": [
-                {"type": "message", "role": "assistant", "content": [
-                    {"type": "output_text", "text": "resumed"}
-                ]}
-            ],
-        })
+        mock_output = json.dumps(
+            {
+                "id": "resp-abc",
+                "output": [
+                    {
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [{"type": "output_text", "text": "resumed"}],
+                    }
+                ],
+            }
+        )
         with patch.object(adapter, "_run_cli", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = (mock_output, 0)
             result = _run(
@@ -208,7 +232,7 @@ class TestRunCli:
     def test_run_cli_timeout_kills_process(self):
         adapter = self._adapter()
         mock_proc = AsyncMock()
-        mock_proc.communicate.side_effect = asyncio.TimeoutError()
+        mock_proc.communicate.side_effect = TimeoutError()
         mock_proc.kill = MagicMock()
         mock_proc.wait = AsyncMock()
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):

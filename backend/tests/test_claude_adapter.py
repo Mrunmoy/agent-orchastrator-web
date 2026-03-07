@@ -160,7 +160,7 @@ class TestRunCli:
     def test_run_cli_timeout_kills_process(self):
         adapter = self._adapter()
         mock_proc = AsyncMock()
-        mock_proc.communicate.side_effect = asyncio.TimeoutError()
+        mock_proc.communicate.side_effect = TimeoutError()
         mock_proc.kill = MagicMock()
         mock_proc.wait = AsyncMock()
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
