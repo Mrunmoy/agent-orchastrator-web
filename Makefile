@@ -3,7 +3,7 @@ ROOT := $(CURDIR)
 PORT ?= 8080
 AGENTS ?=
 
-.PHONY: help serve ui-shot test-ui verify parallel-init parallel-status handoff-packs task-worktree task-prompt
+.PHONY: help serve ui-shot test-ui verify parallel-init parallel-status handoff-packs task-worktree task-prompt task-ready task-shell
 
 help:
 	@echo "Targets:"
@@ -16,6 +16,8 @@ help:
 	@echo "  make handoff-packs - generate codex-code/claude-code kickoff packs"
 	@echo "  make task-worktree TASK_ID=UI-001 PREFIX=claude - create worktree by task id"
 	@echo "  make task-prompt TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-1 - print worker prompt"
+	@echo "  make task-ready TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-1 - create worktree + write TASK_PROMPT.md"
+	@echo "  make task-shell TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-1 - create worktree + prompt + enter shell"
 
 serve:
 	python3 -m http.server $(PORT) --directory $(ROOT)
@@ -57,3 +59,17 @@ task-prompt:
 	./scripts/task_prompt.py "$(TASK_ID)" \
 		--prefix "$(if $(PREFIX),$(PREFIX),claude)" \
 		--worker-name "$(if $(WORKER),$(WORKER),worker)"
+
+task-ready:
+	@if [ -z "$(TASK_ID)" ]; then \
+		echo "Usage: make task-ready TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-1"; \
+		exit 1; \
+	fi
+	./scripts/task_prepare.sh "$(TASK_ID)" "$(if $(PREFIX),$(PREFIX),claude)" "$(if $(WORKER),$(WORKER),worker)"
+
+task-shell:
+	@if [ -z "$(TASK_ID)" ]; then \
+		echo "Usage: make task-shell TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-1"; \
+		exit 1; \
+	fi
+	./scripts/task_prepare.sh "$(TASK_ID)" "$(if $(PREFIX),$(PREFIX),claude)" "$(if $(WORKER),$(WORKER),worker)" --shell

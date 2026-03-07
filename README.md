@@ -92,6 +92,23 @@ make task-prompt TASK_ID=SETUP-002 PREFIX=codex WORKER=codex-setup
 make task-prompt TASK_ID=ADPT-001 PREFIX=claude WORKER=claude-adapter
 ```
 
+### 5.2) One-command task prepare flow (recommended)
+Create/sync worktree + write `TASK_PROMPT.md` inside that worktree:
+```bash
+make task-ready TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-setup
+```
+
+Create/sync worktree + write prompt + open interactive shell in that worktree:
+```bash
+make task-shell TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-setup
+```
+
+Then inside that shell:
+```bash
+claude
+# tell claude: read TASK_PROMPT.md and execute
+```
+
 ### 6) Monitor current parallel state
 ```bash
 make parallel-status
