@@ -61,7 +61,7 @@ Execution board for active parallel slices.
 | TEST-004 | E2E scenario test | `tests/e2e/*` | P2 | unassigned | Todo | API-003,UI-004,COORD-003 | - |
 | DOC-001 | ADR entries | `docs/decisions/*` | P2 | claude-agent | Done | ORCH-004 | claude/doc-001-adr-entries |
 | DOC-002 | Playbook recovery | `docs/playbook/*` | P2 | claude-agent | Done | TEST-001 | claude/doc-002-playbooks |
-| DOC-003 | Project saga milestones | `docs/saga/*` | P2 | unassigned | Todo | SETUP-002 | - |
+| DOC-003 | Project saga milestones | `docs/saga/*` | P2 | claude-agent | Done | SETUP-002 | claude/doc-003-saga-log |
 
 ## Merge Queue
 
