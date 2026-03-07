@@ -87,7 +87,7 @@ def list_conversation_agents(conversation_id: str) -> Any:
     return ok_response({"agents": agents})
 
 
-@router.post("/conversations/{conversation_id}/agents/{agent_id}/remove")
+@router.delete("/conversations/{conversation_id}/agents/{agent_id}")
 def remove_agent_from_conversation(conversation_id: str, agent_id: str) -> Any:
     """Remove an agent from a conversation (deletes the join row, not the agent)."""
     db = get_db()

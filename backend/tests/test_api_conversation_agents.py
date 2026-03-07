@@ -166,7 +166,7 @@ class TestRemoveAgentFromConversation:
     def test_remove_agent_from_conversation(self, client: TestClient):
         cid = _create_conversation(client)
         agent = _create_agent(client, "A", conversation_id=cid)
-        resp = client.post(f"/api/conversations/{cid}/agents/{agent['id']}/remove")
+        resp = client.delete(f"/api/conversations/{cid}/agents/{agent['id']}")
         assert resp.status_code == 200
         assert resp.json()["ok"] is True
         # Agent should no longer appear in conversation agents
@@ -178,7 +178,7 @@ class TestRemoveAgentFromConversation:
 
     def test_remove_nonexistent_link_returns_404(self, client: TestClient):
         cid = _create_conversation(client)
-        resp = client.post(f"/api/conversations/{cid}/agents/nonexistent/remove")
+        resp = client.delete(f"/api/conversations/{cid}/agents/nonexistent")
         assert resp.status_code == 404
         assert resp.json()["ok"] is False
 

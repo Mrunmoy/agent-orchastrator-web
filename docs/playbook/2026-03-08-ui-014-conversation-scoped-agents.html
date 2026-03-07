@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Conversation-Scoped Agents (UI-014)</title>
+  <style>
+    :root { --bg:#0f1016; --panel:#171b26; --ink:#ece3c7; --teal:#67d8c8; --muted:#a6b2b7; }
+    body { margin:0; font-family: Georgia, serif; color:var(--ink); background:radial-gradient(circle at top,#203645 0,#0f1016 60%); }
+    .page { max-width:960px; margin:40px auto; padding:28px; background:linear-gradient(180deg,#171b26,#10131d); border:1px solid #2f7d78; border-radius:14px; box-shadow:0 12px 40px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:1.8rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2d3a; padding:2px 6px; border-radius:4px; }
+    pre { background:#1a1d2e; padding:14px; border-radius:8px; overflow-x:auto; font-size:0.85em; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Conversation-Scoped Agents</h1>
+    <div class="meta">Playbook Entry &middot; 2026-03-08 &middot; UI-014</div>
+
+    <h2>Symptom</h2>
+    <p>Both agents in a conversation show badge "1". Creating multiple agents shows duplicate turn numbers.</p>
+
+    <h2>Root Cause</h2>
+    <p>Agents were stored globally with a <code>sort_order</code> column defaulting to 0. The <code>conversation_agent</code> join table existed in the schema but was never wired up.</p>
+
+    <h2>Fix</h2>
+    <ul>
+      <li>Schema migration v3: recreate <code>conversation_agent</code> with FK constraints, UNIQUE(conversation_id, agent_id), and DEFAULT on turn_order</li>
+      <li>New endpoints: <code>GET /conversations/{id}/agents</code>, <code>DELETE /conversations/{id}/agents/{aid}</code>, <code>PATCH /conversations/{id}/agents/reorder</code></li>
+      <li>Modified <code>POST /agents</code> to accept optional <code>conversation_id</code> with auto-incrementing <code>turn_order</code></li>
+      <li>Cascade delete: deleting an agent cleans up all <code>conversation_agent</code> rows</li>
+    </ul>
+
+    <h2>Verification</h2>
+    <pre>
+# Run conversation agent tests
+cd backend && PYTHONPATH="src${PYTHONPATH:+:$PYTHONPATH}" pytest tests/test_api_conversation_agents.py -v
+
+# Verify schema migration
+cd backend && PYTHONPATH="src${PYTHONPATH:+:$PYTHONPATH}" pytest tests/test_db_manager.py -v
+
+# Full suite
+cd backend && PYTHONPATH="src${PYTHONPATH:+:$PYTHONPATH}" pytest -q</pre>
+
+    <h2>Watch Out For</h2>
+    <ul>
+      <li>Existing databases need migration v3 to get the updated <code>conversation_agent</code> table</li>
+      <li>The <code>turn_order</code> is 1-based (first agent = 1, not 0)</li>
+      <li>Deleting a conversation cascades to <code>conversation_agent</code> rows via FK</li>
+      <li>The global <code>agent.sort_order</code> still exists but is separate from per-conversation <code>turn_order</code></li>
+    </ul>
+  </article>
+</body>
+</html>

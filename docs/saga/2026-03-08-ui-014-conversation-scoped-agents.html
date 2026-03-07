@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saga: The Turn Order — Conversation-Scoped Agents (UI-014)</title>
+  <style>
+    :root { --bg:#0f1016; --panel:#221720; --ink:#f5dfc8; --rose:#ff9db8; --muted:#c9aeb7; }
+    body { margin:0; font-family: Georgia, serif; color:var(--ink); background:radial-gradient(circle at top,#3a2032 0,#0f1016 62%); }
+    .page { max-width:960px; margin:40px auto; padding:28px; background:linear-gradient(180deg,#221720,#151019); border:1px solid #8f4b68; border-radius:14px; box-shadow:0 12px 40px #0008; }
+    h1 { color:var(--rose); margin:0 0 8px; font-size:1.8rem; }
+    h2 { color:var(--rose); font-size:1.2rem; margin-top:22px; }
+    p { color:var(--ink); line-height:1.7; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>The Turn Order</h1>
+    <div class="meta">Saga Chapter &middot; 2026-03-08 &middot; UI-014</div>
+
+    <p>The orchestrator had grown strong. Conversations could be created, agents spawned, messages sent. But something was wrong in the roster hall.</p>
+
+    <p>Two agents stood side by side, both wearing the badge numbered "1". The calude-code agent and the codex-code agent had been summoned into the same conversation, yet neither knew who should speak first. The turn order was broken &mdash; or rather, it had never existed.</p>
+
+    <h2>The Discovery</h2>
+    <p>The agents had been global citizens. They lived in a flat table, unaware of which conversation had summoned them. A <code>conversation_agent</code> join table had been carved into the schema from the beginning &mdash; complete with a <code>turn_order</code> column &mdash; but no one had ever written to it. It was a door built into a wall with nothing on the other side.</p>
+
+    <h2>The Forge</h2>
+    <p>Tests were written first, as was the way. Sixteen tests described the world as it should be: agents listed by turn order, auto-incrementing positions, scoped per conversation, removal without destruction, bulk reordering by decree.</p>
+
+    <p>The schema was reforged. Migration v3 dropped the empty join table and rebuilt it with foreign key constraints binding agents to their conversations, a uniqueness seal preventing duplicates, and cascade rules ensuring no orphans would linger when a conversation or agent was destroyed.</p>
+
+    <p>Four endpoints emerged: one to list, one to create-and-link, one to sever the bond, and one to reorder the ranks. The <code>POST /remove</code> was corrected to <code>DELETE</code> during review &mdash; a reminder that REST has its own grammar.</p>
+
+    <h2>The Order Restored</h2>
+    <p>Now when agents are summoned to a conversation, each receives a turn number. The first agent is 1, the second is 2, the third is 3. The round-robin knows who speaks next. The badges in the roster hall finally show different numbers, and the cycle turns as it should.</p>
+
+    <p>552 tests passed. The forge holds.</p>
+  </article>
+</body>
+</html>
