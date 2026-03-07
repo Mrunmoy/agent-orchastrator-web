@@ -1,0 +1,241 @@
+"""Tests for orchestration control endpoints (API-003)."""
+
+from __future__ import annotations
+
+import uuid
+from datetime import UTC, datetime
+from typing import Any
+
+import pytest
+from fastapi.testclient import TestClient
+
+from agent_orchestrator.api import create_app
+from agent_orchestrator.api.db_provider import _init_db, get_db
+
+
+@pytest.fixture(autouse=True)
+def _fresh_db():
+    """Reset the in-memory database before each test."""
+    _init_db()
+
+
+@pytest.fixture()
+def client():
+    app = create_app()
+    return TestClient(app)
+
+
+def _create_conversation(client: TestClient, title: str = "Test") -> str:
+    """Helper: create a conversation and return its id."""
+    resp = client.post(
+        "/conversations/new",
+        json={"title": title, "project_path": "/tmp"},
+    )
+    return resp.json()["data"]["conversation"]["id"]
+
+
+def _insert_run(
+    conversation_id: str,
+    status: str = "running",
+    batch_size: int = 20,
+) -> str:
+    """Helper: insert a scheduler_run row and return its id."""
+    run_id = str(uuid.uuid4())
+    now = datetime.now(UTC).isoformat()
+    db = get_db()
+    with db.connection() as conn:
+        conn.execute(
+            "INSERT INTO scheduler_run "
+            "(id, conversation_id, status, batch_size, created_at, started_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (run_id, conversation_id, status, batch_size, now, now),
+        )
+        conn.commit()
+    return run_id
+
+
+# ── POST /orchestration/{conversation_id}/run ─────────────────────
+
+
+class TestRunEndpoint:
+    def test_returns_200_and_creates_run(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.post(f"/orchestration/{cid}/run")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["ok"] is True
+        run = body["data"]["run"]
+        assert run["conversation_id"] == cid
+        assert run["status"] == "queued"
+        assert run["batch_size"] == 20
+
+    def test_custom_batch_size(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.post(
+            f"/orchestration/{cid}/run",
+            json={"batch_size": 10},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["data"]["run"]["batch_size"] == 10
+
+    def test_404_for_missing_conversation(self, client: TestClient):
+        resp = client.post("/orchestration/nonexistent/run")
+        assert resp.status_code == 404
+        assert resp.json()["ok"] is False
+
+    def test_409_if_already_running(self, client: TestClient):
+        cid = _create_conversation(client)
+        _insert_run(cid, status="running")
+        resp = client.post(f"/orchestration/{cid}/run")
+        assert resp.status_code == 409
+        assert resp.json()["ok"] is False
+
+    def test_run_persisted_in_db(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.post(f"/orchestration/{cid}/run")
+        run_id = resp.json()["data"]["run"]["id"]
+        db = get_db()
+        with db.connection() as conn:
+            row = conn.execute(
+                "SELECT id, status FROM scheduler_run WHERE id = ?",
+                (run_id,),
+            ).fetchone()
+        assert row is not None
+        assert row[1] == "queued"
+
+
+# ── POST /orchestration/{conversation_id}/continue ────────────────
+
+
+class TestContinueEndpoint:
+    def test_continues_paused_run(self, client: TestClient):
+        cid = _create_conversation(client)
+        run_id = _insert_run(cid, status="paused")
+        resp = client.post(f"/orchestration/{cid}/continue")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["ok"] is True
+        assert body["data"]["run"]["status"] == "queued"
+        assert body["data"]["run"]["id"] == run_id
+
+    def test_404_for_missing_conversation(self, client: TestClient):
+        resp = client.post("/orchestration/nonexistent/continue")
+        assert resp.status_code == 404
+        assert resp.json()["ok"] is False
+
+    def test_409_if_no_paused_run(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.post(f"/orchestration/{cid}/continue")
+        assert resp.status_code == 409
+        assert resp.json()["ok"] is False
+
+    def test_409_if_run_is_running(self, client: TestClient):
+        cid = _create_conversation(client)
+        _insert_run(cid, status="running")
+        resp = client.post(f"/orchestration/{cid}/continue")
+        assert resp.status_code == 409
+        assert resp.json()["ok"] is False
+
+
+# ── POST /orchestration/{conversation_id}/stop ────────────────────
+
+
+class TestStopEndpoint:
+    def test_stops_running_run(self, client: TestClient):
+        cid = _create_conversation(client)
+        run_id = _insert_run(cid, status="running")
+        resp = client.post(f"/orchestration/{cid}/stop")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["ok"] is True
+        assert body["data"]["run"]["status"] == "done"
+        assert body["data"]["run"]["id"] == run_id
+
+    def test_stops_paused_run(self, client: TestClient):
+        cid = _create_conversation(client)
+        _insert_run(cid, status="paused")
+        resp = client.post(f"/orchestration/{cid}/stop")
+        assert resp.status_code == 200
+        assert resp.json()["data"]["run"]["status"] == "done"
+
+    def test_stops_queued_run(self, client: TestClient):
+        cid = _create_conversation(client)
+        _insert_run(cid, status="queued")
+        resp = client.post(f"/orchestration/{cid}/stop")
+        assert resp.status_code == 200
+        assert resp.json()["data"]["run"]["status"] == "done"
+
+    def test_404_for_missing_conversation(self, client: TestClient):
+        resp = client.post("/orchestration/nonexistent/stop")
+        assert resp.status_code == 404
+        assert resp.json()["ok"] is False
+
+    def test_409_if_no_active_run(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.post(f"/orchestration/{cid}/stop")
+        assert resp.status_code == 409
+        assert resp.json()["ok"] is False
+
+    def test_ended_at_set(self, client: TestClient):
+        cid = _create_conversation(client)
+        _insert_run(cid, status="running")
+        resp = client.post(f"/orchestration/{cid}/stop")
+        run = resp.json()["data"]["run"]
+        assert run["ended_at"] is not None
+
+
+# ── POST /orchestration/{conversation_id}/steer ───────────────────
+
+
+class TestSteerEndpoint:
+    def test_injects_steering_note(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.post(
+            f"/orchestration/{cid}/steer",
+            json={"note": "Focus on testing first"},
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["ok"] is True
+        assert body["data"]["event"]["text"] == "Focus on testing first"
+        assert body["data"]["event"]["source_type"] == "user"
+        assert body["data"]["event"]["event_type"] == "steering"
+
+    def test_404_for_missing_conversation(self, client: TestClient):
+        resp = client.post(
+            "/orchestration/nonexistent/steer",
+            json={"note": "Hello"},
+        )
+        assert resp.status_code == 404
+        assert resp.json()["ok"] is False
+
+    def test_422_for_missing_note(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.post(f"/orchestration/{cid}/steer", json={})
+        assert resp.status_code == 422
+
+    def test_422_for_empty_note(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.post(
+            f"/orchestration/{cid}/steer",
+            json={"note": ""},
+        )
+        assert resp.status_code == 422
+
+    def test_steering_persisted_as_message_event(self, client: TestClient):
+        cid = _create_conversation(client)
+        client.post(
+            f"/orchestration/{cid}/steer",
+            json={"note": "Persist this"},
+        )
+        db = get_db()
+        with db.connection() as conn:
+            row = conn.execute(
+                "SELECT text, event_type, source_type FROM message_event "
+                "WHERE conversation_id = ?",
+                (cid,),
+            ).fetchone()
+        assert row is not None
+        assert row[0] == "Persist this"
+        assert row[1] == "steering"
+        assert row[2] == "user"
