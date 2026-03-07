@@ -1,0 +1,52 @@
+.top-bar {
+  background: #4a154b;
+  border: 1px solid #5b2d5c;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr auto auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.top-bar__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.top-bar__field {
+  display: grid;
+  gap: 4px;
+}
+
+.top-bar__field label {
+  font-size: 10px;
+  color: #6b6f76;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.top-bar__status {
+  border: 1px solid #5d4a2e;
+  border-radius: 999px;
+  padding: 8px 10px;
+  color: #ffd8a4;
+  background: #3a2f1f;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+@media (max-width: 930px) {
+  .top-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+}

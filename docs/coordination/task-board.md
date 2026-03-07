@@ -30,7 +30,7 @@ Execution board for active parallel slices.
 | ADPT-002 | Codex CLI adapter | `backend/adapters/codex_adapter.py` | P0 | codex-adapter | Done | SETUP-001 | codex/adpt-codex-cli |
 | API-001 | FastAPI app + health | `backend/api/app.py` | P0 | unassigned | Todo | SETUP-001 | - |
 | API-003 | Run/continue/stop/steer endpoints | `backend/api/routes/orchestration.py` | P0 | unassigned | Todo | API-001,ORCH-004 | - |
-| UI-001 | App shell layout | `frontend/src/layout/*` | P0 | unassigned | Todo | SETUP-002 | - |
+| UI-001 | App shell layout | `frontend/src/layout/*` | P0 | claude-ui | Done | SETUP-002 | claude/ui-app-shell-layout |
 | UI-002 | Conversation history pane | `frontend/src/features/history/*` | P0 | unassigned | Todo | UI-001,API-002 | - |
 | UI-003 | Chat timeline | `frontend/src/features/chat/*` | P0 | unassigned | Todo | UI-001,API-005 | - |
 | UI-004 | Composer + run controls | `frontend/src/features/composer/*` | P0 | unassigned | Todo | UI-001,API-003 | - |

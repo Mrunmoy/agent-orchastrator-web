@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saga: The UI Shell Takes Shape</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>The UI Shell Takes Shape</h1>
+    <div class="meta">Saga Chapter · 2026-03-07 · UI-001</div>
+
+    <h2>The Moment</h2>
+    <p>With the frontend scaffold (SETUP-002) in place, it was time to give the orchestrator its face. The static HTML mockup had proven the Slack-like layout concept — now the challenge was translating that vision into composable React components that downstream features could fill.</p>
+
+    <h2>What Happened</h2>
+    <p>Six layout components emerged from the mockup's bones: a TopBar for run control, a HistoryPane for conversation navigation, a ChatPane for the message stream, an IntelligencePane for agreement and conflict tracking, and BottomControls for steering the debate.</p>
+    <p>The TDD cycle ran clean: 36 tests written first, all red. Then the components and CSS landed, turning every test green. One lesson learned — jsdom cannot evaluate CSS Grid layout properties, so structural tests assert class names rather than computed styles.</p>
+
+    <h2>What It Means</h2>
+    <p>UI-001 is the skeleton that UI-002 through UI-007 will flesh out. The conversation list, chat timeline, composer routing, intelligence cards, and batch controls each have a named slot waiting for them. The responsive grid ensures the layout adapts from wide desktop down to tablet-width views.</p>
+
+    <h2>What Comes Next</h2>
+    <p>The immediate unlocks are UI-002 (conversation history pane), UI-003 (chat timeline), and UI-004 (composer + run controls). These can proceed in parallel once their API dependencies land.</p>
+  </article>
+</body>
+</html>
