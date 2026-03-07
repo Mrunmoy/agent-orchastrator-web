@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saga: The Agents' Awakening (UI-009)</title>
+  <style>
+    :root { --ink:#ffe8f0; --muted:#b89aa5; --rose:#ffa3bf; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#3a1020,#0f1016 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #6a2040; border-radius:16px; background:linear-gradient(180deg,#1f1016,#120d10); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--rose); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:28px; }
+    p { line-height:1.8; }
+    .meta { color:var(--muted); margin-bottom:20px; font-style:italic; }
+    em { color:#ffb8cc; font-style:normal; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>The Agents' Awakening</h1>
+    <div class="meta">Saga Chapter · 2026-03-07 · UI-009</div>
+
+    <h2>Prologue: The Dormant Roster</h2>
+    <p>
+      The cockpit was nearly complete. The conversations pane hummed on the left, the debate theatre
+      stretched across the centre, and the intelligence pane kept its watchful vigil on the right.
+      Yet something was wrong in the Agents section — a quiet, almost invisible wrongness.
+    </p>
+    <p>
+      Anyone who wandered to the bottom of the sidebar would find the roster: a small sign reading
+      <em>No agents configured</em>, and a single button — <em>Add Agent</em>. They would press it.
+      A panel would unfold at the foot of the page like a scroll unrolling on a stone floor.
+      Name. Provider. Model. Role. Then they would stare at the Model field.
+    </p>
+    <p>
+      It was blank. Invitingly, ominously blank. What does one type there? A secret incantation?
+      The name of a god? There was no clue, no placeholder, no hint.
+    </p>
+    <p>
+      So they would leave it empty. They would fill their agent's name — perhaps <em>Codex Worker</em>,
+      perhaps <em>Claude Reviewer</em> — and they would click <em>Save Agent</em>. Nothing would happen.
+      No agent would appear. No error would speak. The form would simply wait,
+      mute and unmoved, like a locked gate with no keyhole in sight.
+    </p>
+
+    <h2>Act I: The Investigation</h2>
+    <p>
+      The ranger traced the failure to its lair in <code>AppShell.tsx</code>. The <code>openCreateAgent</code>
+      function had been written with honest intentions — it opened the editor and set the initial
+      model to an empty string. But the <code>saveAgent</code> function, equally well-intentioned,
+      checked whether model was truthy before proceeding. An empty string is not truthy.
+      Every save attempt was therefore rejected at the gate.
+    </p>
+    <p>
+      The rejection was logged — but only as a red banner at the very top of the application shell,
+      far above the form that had caused it. The form sat at the bottom. The error lived at the top.
+      Mortal eyes scrolled nowhere, and so the failure was invisible.
+    </p>
+    <p>
+      Deeper in the dungeon, a second disappointment lurked. The backend had supported
+      <code>personality_key</code> since the first schema migration. The <code>personalities.json</code>
+      config file listed three archetypes — <em>Software Developer</em>, <em>Code Reviewer</em>,
+      <em>Friendly Brainstormer</em> — each with traits and instructions baked in.
+      Yet the form had never offered a personality field. Every agent created through the UI
+      was born without a soul.
+    </p>
+
+    <h2>Act II: The Forging</h2>
+    <p>
+      The forge was lit in <code>AppShell.tsx</code>. First, the ranger hammered out
+      the <code>PROVIDER_MODELS</code> catalogue — a lookup table mapping each provider to its
+      curated list of known models. Claude's roster of four flagship models. Codex's quartet of
+      reasoning engines. Ollama's open-source menagerie. Gemini's flash and pro variants.
+    </p>
+    <p>
+      The Model field was recast from a free-text input into a dropdown <code>&lt;select&gt;</code>,
+      its options drawn directly from the catalogue. When the form opened for a new agent,
+      the first model of the default provider was pre-selected — so the form was ready to save
+      before the user had typed a single character.
+    </p>
+    <p>
+      A subtle but important enchantment was woven into the Provider dropdown: when its value changed,
+      the Model dropdown would reset in the same state update — atomically, invisibly — to the first
+      model of the newly chosen provider. No stale Codex model would survive a switch to Ollama.
+      Each agent would carry consistent lineage from the moment of its creation.
+    </p>
+    <p>
+      Then came the personality field. The <code>PERSONALITY_OPTIONS</code> array was conjured —
+      a simple list of key-label pairs, with an empty-string sentinel at the front labelled
+      <em>— none —</em>. A new <code>&lt;select&gt;</code> was added to the editor grid.
+      When the user picked a personality, its key was conditionally spread into the API payload.
+      When they left it on "none", no key was sent — and the backend column stayed null,
+      as the schema intended.
+    </p>
+
+    <h2>Act III: The Agents Speak</h2>
+    <p>
+      With the editor fixed, attention turned to the roster itself — the cards that would one day
+      populate the sidebar once agents had been created. Each card bore a small coloured dot:
+      green for idle, amber for running, red for blocked, grey for offline. These dots were
+      previously mute ornaments. Now they gained a voice.
+    </p>
+    <p>
+      A <code>title</code> attribute was added to each dot, so hovering would reveal a tooltip:
+      <em>Idle</em>, <em>Running</em>, <em>Blocked</em>, <em>Offline</em>. An <code>aria-label</code>
+      was added alongside for those who navigate without a cursor. The dot was no longer decorative;
+      it was information.
+    </p>
+    <p>
+      And when an agent carried a personality, the card would now display a soft purple badge
+      beside the provider and role labels. <em>Software Developer</em>. <em>Code Reviewer</em>.
+      <em>Friendly Brainstormer</em>. The agent's character, visible at a glance.
+    </p>
+
+    <h2>Epilogue: The Roster Stirs</h2>
+    <p>
+      Three new tests joined the suite — one verifying that the model dropdown resets when the
+      provider changes, one confirming that all four personality options are present and selectable,
+      and the original "creates an agent" test updated to match the new dropdown reality.
+      The full suite of 146 tests turned green. The linter found nothing to fault.
+    </p>
+    <p>
+      The form was no longer a locked gate. The roster was no longer empty by fate. Agents could
+      now be born with names, providers, models, roles, and personalities — ready to take their
+      place in the debate theatre when the next conversation called them forward.
+    </p>
+    <p>
+      The cockpit was a little more complete. The quest continued.
+    </p>
+  </article>
+</body>
+</html>
