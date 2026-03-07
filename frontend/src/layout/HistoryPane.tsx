@@ -1,4 +1,6 @@
 import "./HistoryPane.css";
+import { AgentRoster } from "../features/agents";
+import type { AgentData } from "../features/agents/types";
 
 export type ConversationSummary = {
   id: string;
@@ -9,19 +11,25 @@ export type ConversationSummary = {
 type HistoryPaneProps = {
   conversations?: ConversationSummary[];
   selectedConversationId?: string | null;
+  agents?: AgentData[];
   onNewConversation?: () => void;
   onDeleteConversation?: () => void;
   onClearConversations?: () => void;
   onSelectConversation?: (conversationId: string) => void;
+  onAddAgent?: () => void;
+  onEditAgent?: (agentId: string) => void;
 };
 
 export function HistoryPane({
   conversations = [],
   selectedConversationId = null,
+  agents = [],
   onNewConversation,
   onDeleteConversation,
   onClearConversations,
   onSelectConversation,
+  onAddAgent,
+  onEditAgent,
 }: HistoryPaneProps) {
   return (
     <aside className="panel history-pane" data-testid="history-pane">
@@ -64,10 +72,11 @@ export function HistoryPane({
           )}
         </div>
 
-        <div className="agent-roster" data-testid="agent-roster">
-          <p className="section-title">Agents In This Conversation</p>
-          <div className="agent-roster__empty">No agents configured</div>
-        </div>
+        <AgentRoster
+          agents={agents}
+          onAdd={() => onAddAgent?.()}
+          onEdit={(agentId) => onEditAgent?.(agentId)}
+        />
       </div>
     </aside>
   );

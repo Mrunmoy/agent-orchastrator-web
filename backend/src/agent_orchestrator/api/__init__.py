@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from agent_orchestrator.api.routes.agents import router as agents_router
 from agent_orchestrator.api.routes.conversations import router as conversations_router
@@ -16,6 +17,13 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="Agent Orchestrator",
         version="0.1.0",
+    )
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
     application.include_router(health_router)
     application.include_router(conversations_router)

@@ -56,17 +56,3 @@
   font-size: 12px;
   font-weight: 700;
 }
-
-.agent-roster {
-  margin-top: 10px;
-  border: 1px solid #5b2d5c;
-  border-radius: 8px;
-  background: #4a154b;
-  padding: 8px;
-}
-
-.agent-roster__empty {
-  font-size: 12px;
-  color: #6b6f76;
-  padding: 6px;
-}
