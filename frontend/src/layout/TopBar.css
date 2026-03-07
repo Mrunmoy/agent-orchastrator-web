@@ -1,8 +1,8 @@
 .top-bar {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  background: var(--sidebar-bg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0;
+  box-shadow: none;
   padding: 10px 14px;
   display: grid;
   grid-template-columns: 1.3fr 1fr auto auto auto;
@@ -13,7 +13,7 @@
 .top-bar__title {
   font-size: 15px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--sidebar-text-active);
   display: flex;
   gap: 8px;
   align-items: center;
@@ -22,7 +22,7 @@
 }
 
 .top-bar__title-accent {
-  color: var(--brand-light);
+  color: var(--sidebar-text-active);
 }
 
 .top-bar__field {
@@ -32,7 +32,7 @@
 
 .top-bar__field label {
   font-size: 10px;
-  color: var(--muted);
+  color: var(--sidebar-text);
   text-transform: uppercase;
   letter-spacing: 0.6px;
   font-weight: 500;

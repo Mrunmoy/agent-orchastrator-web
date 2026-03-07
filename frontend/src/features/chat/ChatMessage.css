@@ -56,8 +56,8 @@
 }
 
 .chat-message--user .chat-bubble {
-  background: rgba(107, 91, 214, 0.15);
-  border: 1px solid var(--brand-glow);
+  background: var(--brand-glow);
+  border: 1px solid var(--brand);
 }
 
 .chat-bubble__header {
