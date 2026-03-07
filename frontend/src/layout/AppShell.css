@@ -96,6 +96,12 @@ button {
   color: #fff;
 }
 
+.btn--secondary {
+  background: #2a314f;
+  border-color: #3a4266;
+  color: #fff;
+}
+
 .panel {
   min-height: 0;
   background: #3f0e40;

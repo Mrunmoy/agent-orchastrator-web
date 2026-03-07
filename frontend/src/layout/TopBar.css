@@ -32,6 +32,13 @@
   letter-spacing: 0.6px;
 }
 
+.top-bar__working-dir-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
 .top-bar__status {
   border: 1px solid #5d4a2e;
   border-radius: 999px;
@@ -48,5 +55,9 @@
 @media (max-width: 930px) {
   .top-bar {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .top-bar__working-dir-row {
+    grid-template-columns: 1fr;
   }
 }
