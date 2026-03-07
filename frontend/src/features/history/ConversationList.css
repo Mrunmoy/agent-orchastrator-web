@@ -1,0 +1,30 @@
+.conversation-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.conversation-list__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.conversation-list__actions .btn {
+  flex: 1;
+}
+
+.conversation-list__items {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid #5b2d5c;
+  border-radius: 8px;
+  background: #4a154b;
+}
+
+.conversation-list__empty {
+  padding: 16px;
+  text-align: center;
+  color: #6b6f76;
+  font-size: 13px;
+  margin: 0;
+}
