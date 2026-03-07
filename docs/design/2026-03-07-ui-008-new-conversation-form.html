@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: New Conversation Form (UI-008)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2f4c; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #5a4728; padding:8px; text-align:left; }
+    th { background:#2a2f4c; color:var(--gold); }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>New Conversation Form (UI-008)</h1>
+    <div class="meta">Design Codex Entry · 2026-03-07</div>
+
+    <h2>Context</h2>
+    <p>
+      The existing "+ New" button in <code>HistoryPane</code> silently created a conversation with an
+      auto-generated title (<em>Conversation N</em>) and the global working directory from
+      <code>localStorage</code>. Users had no opportunity to name the conversation or supply a
+      per-conversation working directory before the API call was made. The issue report noted that
+      clicking "+ New" appeared to do nothing, as no visible feedback occurred when the backend was
+      unreachable and the creation happened to fail silently.
+    </p>
+    <p>
+      This change replaces the instant-create flow with an inline form that collects both a title
+      and a working directory before creating the conversation, and shifts focus to the newly
+      created conversation on success.
+    </p>
+
+    <h2>Problem Statement</h2>
+    <ul>
+      <li>No user-visible feedback when "+ New" is clicked — looks like a broken button.</li>
+      <li>No per-conversation working directory. All conversations shared the single global dir.</li>
+      <li>Auto-generated title gave users no agency over conversation naming.</li>
+    </ul>
+
+    <h2>Solution Design</h2>
+    <table>
+      <thead><tr><th>Element</th><th>Behaviour</th></tr></thead>
+      <tbody>
+        <tr><td>Click "+ New"</td><td>Opens inline <code>ConversationCreator</code> form below main area</td></tr>
+        <tr><td>Title field</td><td>Pre-filled with <em>Conversation N</em>; editable; required</td></tr>
+        <tr><td>Working Directory field</td><td>Pre-filled from <code>localStorage</code>; editable; required</td></tr>
+        <tr><td>"Create" button</td><td>Validates both fields are non-empty, calls API, closes form, selects new conversation</td></tr>
+        <tr><td>"Cancel" button</td><td>Discards form, no API call</td></tr>
+        <tr><td>Validation failure</td><td>Sets <code>errorText</code> in AppShell — rendered in existing error banner</td></tr>
+      </tbody>
+    </table>
+
+    <h2>State Model</h2>
+    <p>A new <code>ConversationCreatorState</code> type is held in <code>AppShell</code>:</p>
+    <ul>
+      <li><code>null</code> — form is closed (default)</li>
+      <li><code>{ title: string, workingDirectory: string }</code> — form is open, fields editable</li>
+    </ul>
+    <p>
+      This mirrors the existing <code>AgentEditorState</code> pattern already used in
+      <code>AppShell.tsx</code>. The same CSS pattern (<code>.agent-editor</code>) is replicated as
+      <code>.conversation-creator</code>.
+    </p>
+
+    <h2>Data Flow</h2>
+    <table>
+      <thead><tr><th>Step</th><th>Actor</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>User</td><td>Clicks "+ New" in <code>HistoryPane</code></td></tr>
+        <tr><td>2</td><td><code>AppShell</code></td><td><code>openConversationCreator()</code> — sets state with pre-filled defaults</td></tr>
+        <tr><td>3</td><td>User</td><td>Edits title and/or working directory; clicks "Create"</td></tr>
+        <tr><td>4</td><td><code>AppShell</code></td><td><code>submitConversationCreator()</code> — validates fields</td></tr>
+        <tr><td>5</td><td><code>AppShell</code></td><td><code>createConversation(title, workingDirectory)</code> — POST /conversations/new</td></tr>
+        <tr><td>6</td><td>API</td><td>Returns new conversation; POST /conversations/select called</td></tr>
+        <tr><td>7</td><td><code>AppShell</code></td><td>Adds conversation to list, selects it, closes form</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li>
+        <strong>Inline form (not modal):</strong> Keeps the same interaction pattern as the existing
+        agent editor, which is an inline section appended below the main grid. No new modal
+        infrastructure needed.
+      </li>
+      <li>
+        <strong>Required validation instead of fallbacks:</strong> Earlier implementation used
+        fallbacks (<em>if empty, use default</em>). This was replaced with explicit validation errors
+        to surface intent — users should always know what title and directory they are creating.
+      </li>
+      <li>
+        <strong><code>generateDefaultTitle(count)</code> helper:</strong> Extracted to eliminate
+        title-generation duplication across <code>openConversationCreator</code>,
+        <code>ensureConversation</code>, and future creation paths.
+      </li>
+      <li>
+        <strong>Global working directory not removed from TopBar:</strong> The global dir continues
+        to seed per-conversation defaults. Future work could deprecate the TopBar field once all
+        conversations carry their own directory.
+      </li>
+    </ul>
+
+    <h2>Changed Files</h2>
+    <table>
+      <thead><tr><th>File</th><th>Change</th></tr></thead>
+      <tbody>
+        <tr><td><code>frontend/src/layout/AppShell.tsx</code></td><td>State, handlers, JSX for creator form</td></tr>
+        <tr><td><code>frontend/src/layout/AppShell.css</code></td><td><code>.conversation-creator</code> styles; extra grid row</td></tr>
+        <tr><td><code>frontend/src/layout/AppShell.test.tsx</code></td><td>3 new tests; 2 existing tests updated</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Follow-Up</h2>
+    <ul>
+      <li>Consider removing the global working directory from <code>TopBar</code> once per-conversation dirs are established as the primary mechanism.</li>
+      <li>Inline editing of the conversation title after creation (rename).</li>
+    </ul>
+  </article>
+</body>
+</html>

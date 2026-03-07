@@ -5,6 +5,7 @@ __pycache__/
 
 # Node
 node_modules/
+*.tsbuildinfo
 
 # Artifacts
 artifacts/screenshots/*.png

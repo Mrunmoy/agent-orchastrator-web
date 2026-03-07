@@ -51,5 +51,6 @@
     {"id":"DOC-001","slug":"doc-adr-core-decisions","title":"ADR entries for core decisions","scope":"docs/decisions/*","epic":"DOC","priority":"P2","status":"Done","depends_on":["ORCH-004"],"default_owner":"claude-agent"},
     {"id":"DOC-002","slug":"doc-playbook-recovery","title":"Playbook recovery/debug entries","scope":"docs/playbook/*","epic":"DOC","priority":"P2","status":"Done","depends_on":["TEST-001"],"default_owner":"claude-agent"},
     {"id":"DOC-003","slug":"doc-saga-milestones","title":"Project saga milestone updates","scope":"docs/saga/*","epic":"DOC","priority":"P2","status":"Done","depends_on":["SETUP-002"],"default_owner":"claude-agent"},
+    {"id":"UI-008","slug":"ui-new-conversation-form","title":"New conversation form (title + working directory)","scope":"frontend/src/layout/AppShell.tsx,frontend/src/layout/AppShell.css","epic":"UI","priority":"P0","status":"Done","depends_on":["UI-002","API-002"],"default_owner":"copilot"}
   ]
 }

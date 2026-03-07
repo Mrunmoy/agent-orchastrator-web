@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Playbook 06: Lock Contention</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2,h3 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.3rem; margin-top:28px; }
+    h3 { font-size:1.1rem; margin-top:18px; }
+    p,li { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#0c2028; padding:2px 6px; border-radius:4px; font-size:0.9em; font-family: monospace; }
+    pre { background:#0c2028; border:1px solid #2f7b72; border-radius:8px; padding:16px; overflow-x:auto; margin:12px 0; }
+    pre code { background:none; padding:0; font-size:0.88em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #2f7b72; padding:8px; text-align:left; }
+    th { background:#0c2028; color:var(--teal); }
+    ul,ol { padding-left:1.5em; }
+    a { color:#7fead6; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook 06: Lock Contention</h1>
+    <div class="meta">Playbook Entry</div>
+<p>Agents block each other when trying to acquire locks on shared resources.</p>
+<h2>Symptoms</h2>
+<ul>
+  <li><code>LockConflictError</code> raised when an agent tries to acquire a resource lock.</li>
+  <li>An agent's status is <code>AgentStatus.BLOCKED</code> and cannot proceed with its task.</li>
+  <li>The batch runner produces <code>WAITING_RESOURCES</code> status because the blocked agent is not <code>IDLE</code>.</li>
+  <li>Multiple agents are assigned tasks that touch the same files or directories.</li>
+</ul>
+<h2>Diagnosis</h2>
+<p>> <strong>Note:</strong> The lock manager (<code>COORD-002</code>) is a planned component. This playbook describes the intended design based on the task specification and domain model. When implemented, the <code>LockManager</code> will live at <code>backend/src/agent_orchestrator/orchestrator/locks.py</code>.</p>
+<h3>1. Identify the conflicting resource</h3>
+<p>Lock conflicts occur when two agents (identified by <code>agent_id</code>) attempt to acquire a lock on the same resource path. Check:</p>
+<ul>
+  <li>Which agent holds the lock (the <code>owner</code> field).</li>
+  <li>Which agent is requesting it.</li>
+  <li>What resource path is contested (e.g., a file path or directory).</li>
+</ul>
+<h3>2. Check agent statuses in the scheduler</h3>
+<pre><code>for agent in scheduler._roster:
+    print(f"{agent.id}: {agent.status.value}")</code></pre>
+<p>Agents with <code>AgentStatus.BLOCKED</code> are waiting for a lock they could not acquire.</p>
+<h3>3. Review task scope assignments</h3>
+<p>The task board (<code>docs/coordination/task-board.md</code>) assigns a <code>Scope</code> to each task, defining which files/directories that task may modify. Conflicts arise when scopes overlap.</p>
+<h3>4. Check for expired or stale locks</h3>
+<p>If an agent crashed or its batch run was stopped without releasing locks, stale locks may remain. The lock manager should provide a <code>cleanup_expired()</code> method to release locks that have exceeded their TTL.</p>
+<h2>Recovery</h2>
+<h3>Fix 1: Release stale locks</h3>
+<p>If a lock is held by an agent that is no longer running:</p>
+<pre><code>lock_manager.release(resource_path, owner=stale_agent_id)
+lock_manager.cleanup_expired()</code></pre>
+<h3>Fix 2: Reassign tasks to avoid overlap</h3>
+<p>Review the task board and ensure that concurrently active tasks have non-overlapping scopes:</p>
+<table>
+  <thead><tr><th>Task</th><th>Scope</th><th>Agent</th></tr></thead>
+  <tbody>
+    <tr><td>SETUP-002</td><td>`frontend/*`</td><td>claude-frontend</td></tr>
+  </tbody>
+</table>
+<p>If two tasks must touch the same files, serialize them -- complete one before starting the other.</p>
+<h3>Fix 3: Unblock the agent</h3>
+<p>After releasing the conflicting lock, reset the agent's status so the scheduler can include it in the rotation:</p>
+<pre><code>scheduler.mark_agent_status(agent_id, AgentStatus.IDLE)</code></pre>
+<h3>Fix 4: Coordinate through the merge queue</h3>
+<p>Instead of having two agents edit the same file simultaneously, use the merge coordinator to serialize their branches:</p>
+<ol>
+  <li>Agent A completes its task and submits to the merge queue.</li>
+  <li>After Agent A's branch is merged, Agent B rebases and continues.</li>
+</ol>
+<h2>Prevention</h2>
+<ul>
+  <li>Design task scopes to be disjoint (different files/directories per task).</li>
+  <li>Use the worktree-based development model (<code>make task-worktree</code>) to isolate each task's file changes.</li>
+  <li>Configure lock TTLs to auto-expire and prevent indefinite blocking.</li>
+  <li>Assign one active task per worker agent (enforced by the task board rules).</li>
+</ul>
+<h2>Code References</h2>
+<ul>
+  <li><code>backend/src/agent_orchestrator/orchestrator/models.py</code> -- <code>AgentStatus</code> enum (<code>IDLE</code>, <code>RUNNING</code>, <code>BLOCKED</code>, <code>OFFLINE</code>).</li>
+  <li><code>backend/src/agent_orchestrator/orchestrator/scheduler.py</code> -- <code>RoundRobinScheduler</code> skips non-IDLE agents, <code>mark_agent_status()</code>.</li>
+  <li><code>backend/src/agent_orchestrator/orchestrator/merge_queue.py</code> -- <code>MergeCoordinator</code> for serializing branch integration.</li>
+  <li><code>docs/coordination/task-board.md</code> -- task scope assignments.</li>
+  <li><code>config/tasks.json</code> -- machine-readable task registry with scope fields.</li>
+</ul>
+  </article>
+</body>
+</html>

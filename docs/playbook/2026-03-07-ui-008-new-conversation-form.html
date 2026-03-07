@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: New Conversation Form (UI-008)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#1a3040,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2a6060; border-radius:16px; background:linear-gradient(180deg,#152028,#0e1620); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1e3040; padding:2px 6px; border-radius:4px; font-size:0.9em; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook: New Conversation Form (UI-008)</h1>
+    <div class="meta">Playbook Entry · 2026-03-07</div>
+
+    <h2>TDD Notes</h2>
+    <ul>
+      <li>Tests written first against the <em>expected UX</em>, not the existing broken behaviour:
+        <ol>
+          <li><code>"shows new conversation form when + New is clicked"</code> — form appears, no API call yet.</li>
+          <li><code>"cancels new conversation form without creating"</code> — Cancel closes form, no API call.</li>
+          <li><code>"creates a new conversation when form is submitted"</code> — correct <code>title</code> and <code>workingDirectory</code> passed to <code>createConversation</code>; form dismisses; conversation appears in list.</li>
+        </ol>
+      </li>
+      <li>Two existing tests that clicked "+ New" and immediately awaited <code>createConversation</code> were updated to also submit the form via the "Create" button.</li>
+      <li>All 146 tests passed after implementation.</li>
+    </ul>
+
+    <h2>Key Files</h2>
+    <ul>
+      <li><code>frontend/src/layout/AppShell.tsx</code> — <code>ConversationCreatorState</code> type, <code>conversationCreator</code> state, <code>openConversationCreator()</code>, <code>submitConversationCreator()</code>, <code>generateDefaultTitle()</code>.</li>
+      <li><code>frontend/src/layout/AppShell.css</code> — <code>.conversation-creator</code> block with same structure as <code>.agent-editor</code>.</li>
+      <li><code>frontend/src/layout/AppShell.test.tsx</code> — 3 new tests, 2 updated.</li>
+    </ul>
+
+    <h2>Debug Tips</h2>
+    <ul>
+      <li>If the form does not appear after clicking "+ New", check that <code>onNewConversation</code> in <code>HistoryPane</code> calls <code>openConversationCreator()</code> (not <code>createConversation()</code> directly).</li>
+      <li>If the form closes without creating, ensure <code>submitConversationCreator()</code> is awaited properly (<code>void submitConversationCreator()</code> inside the JSX click handler).</li>
+      <li>Validation errors appear in the global error banner (<code>.app-shell__error</code>) — check <code>errorText</code> state if the banner shows unexpectedly.</li>
+      <li>The creator form pre-fills from <code>localStorage</code> key <code>ao_working_dir</code>. In test environments <code>localStorage</code> is not available, so <code>DEFAULT_WORKING_DIR</code> (<code>/home/user/workspace</code>) is used as fallback.</li>
+    </ul>
+
+    <h2>Testing</h2>
+    <ul>
+      <li>Run all frontend tests: <code>cd frontend &amp;&amp; npx vitest run</code></li>
+      <li>Run targeted test file: <code>cd frontend &amp;&amp; npx vitest run src/layout/AppShell.test.tsx</code></li>
+      <li>146 tests, 21 test files, all passing.</li>
+    </ul>
+
+    <h2>Common Issues</h2>
+    <ul>
+      <li>
+        <strong>Form appears but "Create" does nothing:</strong> Likely the <code>submitConversationCreator</code>
+        function is checking <code>if (!conversationCreator) return</code> — the state may have been
+        cleared by a re-render. Ensure no unrelated state change triggers a reset.
+      </li>
+      <li>
+        <strong>Both form and agent editor open at the same time:</strong> They use independent
+        state slices (<code>conversationCreator</code> and <code>agentEditor</code>). This is
+        intentional; close one before opening the other if the UX feels crowded.
+      </li>
+    </ul>
+  </article>
+</body>
+</html>

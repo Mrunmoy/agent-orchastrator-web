@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Playbook 04: State Machine Invalid Transition</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2,h3 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.3rem; margin-top:28px; }
+    h3 { font-size:1.1rem; margin-top:18px; }
+    p,li { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#0c2028; padding:2px 6px; border-radius:4px; font-size:0.9em; font-family: monospace; }
+    pre { background:#0c2028; border:1px solid #2f7b72; border-radius:8px; padding:16px; overflow-x:auto; margin:12px 0; }
+    pre code { background:none; padding:0; font-size:0.88em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #2f7b72; padding:8px; text-align:left; }
+    th { background:#0c2028; color:var(--teal); }
+    ul,ol { padding-left:1.5em; }
+    a { color:#7fead6; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook 04: State Machine Invalid Transition</h1>
+    <div class="meta">Playbook Entry</div>
+<p>A conversation has entered an unexpected state, or a state transition is being rejected.</p>
+<h2>Symptoms</h2>
+<ul>
+  <li><code>InvalidTransition</code> exception raised with message: <code>"Invalid transition from '<current>' to '<target>'"</code>.</li>
+  <li>The exception object carries <code>from_state</code> and <code>to_state</code> attributes for programmatic inspection.</li>
+  <li>A conversation appears stuck because the code is trying to move it to a state that is not reachable from the current state.</li>
+</ul>
+<h2>Diagnosis</h2>
+<h3>1. Review the transition graph</h3>
+<p>The valid transitions are defined in <code>TRANSITIONS</code> as a dict mapping each <code>ConversationState</code> to its allowed target states:</p>
+<pre><code>QUEUED          -&gt; DEBATE
+DEBATE          -&gt; EXECUTION_PLANNING, NEEDS_USER_INPUT, FAILED
+EXECUTION_PLANNING -&gt; AUTONOMOUS_WORK, NEEDS_USER_INPUT, FAILED
+AUTONOMOUS_WORK -&gt; COMPLETED, NEEDS_USER_INPUT, FAILED
+NEEDS_USER_INPUT -&gt; DEBATE, EXECUTION_PLANNING, AUTONOMOUS_WORK, FAILED
+COMPLETED       -&gt; (terminal -- no outgoing transitions)
+FAILED          -&gt; QUEUED (retry path)</code></pre>
+<h3>2. Check the current state</h3>
+<pre><code>sm = StateMachine(conversation_id="...", initial_state=ConversationState.QUEUED)
+print(sm.current_state)  # What state is the conversation actually in?</code></pre>
+<h3>3. Check transition history</h3>
+<p>The <code>StateMachine.history</code> property returns a list of <code>(from_state, to_state, timestamp)</code> tuples showing every transition that occurred. This is essential for understanding how the conversation reached its current state.</p>
+<pre><code>for from_s, to_s, ts in sm.history:
+    print(f"{ts}: {from_s.value} -&gt; {to_s.value}")</code></pre>
+<h3>4. Use can_transition() to probe</h3>
+<p>Before attempting a transition, check if it is valid:</p>
+<pre><code>if sm.can_transition(ConversationState.AUTONOMOUS_WORK):
+    sm.transition(ConversationState.AUTONOMOUS_WORK)
+else:
+    # Handle: find a valid intermediate state
+    pass</code></pre>
+<h2>Common Invalid Transition Scenarios</h2>
+<h3>Trying to skip phases</h3>
+<p><strong>Example:</strong> Moving from <code>QUEUED</code> directly to <code>AUTONOMOUS_WORK</code>.</p>
+<p><strong>Fix:</strong> Follow the required path: <code>QUEUED -> DEBATE -> EXECUTION_PLANNING -> AUTONOMOUS_WORK</code>.</p>
+<h3>Trying to restart a completed conversation</h3>
+<p><strong>Example:</strong> Moving from <code>COMPLETED</code> to <code>DEBATE</code>.</p>
+<p><strong>Fix:</strong> <code>COMPLETED</code> is a terminal state with no outgoing transitions. Create a new conversation instead.</p>
+<h3>Trying to recover from failure incorrectly</h3>
+<p><strong>Example:</strong> Moving from <code>FAILED</code> to <code>DEBATE</code>.</p>
+<p><strong>Fix:</strong> <code>FAILED</code> can only transition to <code>QUEUED</code>. Go through <code>QUEUED -> DEBATE</code>.</p>
+<h3>Returning from user input to the wrong phase</h3>
+<p><strong>Example:</strong> Moving from <code>NEEDS_USER_INPUT</code> to <code>COMPLETED</code>.</p>
+<p><strong>Fix:</strong> <code>NEEDS_USER_INPUT</code> can go to <code>DEBATE</code>, <code>EXECUTION_PLANNING</code>, <code>AUTONOMOUS_WORK</code>, or <code>FAILED</code> -- but not directly to <code>COMPLETED</code>. Route through <code>AUTONOMOUS_WORK -> COMPLETED</code>.</p>
+<h2>Recovery</h2>
+<h3>Fix 1: Route through valid intermediate states</h3>
+<p>If you need to reach a state that is not directly reachable, chain transitions through valid intermediates:</p>
+<pre><code>sm.transition(ConversationState.QUEUED)    # FAILED -&gt; QUEUED
+sm.transition(ConversationState.DEBATE)    # QUEUED -&gt; DEBATE</code></pre>
+<h3>Fix 2: Create a new StateMachine</h3>
+<p>If the conversation state is truly unrecoverable (e.g., stuck in <code>COMPLETED</code> but work is needed), create a new <code>StateMachine</code> with the desired initial state for a new conversation:</p>
+<pre><code>new_sm = StateMachine(
+    conversation_id="new-conversation-id",
+    initial_state=ConversationState.QUEUED,
+)</code></pre>
+<h3>Fix 3: Fail and retry</h3>
+<p>Any state except <code>COMPLETED</code> can transition to <code>FAILED</code>, and <code>FAILED</code> can transition to <code>QUEUED</code>. This is the canonical retry path:</p>
+<pre><code>sm.transition(ConversationState.FAILED)  # from any non-terminal state
+sm.transition(ConversationState.QUEUED)  # reset to start
+sm.transition(ConversationState.DEBATE)  # begin again</code></pre>
+<h2>Code References</h2>
+<ul>
+  <li><code>backend/src/agent_orchestrator/orchestrator/state_machine.py</code> -- <code>StateMachine</code> class, <code>TRANSITIONS</code> dict, <code>InvalidTransition</code> exception.</li>
+  <li><code>backend/src/agent_orchestrator/orchestrator/models.py</code> -- <code>ConversationState</code> enum values.</li>
+</ul>
+  </article>
+</body>
+</html>

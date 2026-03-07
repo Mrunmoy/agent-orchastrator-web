@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Playbook 01: Batch Runner Stuck</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2,h3 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.3rem; margin-top:28px; }
+    h3 { font-size:1.1rem; margin-top:18px; }
+    p,li { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#0c2028; padding:2px 6px; border-radius:4px; font-size:0.9em; font-family: monospace; }
+    pre { background:#0c2028; border:1px solid #2f7b72; border-radius:8px; padding:16px; overflow-x:auto; margin:12px 0; }
+    pre code { background:none; padding:0; font-size:0.88em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #2f7b72; padding:8px; text-align:left; }
+    th { background:#0c2028; color:var(--teal); }
+    ul,ol { padding-left:1.5em; }
+    a { color:#7fead6; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook 01: Batch Runner Stuck</h1>
+    <div class="meta">Playbook Entry</div>
+<p>A batch run hangs or stops progressing through its turns.</p>
+<h2>Symptoms</h2>
+<ul>
+  <li><code>BatchRunner.turns_completed</code> is not advancing.</li>
+  <li><code>BatchRunner.status</code> remains <code>RunStatus.RUNNING</code> indefinitely.</li>
+  <li>The batch completed fewer turns than <code>batch_size</code> (default 20) and status is <code>RunStatus.WAITING_RESOURCES</code>.</li>
+  <li>No new <code>TurnRecord</code> entries appearing in the <code>turn_log</code>.</li>
+</ul>
+<h2>Diagnosis</h2>
+<h3>1. Check if the scheduler has no available agents</h3>
+<p>The <code>BatchRunner.run()</code> loop calls <code>self._scheduler.next_agent()</code> at the start of each turn. If every agent in the roster has a status other than <code>AgentStatus.IDLE</code> (e.g., <code>RUNNING</code>, <code>BLOCKED</code>, or <code>OFFLINE</code>), <code>next_agent()</code> returns <code>None</code> and the batch transitions to <code>RunStatus.WAITING_RESOURCES</code>.</p>
+<pre><code>agent = self._scheduler.next_agent()
+if agent is None:
+    self._status = RunStatus.WAITING_RESOURCES
+    break</code></pre>
+<p><strong>Check:</strong> Inspect <code>scheduler.available_agents</code> -- if the list is empty, all agents are unavailable.</p>
+<h3>2. Check the turn log for adapter errors</h3>
+<p>Each turn produces a <code>TurnRecord</code> with a <code>status</code> field from <code>AdapterStatus</code>. Look for:</p>
+<ul>
+  <li><code>AdapterStatus.ERROR</code> -- the adapter raised an exception during <code>send_prompt()</code>.</li>
+  <li><code>AdapterStatus.TIMED_OUT</code> -- the CLI agent exceeded its <code>timeout_seconds</code> (default 120s).</li>
+</ul>
+<pre><code>except Exception:
+    record = TurnRecord(
+        ...
+        status=AdapterStatus.ERROR,
+        ...
+    )</code></pre>
+<p>If every turn is producing <code>ERROR</code> status, the adapter or CLI tool is fundamentally broken.</p>
+<h3>3. Check for stuck pause/stop flags</h3>
+<p>The batch checks <code>_pause_requested</code> and <code>_stop_requested</code> between turns (lines 147-152). If <code>pause()</code> was called, the batch will stop after the current turn with <code>RunStatus.PAUSED</code>. If <code>stop()</code> was called, it stops with <code>RunStatus.DONE</code>. These are not "stuck" states but may appear so if the caller forgot a pause was requested.</p>
+<h2>Recovery</h2>
+<h3>Scenario A: No agents available (WAITING_RESOURCES)</h3>
+<ol>
+  <li>Check each agent's status: <code>scheduler._roster</code> contains <code>Agent</code> objects with a <code>status</code> field.</li>
+  <li>If agents are stuck in <code>RUNNING</code>, they may have had their turn complete but <code>mark_agent_status</code> was not called. The <code>finally</code> block in <code>run()</code> should reset agents to <code>IDLE</code>, but verify.</li>
+  <li>If agents are <code>OFFLINE</code>, check that the underlying CLI tool is installed and reachable (see Playbook 02).</li>
+  <li>Fix agent statuses: <code>scheduler.mark_agent_status(agent_id, AgentStatus.IDLE)</code>.</li>
+</ol>
+<h3>Scenario B: Adapter errors on every turn</h3>
+<ol>
+  <li>Follow Playbook 02 to diagnose the adapter.</li>
+  <li>Once the adapter issue is resolved, create a new <code>BatchRunner</code> with a fresh scheduler and adapter map.</li>
+</ol>
+<h3>Scenario C: Resuming after pause</h3>
+<ol>
+  <li>If the batch is <code>PAUSED</code>, create a new <code>BatchRunner</code> for the remaining turns.</li>
+  <li>Carry forward the conversation context (use the checkpoint system, see Playbook 07).</li>
+</ol>
+<h2>Code References</h2>
+<ul>
+  <li><code>backend/src/agent_orchestrator/orchestrator/batch_runner.py</code> -- <code>BatchRunner</code> class, <code>run()</code> method, <code>TurnRecord</code> and <code>BatchResult</code> dataclasses.</li>
+  <li><code>backend/src/agent_orchestrator/orchestrator/scheduler.py</code> -- <code>RoundRobinScheduler.next_agent()</code>, <code>available_agents</code> property.</li>
+  <li><code>backend/src/agent_orchestrator/orchestrator/models.py</code> -- <code>RunStatus</code> enum (<code>QUEUED</code>, <code>RUNNING</code>, <code>PAUSED</code>, <code>WAITING_RESOURCES</code>, <code>DONE</code>, <code>FAILED</code>), <code>AgentStatus</code> enum.</li>
+</ul>
+  </article>
+</body>
+</html>

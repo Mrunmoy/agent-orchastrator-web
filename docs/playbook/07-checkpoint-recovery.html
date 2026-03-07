@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Playbook 07: Checkpoint Recovery</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2,h3 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.3rem; margin-top:28px; }
+    h3 { font-size:1.1rem; margin-top:18px; }
+    p,li { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#0c2028; padding:2px 6px; border-radius:4px; font-size:0.9em; font-family: monospace; }
+    pre { background:#0c2028; border:1px solid #2f7b72; border-radius:8px; padding:16px; overflow-x:auto; margin:12px 0; }
+    pre code { background:none; padding:0; font-size:0.88em; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; }
+    th,td { border:1px solid #2f7b72; padding:8px; text-align:left; }
+    th { background:#0c2028; color:var(--teal); }
+    ul,ol { padding-left:1.5em; }
+    a { color:#7fead6; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Playbook 07: Checkpoint Recovery</h1>
+    <div class="meta">Playbook Entry</div>
+<p>Conversation context is lost, corrupted, or has grown too large to fit within token limits.</p>
+<h2>Symptoms</h2>
+<ul>
+  <li><code>CheckpointPack.token_estimate</code> exceeds <code>max_token_estimate</code> (default 4000 tokens).</li>
+  <li>A checkpoint has too many <code>recent_events</code> and the context pack is bloated.</li>
+  <li>The summary is empty or truncated after compaction, indicating the checkpoint was severely over-budget.</li>
+  <li>Conversation resume fails because the JSONL event log is missing or unreadable.</li>
+  <li><code>EventLogReader.read_all()</code> returns an empty list when events should exist.</li>
+</ul>
+<h2>Diagnosis</h2>
+<h3>1. Check the token estimate</h3>
+<p>The <code>CheckpointBuilder.estimate_tokens()</code> method uses a rough heuristic: <code>word_count * 1.3</code>, rounded to the nearest integer.</p>
+<pre><code>builder = CheckpointBuilder(
+    conversation_id="conv-123",
+    max_recent_events=20,
+    max_token_estimate=4000,
+)
+pack = builder.build(summary="...", key_decisions=[...])
+print(f"Token estimate: {pack.token_estimate}")
+print(f"Max allowed: {builder.max_token_estimate}")
+print(f"Recent events: {len(pack.recent_events)}")</code></pre>
+<h3>2. Inspect the checkpoint pack contents</h3>
+<p>A <code>CheckpointPack</code> contains:</p>
+<table>
+  <thead><tr><th>Field</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>`summary`</td><td>Free-text summary of the conversation so far</td></tr>
+    <tr><td>`key_decisions`</td><td>List of important decisions made</td></tr>
+    <tr><td>`recent_events`</td><td>Last N events from the JSONL event log (default N=20)</td></tr>
+    <tr><td>`token_estimate`</td><td>Estimated token count of all packed content</td></tr>
+    <tr><td>`created_at`</td><td>ISO-8601 UTC timestamp</td></tr>
+  </tbody>
+</table>
+<h3>3. Check the event log</h3>
+<p>The <code>CheckpointBuilder.build()</code> method reads events from the JSONL event log if no explicit events list is provided. Verify the log exists and is readable:</p>
+<pre><code>from agent_orchestrator.storage.event_log import EventLogReader, conversation_log_path
+
+path = conversation_log_path("conv-123")
+print(f"Log path: {path}")
+print(f"Exists: {path.exists()}")
+
+reader = EventLogReader(path)
+events = reader.read_all()
+print(f"Event count: {len(events)}")</code></pre>
+<h3>4. Identify compaction impact</h3>
+<p>After calling <code>compact()</code>, check what was trimmed:</p>
+<ul>
+  <li>If <code>recent_events</code> is shorter than the original, oldest events were dropped.</li>
+  <li>If <code>summary</code> is shorter than the original, it was truncated word-by-word to fit.</li>
+  <li>If <code>summary</code> is empty, the checkpoint was severely over-budget and all content was trimmed.</li>
+</ul>
+<h2>Recovery</h2>
+<h3>Fix 1: Compact the checkpoint</h3>
+<p>The <code>CheckpointBuilder.compact()</code> method reduces a checkpoint to fit within <code>max_token_estimate</code> using a two-phase approach:</p>
+<p><strong>Phase 1:</strong> Drop oldest recent events one at a time until the estimate fits.</p>
+<p><strong>Phase 2:</strong> If still over budget after removing all events, truncate the summary word-by-word.</p>
+<pre><code>oversized_pack = builder.build(summary=long_summary, key_decisions=decisions)
+compacted_pack = builder.compact(oversized_pack)
+print(f"Before: {oversized_pack.token_estimate} tokens, {len(oversized_pack.recent_events)} events")
+print(f"After: {compacted_pack.token_estimate} tokens, {len(compacted_pack.recent_events)} events")</code></pre>
+<h3>Fix 2: Rebuild from event log</h3>
+<p>If the checkpoint is corrupted or lost, rebuild it from the JSONL event log:</p>
+<pre><code>reader = EventLogReader(conversation_log_path("conv-123"))
+events = reader.read_all()
+
+summary = "... (manually written or LLM-generated summary) ..."
+key_decisions = ["Decision 1", "Decision 2"]
+
+pack = builder.build(
+    summary=summary,
+    key_decisions=key_decisions,
+    events=events,  # pass events directly instead of reading from log
+)</code></pre>
+<h3>Fix 3: Adjust token budget</h3>
+<p>If checkpoints are consistently too large, increase the budget or reduce the event window:</p>
+<pre><code>builder = CheckpointBuilder(
+    conversation_id="conv-123",
+    max_recent_events=10,     # was 20 -- fewer events in context
+    max_token_estimate=8000,  # was 4000 -- allow larger checkpoints
+)</code></pre>
+<p><strong>Trade-off:</strong> Larger checkpoints provide more context but consume more of the LLM's context window. Fewer recent events mean less immediate conversation history.</p>
+<h3>Fix 4: Fix or recreate the event log</h3>
+<p>If <code>conversation_log_path()</code> points to a missing or corrupted file:</p>
+<ol>
+  <li>Check the expected path (derived from <code>conversation_id</code>).</li>
+  <li>If the file exists but is corrupted (malformed JSON lines), manually fix or remove bad lines.</li>
+  <li>If the file is missing entirely, the conversation history is lost. Start a new conversation or manually reconstruct the log.</li>
+</ol>
+<h2>Prevention</h2>
+<ul>
+  <li>Monitor <code>token_estimate</code> after each batch run and compact proactively.</li>
+  <li>Keep summaries concise -- they are the most expensive part of the checkpoint after compaction removes events.</li>
+  <li>Use meaningful <code>key_decisions</code> entries rather than verbose descriptions.</li>
+  <li>Periodically compact long-running conversations to prevent token budget overflow.</li>
+</ul>
+<h2>Code References</h2>
+<ul>
+  <li><code>backend/src/agent_orchestrator/storage/checkpoint.py</code> -- <code>CheckpointBuilder</code>, <code>CheckpointPack</code>, <code>build()</code>, <code>compact()</code>, <code>estimate_tokens()</code>.</li>
+  <li><code>backend/src/agent_orchestrator/storage/event_log.py</code> -- <code>EventLogReader</code>, <code>conversation_log_path()</code>.</li>
+</ul>
+<p>___BEGIN___COMMAND_DONE_MARKER___0</p>
+<p>___BEGIN___COMMAND_DONE_MARKER___0</p>
+  </article>
+</body>
+</html>

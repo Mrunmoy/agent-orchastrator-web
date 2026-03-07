@@ -34,12 +34,21 @@ type AgentEditorState = {
   role: AgentRole;
 };
 
+type ConversationCreatorState = {
+  title: string;
+  workingDirectory: string;
+};
+
 function getWorkingDirectory(): string {
   try {
     return window.localStorage.getItem(WORKING_DIR_KEY) ?? DEFAULT_WORKING_DIR;
   } catch {
     return DEFAULT_WORKING_DIR;
   }
+}
+
+function generateDefaultTitle(count: number): string {
+  return `Conversation ${count + 1}`;
 }
 
 function toConversationSummary(row: {
@@ -78,6 +87,10 @@ export function AppShell() {
   >({});
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [agentEditor, setAgentEditor] = useState<AgentEditorState | null>(null);
+  const [conversationCreator, setConversationCreator] = useState<ConversationCreatorState | null>(
+    null,
+  );
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [runStatus, setRunStatus] = useState("Idle");
   const [gateStatus, setGateStatus] = useState("Open");
   const [memoSummary, setMemoSummary] = useState("No memo available.");
@@ -113,12 +126,12 @@ export function AppShell() {
     void load();
   }, []);
 
-  const createConversation = async () => {
+  const createConversation = async (
+    title: string,
+    workingDirectory: string,
+  ): Promise<string | null> => {
     try {
-      const created = await createConversationApi(
-        `Conversation ${conversations.length + 1}`,
-        getWorkingDirectory(),
-      );
+      const created = await createConversationApi(title, workingDirectory);
       const selected = await selectConversationApi(created.id);
       const selectedId = selected.id;
       setConversations((prev) => [
@@ -130,11 +143,39 @@ export function AppShell() {
         ...prev,
       ]);
       setSelectedConversationId(selectedId);
+      setConversationCreator(null);
       setErrorText(null);
       return selectedId;
     } catch (error) {
       setErrorText(error instanceof Error ? error.message : "Failed to create conversation");
       return null;
+    }
+  };
+
+  const openConversationCreator = () => {
+    setConversationCreator({
+      title: generateDefaultTitle(conversations.length),
+      workingDirectory: getWorkingDirectory(),
+    });
+  };
+
+  const submitConversationCreator = async () => {
+    if (!conversationCreator || isCreatingConversation) return;
+    const title = conversationCreator.title.trim();
+    const workingDirectory = conversationCreator.workingDirectory.trim();
+    if (!title) {
+      setErrorText("Conversation title is required.");
+      return;
+    }
+    if (!workingDirectory) {
+      setErrorText("Working directory is required.");
+      return;
+    }
+    setIsCreatingConversation(true);
+    try {
+      await createConversation(title, workingDirectory);
+    } finally {
+      setIsCreatingConversation(false);
     }
   };
 
@@ -200,7 +241,7 @@ export function AppShell() {
     if (selectedConversationId) {
       return selectedConversationId;
     }
-    return createConversation();
+    return createConversation(generateDefaultTitle(conversations.length), getWorkingDirectory());
   };
 
   const appendLocalMessage = (conversationId: string, sender: string, text: string) => {
@@ -382,7 +423,7 @@ export function AppShell() {
           conversations={conversations}
           selectedConversationId={selectedConversationId}
           agents={agents}
-          onNewConversation={() => void createConversation()}
+          onNewConversation={() => openConversationCreator()}
           onDeleteConversation={() => void deleteConversation()}
           onClearConversations={() => void clearAllConversations()}
           onSelectConversation={(conversationId) => void selectConversation(conversationId)}
@@ -407,6 +448,45 @@ export function AppShell() {
         onContinueBatch={(steering, preference) => void continueBatch(steering, preference)}
         onMarkGateReady={markGateReady}
       />
+      {conversationCreator ? (
+        <section className="conversation-creator" data-testid="conversation-creator">
+          <h3>New Conversation</h3>
+          <div className="conversation-creator__grid">
+            <label>
+              Title
+              <input
+                value={conversationCreator.title}
+                onChange={(event) =>
+                  setConversationCreator((prev) =>
+                    prev ? { ...prev, title: event.target.value } : prev,
+                  )
+                }
+                placeholder="My conversation"
+              />
+            </label>
+            <label>
+              Working Directory
+              <input
+                value={conversationCreator.workingDirectory}
+                onChange={(event) =>
+                  setConversationCreator((prev) =>
+                    prev ? { ...prev, workingDirectory: event.target.value } : prev,
+                  )
+                }
+                placeholder="/path/to/project"
+              />
+            </label>
+          </div>
+          <div className="conversation-creator__actions">
+            <button className="btn btn--primary" onClick={() => void submitConversationCreator()} disabled={isCreatingConversation}>
+              {isCreatingConversation ? "Creating…" : "Create"}
+            </button>
+            <button className="btn btn--subtle" onClick={() => setConversationCreator(null)}>
+              Cancel
+            </button>
+          </div>
+        </section>
+      ) : null}
       {agentEditor ? (
         <section className="agent-editor" data-testid="agent-editor">
           <h3>{agentEditor.mode === "create" ? "Add Agent" : "Edit Agent"}</h3>

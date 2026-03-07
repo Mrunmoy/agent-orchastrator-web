@@ -67,15 +67,49 @@ describe("AppShell", () => {
     await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
   });
 
-  it("creates a new conversation when New is clicked", async () => {
+  it("shows new conversation form when + New is clicked", async () => {
     render(<AppShell />);
     await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
 
     fireEvent.click(screen.getByRole("button", { name: /\+ new/i }));
 
-    await waitFor(() => expect(api.createConversation).toHaveBeenCalledOnce());
+    expect(screen.getByTestId("conversation-creator")).toBeInTheDocument();
+    expect(api.createConversation).not.toHaveBeenCalled();
+  });
+
+  it("cancels new conversation form without creating", async () => {
+    render(<AppShell />);
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
+
+    fireEvent.click(screen.getByRole("button", { name: /\+ new/i }));
+    const creator = screen.getByTestId("conversation-creator");
+    fireEvent.click(within(creator).getByRole("button", { name: /cancel/i }));
+
+    expect(screen.queryByTestId("conversation-creator")).not.toBeInTheDocument();
+    expect(api.createConversation).not.toHaveBeenCalled();
+  });
+
+  it("creates a new conversation when form is submitted", async () => {
+    render(<AppShell />);
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
+
+    fireEvent.click(screen.getByRole("button", { name: /\+ new/i }));
+    const creator = screen.getByTestId("conversation-creator");
+
+    fireEvent.change(within(creator).getByLabelText(/title/i), {
+      target: { value: "My Project" },
+    });
+    fireEvent.change(within(creator).getByLabelText(/working directory/i), {
+      target: { value: "/tmp/myproject" },
+    });
+    fireEvent.click(within(creator).getByRole("button", { name: /create/i }));
+
+    await waitFor(() =>
+      expect(api.createConversation).toHaveBeenCalledWith("My Project", "/tmp/myproject"),
+    );
     const list = screen.getByTestId("conversation-list");
     expect(within(list).getByText("Conversation 1")).toBeInTheDocument();
+    expect(screen.queryByTestId("conversation-creator")).not.toBeInTheDocument();
   });
 
   it("sends a message to orchestrator steer endpoint", async () => {
@@ -83,6 +117,8 @@ describe("AppShell", () => {
     await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
 
     fireEvent.click(screen.getByRole("button", { name: /\+ new/i }));
+    const creator = screen.getByTestId("conversation-creator");
+    fireEvent.click(within(creator).getByRole("button", { name: /create/i }));
     await waitFor(() => expect(api.createConversation).toHaveBeenCalledOnce());
 
     fireEvent.change(screen.getByPlaceholderText("Type a message..."), {
@@ -101,6 +137,8 @@ describe("AppShell", () => {
     await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
 
     fireEvent.click(screen.getByRole("button", { name: /\+ new/i }));
+    const creator = screen.getByTestId("conversation-creator");
+    fireEvent.click(within(creator).getByRole("button", { name: /create/i }));
     await waitFor(() => expect(api.createConversation).toHaveBeenCalledOnce());
 
     fireEvent.click(screen.getByRole("button", { name: /clear all/i }));
