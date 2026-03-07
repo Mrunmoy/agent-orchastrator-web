@@ -504,7 +504,11 @@ export function AppShell() {
             </label>
           </div>
           <div className="conversation-creator__actions">
-            <button className="btn btn--primary" onClick={() => void submitConversationCreator()} disabled={isCreatingConversation}>
+            <button
+              className="btn btn--primary"
+              onClick={() => void submitConversationCreator()}
+              disabled={isCreatingConversation}
+            >
               {isCreatingConversation ? "Creating…" : "Create"}
             </button>
             <button className="btn btn--subtle" onClick={() => setConversationCreator(null)}>
@@ -610,7 +614,11 @@ export function AppShell() {
             </label>
           </div>
           <div className="agent-editor__actions">
-            <button className="btn btn--primary" onClick={() => void saveAgent()} disabled={isSavingAgent}>
+            <button
+              className="btn btn--primary"
+              onClick={() => void saveAgent()}
+              disabled={isSavingAgent}
+            >
               {isSavingAgent ? "Saving…" : "Save Agent"}
             </button>
             {agentEditor.mode === "edit" ? (

@@ -64,8 +64,8 @@ def test_initialize_preserves_data():
     with mgr.connection() as conn:
         now = "2026-03-07T00:00:00Z"
         conn.execute(
-            "INSERT INTO agent VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            ("a1", "Agent", "claude", "opus-4", None, "worker", "idle", None, "[]", now, now),
+            "INSERT INTO agent VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            ("a1", "Agent", "claude", "opus-4", None, "worker", "idle", None, "[]", 0, now, now),
         )
         conn.commit()
     mgr.initialize()  # re-initialize

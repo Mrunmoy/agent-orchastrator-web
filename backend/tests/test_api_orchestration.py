@@ -27,7 +27,7 @@ def client():
 def _create_conversation(client: TestClient, title: str = "Test") -> str:
     """Helper: create a conversation and return its id."""
     resp = client.post(
-        "/conversations/new",
+        "/api/conversations/new",
         json={"title": title, "project_path": "/tmp"},
     )
     return resp.json()["data"]["conversation"]["id"]
@@ -59,7 +59,7 @@ def _insert_run(
 class TestRunEndpoint:
     def test_returns_200_and_creates_run(self, client: TestClient):
         cid = _create_conversation(client)
-        resp = client.post(f"/orchestration/{cid}/run")
+        resp = client.post(f"/api/orchestration/{cid}/run")
         assert resp.status_code == 200
         body = resp.json()
         assert body["ok"] is True
@@ -71,35 +71,35 @@ class TestRunEndpoint:
     def test_custom_batch_size(self, client: TestClient):
         cid = _create_conversation(client)
         resp = client.post(
-            f"/orchestration/{cid}/run",
+            f"/api/orchestration/{cid}/run",
             json={"batch_size": 10},
         )
         assert resp.status_code == 200
         assert resp.json()["data"]["run"]["batch_size"] == 10
 
     def test_404_for_missing_conversation(self, client: TestClient):
-        resp = client.post("/orchestration/nonexistent/run")
+        resp = client.post("/api/orchestration/nonexistent/run")
         assert resp.status_code == 404
         assert resp.json()["ok"] is False
 
     def test_409_if_already_running(self, client: TestClient):
         cid = _create_conversation(client)
         _insert_run(cid, status="running")
-        resp = client.post(f"/orchestration/{cid}/run")
+        resp = client.post(f"/api/orchestration/{cid}/run")
         assert resp.status_code == 409
         assert resp.json()["ok"] is False
 
     def test_409_if_paused_run_exists(self, client: TestClient):
         cid = _create_conversation(client)
         _insert_run(cid, status="paused")
-        resp = client.post(f"/orchestration/{cid}/run")
+        resp = client.post(f"/api/orchestration/{cid}/run")
         assert resp.status_code == 409
         assert resp.json()["ok"] is False
 
     def test_422_for_zero_batch_size(self, client: TestClient):
         cid = _create_conversation(client)
         resp = client.post(
-            f"/orchestration/{cid}/run",
+            f"/api/orchestration/{cid}/run",
             json={"batch_size": 0},
         )
         assert resp.status_code == 422
@@ -107,14 +107,14 @@ class TestRunEndpoint:
     def test_422_for_negative_batch_size(self, client: TestClient):
         cid = _create_conversation(client)
         resp = client.post(
-            f"/orchestration/{cid}/run",
+            f"/api/orchestration/{cid}/run",
             json={"batch_size": -5},
         )
         assert resp.status_code == 422
 
     def test_run_persisted_in_db(self, client: TestClient):
         cid = _create_conversation(client)
-        resp = client.post(f"/orchestration/{cid}/run")
+        resp = client.post(f"/api/orchestration/{cid}/run")
         run_id = resp.json()["data"]["run"]["id"]
         db = get_db()
         with db.connection() as conn:
@@ -133,7 +133,7 @@ class TestContinueEndpoint:
     def test_continues_paused_run(self, client: TestClient):
         cid = _create_conversation(client)
         run_id = _insert_run(cid, status="paused")
-        resp = client.post(f"/orchestration/{cid}/continue")
+        resp = client.post(f"/api/orchestration/{cid}/continue")
         assert resp.status_code == 200
         body = resp.json()
         assert body["ok"] is True
@@ -141,20 +141,20 @@ class TestContinueEndpoint:
         assert body["data"]["run"]["id"] == run_id
 
     def test_404_for_missing_conversation(self, client: TestClient):
-        resp = client.post("/orchestration/nonexistent/continue")
+        resp = client.post("/api/orchestration/nonexistent/continue")
         assert resp.status_code == 404
         assert resp.json()["ok"] is False
 
     def test_409_if_no_paused_run(self, client: TestClient):
         cid = _create_conversation(client)
-        resp = client.post(f"/orchestration/{cid}/continue")
+        resp = client.post(f"/api/orchestration/{cid}/continue")
         assert resp.status_code == 409
         assert resp.json()["ok"] is False
 
     def test_409_if_run_is_running(self, client: TestClient):
         cid = _create_conversation(client)
         _insert_run(cid, status="running")
-        resp = client.post(f"/orchestration/{cid}/continue")
+        resp = client.post(f"/api/orchestration/{cid}/continue")
         assert resp.status_code == 409
         assert resp.json()["ok"] is False
 
@@ -166,7 +166,7 @@ class TestStopEndpoint:
     def test_stops_running_run(self, client: TestClient):
         cid = _create_conversation(client)
         run_id = _insert_run(cid, status="running")
-        resp = client.post(f"/orchestration/{cid}/stop")
+        resp = client.post(f"/api/orchestration/{cid}/stop")
         assert resp.status_code == 200
         body = resp.json()
         assert body["ok"] is True
@@ -176,32 +176,32 @@ class TestStopEndpoint:
     def test_stops_paused_run(self, client: TestClient):
         cid = _create_conversation(client)
         _insert_run(cid, status="paused")
-        resp = client.post(f"/orchestration/{cid}/stop")
+        resp = client.post(f"/api/orchestration/{cid}/stop")
         assert resp.status_code == 200
         assert resp.json()["data"]["run"]["status"] == "done"
 
     def test_stops_queued_run(self, client: TestClient):
         cid = _create_conversation(client)
         _insert_run(cid, status="queued")
-        resp = client.post(f"/orchestration/{cid}/stop")
+        resp = client.post(f"/api/orchestration/{cid}/stop")
         assert resp.status_code == 200
         assert resp.json()["data"]["run"]["status"] == "done"
 
     def test_404_for_missing_conversation(self, client: TestClient):
-        resp = client.post("/orchestration/nonexistent/stop")
+        resp = client.post("/api/orchestration/nonexistent/stop")
         assert resp.status_code == 404
         assert resp.json()["ok"] is False
 
     def test_409_if_no_active_run(self, client: TestClient):
         cid = _create_conversation(client)
-        resp = client.post(f"/orchestration/{cid}/stop")
+        resp = client.post(f"/api/orchestration/{cid}/stop")
         assert resp.status_code == 409
         assert resp.json()["ok"] is False
 
     def test_ended_at_set(self, client: TestClient):
         cid = _create_conversation(client)
         _insert_run(cid, status="running")
-        resp = client.post(f"/orchestration/{cid}/stop")
+        resp = client.post(f"/api/orchestration/{cid}/stop")
         run = resp.json()["data"]["run"]
         assert run["ended_at"] is not None
 
@@ -213,7 +213,7 @@ class TestSteerEndpoint:
     def test_injects_steering_note(self, client: TestClient):
         cid = _create_conversation(client)
         resp = client.post(
-            f"/orchestration/{cid}/steer",
+            f"/api/orchestration/{cid}/steer",
             json={"note": "Focus on testing first"},
         )
         assert resp.status_code == 200
@@ -225,7 +225,7 @@ class TestSteerEndpoint:
 
     def test_404_for_missing_conversation(self, client: TestClient):
         resp = client.post(
-            "/orchestration/nonexistent/steer",
+            "/api/orchestration/nonexistent/steer",
             json={"note": "Hello"},
         )
         assert resp.status_code == 404
@@ -233,13 +233,13 @@ class TestSteerEndpoint:
 
     def test_422_for_missing_note(self, client: TestClient):
         cid = _create_conversation(client)
-        resp = client.post(f"/orchestration/{cid}/steer", json={})
+        resp = client.post(f"/api/orchestration/{cid}/steer", json={})
         assert resp.status_code == 422
 
     def test_422_for_empty_note(self, client: TestClient):
         cid = _create_conversation(client)
         resp = client.post(
-            f"/orchestration/{cid}/steer",
+            f"/api/orchestration/{cid}/steer",
             json={"note": ""},
         )
         assert resp.status_code == 422
@@ -247,7 +247,7 @@ class TestSteerEndpoint:
     def test_steering_persisted_as_message_event(self, client: TestClient):
         cid = _create_conversation(client)
         client.post(
-            f"/orchestration/{cid}/steer",
+            f"/api/orchestration/{cid}/steer",
             json={"note": "Persist this"},
         )
         db = get_db()

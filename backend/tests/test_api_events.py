@@ -23,7 +23,7 @@ class TestEventsEndpoint:
     """GET /events returns events for a conversation."""
 
     def test_missing_conversation_id_returns_error(self):
-        resp = client.get("/events")
+        resp = client.get("/api/events")
         assert resp.status_code == 400
         body = resp.json()
         assert body["ok"] is False
@@ -37,7 +37,7 @@ class TestEventsEndpoint:
             "agent_orchestrator.api.routes.events.conversation_log_path",
             return_value=log_path,
         ):
-            resp = client.get(f"/events?conversation_id={conv_id}")
+            resp = client.get(f"/api/events?conversation_id={conv_id}")
         assert resp.status_code == 200
         body = resp.json()
         assert body["ok"] is True
@@ -56,7 +56,7 @@ class TestEventsEndpoint:
             "agent_orchestrator.api.routes.events.conversation_log_path",
             return_value=log_path,
         ):
-            resp = client.get(f"/events?conversation_id={conv_id}")
+            resp = client.get(f"/api/events?conversation_id={conv_id}")
         assert resp.status_code == 200
         body = resp.json()
         assert len(body["data"]["events"]) == 3
@@ -76,7 +76,7 @@ class TestEventsEndpoint:
             "agent_orchestrator.api.routes.events.conversation_log_path",
             return_value=log_path,
         ):
-            resp = client.get(f"/events?conversation_id={conv_id}&since=e1")
+            resp = client.get(f"/api/events?conversation_id={conv_id}&since=e1")
         assert resp.status_code == 200
         body = resp.json()
         assert len(body["data"]["events"]) == 2
@@ -97,7 +97,7 @@ class TestEventsEndpoint:
             "agent_orchestrator.api.routes.events.conversation_log_path",
             return_value=log_path,
         ):
-            resp = client.get(f"/events?conversation_id={conv_id}")
+            resp = client.get(f"/api/events?conversation_id={conv_id}")
         body = resp.json()
         timestamps = [e["timestamp"] for e in body["data"]["events"]]
         assert timestamps == sorted(timestamps)
@@ -107,7 +107,7 @@ class TestLatestEndpoint:
     """GET /events/latest returns the last N events."""
 
     def test_missing_conversation_id_returns_error(self):
-        resp = client.get("/events/latest")
+        resp = client.get("/api/events/latest")
         assert resp.status_code == 400
         body = resp.json()
         assert body["ok"] is False
@@ -125,7 +125,7 @@ class TestLatestEndpoint:
             "agent_orchestrator.api.routes.events.conversation_log_path",
             return_value=log_path,
         ):
-            resp = client.get(f"/events/latest?conversation_id={conv_id}&n=2")
+            resp = client.get(f"/api/events/latest?conversation_id={conv_id}&n=2")
         assert resp.status_code == 200
         body = resp.json()
         assert len(body["data"]["events"]) == 2
@@ -144,7 +144,7 @@ class TestLatestEndpoint:
             "agent_orchestrator.api.routes.events.conversation_log_path",
             return_value=log_path,
         ):
-            resp = client.get(f"/events/latest?conversation_id={conv_id}")
+            resp = client.get(f"/api/events/latest?conversation_id={conv_id}")
         assert resp.status_code == 200
         body = resp.json()
         assert len(body["data"]["events"]) == 10
@@ -153,14 +153,14 @@ class TestLatestEndpoint:
         assert body["data"]["events"][9]["event_id"] == "e15"
 
     def test_n_zero_returns_error(self):
-        resp = client.get("/events/latest?conversation_id=conv-1&n=0")
+        resp = client.get("/api/events/latest?conversation_id=conv-1&n=0")
         assert resp.status_code == 400
         body = resp.json()
         assert body["ok"] is False
         assert "positive" in body["error"].lower()
 
     def test_n_negative_returns_error(self):
-        resp = client.get("/events/latest?conversation_id=conv-1&n=-5")
+        resp = client.get("/api/events/latest?conversation_id=conv-1&n=-5")
         assert resp.status_code == 400
         body = resp.json()
         assert body["ok"] is False

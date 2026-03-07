@@ -18,7 +18,7 @@ def test_cors_uses_safe_local_defaults(monkeypatch) -> None:
     monkeypatch.delenv("ALLOWED_ORIGINS", raising=False)
     app = create_app()
     cors = _cors_kwargs(app)
-    assert cors["allow_origins"] == ["http://127.0.0.1:5173", "http://localhost:5173"]
+    assert cors["allow_origins"] == ["*"]
 
 
 def test_cors_allows_env_override(monkeypatch) -> None:

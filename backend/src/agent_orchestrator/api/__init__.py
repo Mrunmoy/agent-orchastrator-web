@@ -17,8 +17,8 @@ from agent_orchestrator.api.routes.orchestration import router as orchestration_
 def _allowed_origins_from_env() -> list[str]:
     raw = os.getenv("ALLOWED_ORIGINS")
     if raw is None or not raw.strip():
-        # Safe default for local dev; override explicitly for LAN/prod.
-        return ["http://127.0.0.1:5173", "http://localhost:5173"]
+        # Permissive in dev: allow any origin so LAN access works.
+        return ["*"]
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
@@ -35,11 +35,11 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    application.include_router(health_router)
-    application.include_router(conversations_router)
-    application.include_router(events_router)
-    application.include_router(agents_router)
-    application.include_router(orchestration_router)
+    application.include_router(health_router, prefix="/api")
+    application.include_router(conversations_router, prefix="/api")
+    application.include_router(events_router, prefix="/api")
+    application.include_router(agents_router, prefix="/api")
+    application.include_router(orchestration_router, prefix="/api")
     return application
 
 
