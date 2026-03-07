@@ -130,9 +130,18 @@ button {
   margin: 12px auto;
   padding: 0 10px;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto auto;
   gap: 10px;
   min-height: calc(100vh - 24px);
+}
+
+.app-shell__error {
+  border: 1px solid #b31947;
+  background: #411625;
+  color: #ffd1dd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
 }
 
 .app-shell__main {
@@ -140,6 +149,43 @@ button {
   display: grid;
   grid-template-columns: 340px 1fr 360px;
   gap: 10px;
+}
+
+.agent-editor {
+  border: 1px solid #5b2d5c;
+  border-radius: 10px;
+  background: #3f0e40;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.agent-editor h3 {
+  margin: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #f0dff0;
+}
+
+.agent-editor__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.agent-editor__grid label {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #c6b3c8;
+}
+
+.agent-editor__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 1280px) {
@@ -154,6 +200,10 @@ button {
 
 @media (max-width: 930px) {
   .app-shell__main {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-editor__grid {
     grid-template-columns: 1fr;
   }
 }
