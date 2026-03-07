@@ -3,8 +3,8 @@
 This is the source-of-truth backlog for current known scope.
 
 ## Current State Snapshot
-- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex/Ollama adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot, domain models (enums + dataclasses), conversation CRUD endpoints, JSONL event log writer/reader.
-- Not done: full orchestrator runtime (state machine, scheduler, batch runner), API surface beyond health/conversations, checkpoint builder, production workflow integration.
+- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex/Ollama adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot, domain models (enums + dataclasses), conversation CRUD endpoints, JSONL event log writer/reader, conversation state machine, round-robin scheduler, 20-turn batch runner, adapter output normalization, checkpoint pack builder, agent config endpoints, events stream endpoint, conversation history pane, chat timeline, agent roster editor, orchestration control endpoints, steering note injection, capacity-aware throttle, intelligence pane, merge coordinator queue.
+- Not done: composer + run controls (UI-004), run-window controls (UI-007), branch lock policy, notification pipeline, auth, LAN profile, remaining test/doc tasks.
 
 ## Definition of Done (per task)
 - Design/spec links are updated if behavior changed.
@@ -21,47 +21,47 @@ This is the source-of-truth backlog for current known scope.
 - [x] `DATA-001` Implement SQLite schema v1 (conversations, agents, tasks, runs, checkpoints)
 - [x] `DATA-002` Add migration/bootstrap loader for schema initialization
 - [x] `DATA-003` Implement append-only JSONL event log writer/reader
-- [ ] `DATA-004` Implement checkpoint pack builder with token bounds and summary compaction
+- [x] `DATA-004` Implement checkpoint pack builder with token bounds and summary compaction
 
 ## Epic ORCH - Orchestration Core
 - [x] `ORCH-001` Implement domain models (Agent, Conversation, Task, RunWindow, Notification)
-- [ ] `ORCH-002` Implement conversation state machine (`Debate`, `Planning`, `Working`, `NeedsInput`, `Queued`, `Completed`, `Failed`)
-- [ ] `ORCH-003` Implement round-robin scheduler with strict agent order
-- [ ] `ORCH-004` Implement 20-turn batch runner with pause/continue/stop-now
-- [ ] `ORCH-005` Implement user steering note injection between windows
-- [ ] `ORCH-006` Implement capacity-aware throttle and queue/resume policy
+- [x] `ORCH-002` Implement conversation state machine (`Debate`, `Planning`, `Working`, `NeedsInput`, `Queued`, `Completed`, `Failed`)
+- [x] `ORCH-003` Implement round-robin scheduler with strict agent order
+- [x] `ORCH-004` Implement 20-turn batch runner with pause/continue/stop-now
+- [x] `ORCH-005` Implement user steering note injection between windows
+- [x] `ORCH-006` Implement capacity-aware throttle and queue/resume policy
 
 ## Epic ADPT - CLI Agent Adapters
 - [x] `ADPT-001` Implement Claude CLI adapter (prompt, session attach/resume hooks, timeout handling)
 - [x] `ADPT-002` Implement Codex CLI adapter (prompt, session attach/resume hooks, timeout handling)
 - [x] `ADPT-003` Implement Ollama memo adapter for neutral decision memo
-- [ ] `ADPT-004` Normalize adapter output into common message/event schema
+- [x] `ADPT-004` Normalize adapter output into common message/event schema
 
 ## Epic API - Backend Service
 - [x] `API-001` Implement FastAPI app with health/config endpoints
 - [x] `API-002` Implement conversation CRUD endpoints
-- [ ] `API-003` Implement orchestration control endpoints (`run`, `continue`, `stop`, `steer`)
-- [ ] `API-004` Implement agent config endpoints (name, role, personality, order, working dir)
-- [ ] `API-005` Implement events stream endpoint for UI live updates
+- [x] `API-003` Implement orchestration control endpoints (`run`, `continue`, `stop`, `steer`)
+- [x] `API-004` Implement agent config endpoints (name, role, personality, order, working dir)
+- [x] `API-005` Implement events stream endpoint for UI live updates
 
 ## Epic UI - Slack-Like Web Experience
 - [x] `UI-001` Implement app shell layout (history left, chat center, intelligence right, controls bottom)
-- [ ] `UI-002` Implement conversation history list (scroll, select, delete, clear all, status icon)
-- [ ] `UI-003` Implement chat timeline (avatar, bold name, timestamp, typing/thinking indicator)
+- [x] `UI-002` Implement conversation history list (scroll, select, delete, clear all, status icon)
+- [x] `UI-003` Implement chat timeline (avatar, bold name, timestamp, typing/thinking indicator)
 - [ ] `UI-004` Implement composer + target-agent routing + run controls
-- [ ] `UI-005` Implement agent roster editor (unique name, source, model, personality, order)
-- [ ] `UI-006` Implement intelligence pane (agreement/disagreement + neutral memo)
+- [x] `UI-005` Implement agent roster editor (unique name, source, model, personality, order)
+- [x] `UI-006` Implement intelligence pane (agreement/disagreement + neutral memo)
 - [ ] `UI-007` Implement run-window controls (next 20, continue 20, stop now, steering note)
 
 ## Epic COORD - Parallel Delivery and Merge Safety
-- [ ] `COORD-001` Implement merge-coordinator queue model and serialized integration flow
-- [ ] `COORD-002` Implement branch/task lock policy to avoid multi-agent file conflicts
-- [ ] `COORD-003` Implement notifications for `Needs Input`, `Blocked`, `Completed`, `Queued`
+- [x] `COORD-001` Implement merge-coordinator queue model and serialized integration flow
+- [x] `COORD-002` Implement branch/task lock policy to avoid multi-agent file conflicts
+- [x] `COORD-003` Implement notifications for `Needs Input`, `Blocked`, `Completed`, `Queued`
 
 ## Epic TEST - Test and Quality Gates
-- [ ] `TEST-001` Backend unit tests for scheduler, batch runner, state transitions
+- [x] `TEST-001` Backend unit tests for scheduler, batch runner, state transitions
 - [ ] `TEST-002` Adapter contract tests with mocked CLI responses
-- [ ] `TEST-003` Frontend component tests for history, timeline, controls
+- [x] `TEST-003` Frontend component tests for history, timeline, controls
 - [ ] `TEST-004` End-to-end scenario: debate -> agreement -> task split -> completion notification
 
 ## Epic OPS - Local Network and Security
