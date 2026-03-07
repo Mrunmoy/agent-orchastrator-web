@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from agent_orchestrator.api import create_app
-from agent_orchestrator.api.routes.conversations import _init_db
+from agent_orchestrator.api.routes.conversations import _init_db, get_db
 
 
 @pytest.fixture(autouse=True)
@@ -170,6 +170,34 @@ class TestSelectConversation:
         assert resp.status_code == 404
         assert resp.json()["ok"] is False
         assert "error" in resp.json()
+
+    def test_select_updates_only_selected_updated_at(self, client: TestClient):
+        r1 = client.post(
+            "/conversations/new",
+            json={"title": "A", "project_path": "/tmp"},
+        )
+        r2 = client.post(
+            "/conversations/new",
+            json={"title": "B", "project_path": "/tmp"},
+        )
+        cid_a = r1.json()["data"]["conversation"]["id"]
+        cid_b = r2.json()["data"]["conversation"]["id"]
+
+        db = get_db()
+        with db.connection() as conn:
+            old_a = "2001-01-01T00:00:00+00:00"
+            old_b = "2002-02-02T00:00:00+00:00"
+            conn.execute("UPDATE conversation SET updated_at = ? WHERE id = ?", (old_a, cid_a))
+            conn.execute("UPDATE conversation SET updated_at = ? WHERE id = ?", (old_b, cid_b))
+            conn.commit()
+
+        client.post("/conversations/select", json={"conversation_id": cid_a})
+
+        convs = client.get("/conversations").json()["data"]["conversations"]
+        by_id = {c["id"]: c for c in convs}
+        assert by_id[cid_a]["updated_at"] != old_a
+        assert by_id[cid_b]["updated_at"] == old_b
+        assert convs[0]["id"] == cid_a
 
 
 # ── POST /conversations/delete ──────────────────────────────────────

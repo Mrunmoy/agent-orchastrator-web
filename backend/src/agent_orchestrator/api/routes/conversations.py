@@ -143,9 +143,16 @@ def select_conversation(body: ConversationIdBody) -> Any:
                 content=error_response("Conversation not found"),
             )
         now = datetime.now(UTC).isoformat()
-        conn.execute("UPDATE conversation SET active = 0, updated_at = ?", (now,))
         conn.execute(
-            "UPDATE conversation SET active = 1, updated_at = ? WHERE id = ?",
+            "UPDATE conversation "
+            "SET active = 0 "
+            "WHERE deleted_at IS NULL AND id != ?",
+            (body.conversation_id,),
+        )
+        conn.execute(
+            "UPDATE conversation "
+            "SET active = 1, updated_at = ? "
+            "WHERE id = ? AND deleted_at IS NULL",
             (now, body.conversation_id),
         )
         conn.commit()
