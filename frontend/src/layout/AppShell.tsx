@@ -7,7 +7,6 @@ import {
   createConversation as createConversationApi,
   deleteAgent as deleteAgentApi,
   deleteConversation as deleteConversationApi,
-  listAgents,
   listConversationAgents,
   listConversations,
   removeAgentFromConversation as removeAgentFromConversationApi,
@@ -158,14 +157,8 @@ export function AppShell() {
         } else {
           setAgents([]);
         }
-      } catch {
-        // Fallback to global agents if conversation-scoped endpoint fails
-        try {
-          const agentRows = await listAgents();
-          setAgents(agentRows.map(toAgentData));
-        } catch (error) {
-          setErrorText(error instanceof Error ? error.message : "Failed to load agents");
-        }
+      } catch (error) {
+        setErrorText(error instanceof Error ? error.message : "Failed to load agents");
       }
     };
     void loadAgents();

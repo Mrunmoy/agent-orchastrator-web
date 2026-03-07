@@ -222,6 +222,40 @@ describe("AppShell", () => {
     expect(personalitySelect.value).toBe("code_reviewer");
   });
 
+  it("removes agent from conversation (not global delete) when conversation is selected", async () => {
+    api.listConversations.mockResolvedValue([
+      { id: "conv-1", title: "Test", project_path: "/tmp", updated_at: "2026-01-01T00:00:00Z", active: 1 },
+    ]);
+    api.listConversationAgents.mockResolvedValue([
+      {
+        id: "agent-1",
+        display_name: "Claude Bot",
+        provider: "claude",
+        model: "opus",
+        role: "worker",
+        status: "idle",
+        sort_order: 0,
+        turn_order: 1,
+      },
+    ]);
+    render(<AppShell />);
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
+    await waitFor(() => expect(api.listConversationAgents).toHaveBeenCalled());
+
+    // Click Edit on the agent card
+    const editBtn = await screen.findByRole("button", { name: /edit/i });
+    fireEvent.click(editBtn);
+
+    // Click Delete Agent
+    const deleteBtn = await screen.findByRole("button", { name: /delete agent/i });
+    fireEvent.click(deleteBtn);
+
+    await waitFor(() =>
+      expect(api.removeAgentFromConversation).toHaveBeenCalledWith("conv-1", "agent-1"),
+    );
+    expect(api.deleteAgent).not.toHaveBeenCalled();
+  });
+
   it("app-shell has dark theme root element", () => {
     render(<AppShell />);
     const shell = screen.getByTestId("app-shell");
