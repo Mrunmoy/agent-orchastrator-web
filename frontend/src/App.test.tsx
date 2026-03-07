@@ -3,13 +3,17 @@ import { describe, it, expect } from "vitest";
 import App from "./App";
 
 describe("App", () => {
-  it("renders the app shell heading", () => {
+  it("renders the app shell layout", () => {
     render(<App />);
-    expect(screen.getByRole("heading", { name: /agent orchestrator/i })).toBeInTheDocument();
+    expect(screen.getByTestId("app-shell")).toBeInTheDocument();
   });
 
-  it("renders the root layout element", () => {
-    const { container } = render(<App />);
-    expect(container.querySelector("[data-testid='app-shell']")).toBeInTheDocument();
+  it("renders all four layout zones", () => {
+    render(<App />);
+    expect(screen.getByTestId("top-bar")).toBeInTheDocument();
+    expect(screen.getByTestId("history-pane")).toBeInTheDocument();
+    expect(screen.getByTestId("chat-pane")).toBeInTheDocument();
+    expect(screen.getByTestId("intelligence-pane")).toBeInTheDocument();
+    expect(screen.getByTestId("bottom-controls")).toBeInTheDocument();
   });
 });
