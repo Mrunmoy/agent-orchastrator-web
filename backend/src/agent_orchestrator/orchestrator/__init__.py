@@ -20,9 +20,17 @@ from agent_orchestrator.orchestrator.models import (
     TaskStatus,
 )
 from agent_orchestrator.orchestrator.scheduler import RoundRobinScheduler
+from agent_orchestrator.orchestrator.state_machine import (
+    TRANSITIONS,
+    InvalidTransition,
+    StateMachine,
+)
 
 __all__ = [
     "Agent",
+    "InvalidTransition",
+    "StateMachine",
+    "TRANSITIONS",
     "AgentRole",
     "AgentStatus",
     "Artifact",
