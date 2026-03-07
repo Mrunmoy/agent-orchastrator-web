@@ -3,165 +3,92 @@
 [![CI](https://github.com/Mrunmoy/agent-orchastrator-web/actions/workflows/ci.yml/badge.svg)](https://github.com/Mrunmoy/agent-orchastrator-web/actions/workflows/ci.yml)
 [![Status: WIP](https://img.shields.io/badge/status-work%20in%20progress-orange)](#)
 
-LAN-accessible, CLI-native multi-agent orchestration workspace.
-**Work In Progress:** active development in progress; interfaces and behavior may change frequently.
+A local-first, LAN-accessible orchestration cockpit for running multiple CLI AI agents (Claude, Codex, Ollama) in structured workflows. Instead of chatting with one model at a time, you set up multi-agent conversations where agents debate, agree, and build software together through phased execution.
 
-## License
-This project is licensed under the custom [Mrunmoy + Claude + Codex Appreciation License v1.0](./LICENSE).
-Usage requires a visible acknowledgment thanking **Mrunmoy**, **Claude**, and **Codex** before using the software.
+**What it lets you do:**
 
-## Toolchain
-This project uses **Nix** for reproducible development.
+- Run parallel AI agents that discuss design decisions before writing code
+- Execute structured workflows: design debate, TDD planning, implementation, integration, docs, merge
+- Batch-execute agent turns (20 at a time) with pause points for human steering
+- Resume conversations from checkpoints instead of replaying full transcripts
+- Monitor agent agreement/disagreement in real time via a Slack-like UI
+
+## Quick Start
+
+### Prerequisites
+
+- [Nix](https://nixos.org/download/) package manager
+- Git
+
+### Clone and Setup
 
 ```bash
+git clone git@github.com:Mrunmoy/agent-orchastrator-web.git
+cd agent-orchastrator-web
 nix develop
 ```
 
-The dev shell now bootstraps frontend dependencies automatically (runs `npm ci --prefix frontend` if `frontend/node_modules` is missing).
-If frontend tests still fail with `vitest: not found`, run:
-```bash
-npm ci --prefix frontend
-```
+That's it. The Nix dev shell provides Python 3.12, Node.js 22, and all tooling. Frontend dependencies install automatically on shell entry.
 
-Optional:
+If you use [direnv](https://direnv.net/), you can skip typing `nix develop` every time:
+
 ```bash
 direnv allow
 ```
 
-## Step-By-Step Runbook
+### Verify Everything Works
 
-### 1) Enter dev environment
 ```bash
-cd <repo-root>
-nix develop
+make test-all    # run backend + frontend tests
+make verify      # UI smoke test + screenshot
 ```
 
-### 2) Start local UI mock and checks
+### Start the Dev Server
+
 ```bash
-make serve      # http://localhost:8080
-make test-ui
-make verify
+# Backend API
+cd backend && uvicorn agent_orchestrator.api.app:app --reload
+
+# Frontend dev server
+cd frontend && npm run dev
 ```
 
-### 3) Generate manager handoff packets
-```bash
-make handoff-packs
-```
-Kickoff docs:
-- `docs/handoff/claude-code/KICKOFF.md`
-- `docs/handoff/codex-code/KICKOFF.md`
+## API Quick Tour
 
-### 4) Create task worktree by task ID
-Preferred flow is task-driven worktree creation:
-```bash
-make task-worktree TASK_ID=UI-001 PREFIX=claude
-make task-worktree TASK_ID=ORCH-001 PREFIX=claude
-make task-worktree TASK_ID=DATA-001 PREFIX=claude
+The backend exposes a REST API. All responses use a standard envelope:
+
+```json
+{"ok": true, "data": { ... }}
 ```
 
-This creates:
-- branch: `claude/<task-slug>`
-- worktree: `../agent-orchestrator-worktrees/<task-slug>`
-- context file: `.agent-context.md` inside the worktree
+Example — list conversations:
 
-### 4.1) Recommended first parallel batch (real tasks)
-Start these first:
 ```bash
-# Worker 1 (Claude): backend foundation
-make task-worktree TASK_ID=SETUP-001 PREFIX=claude
-
-# Worker 2 (Codex): frontend foundation
-make task-worktree TASK_ID=SETUP-002 PREFIX=codex
-
-# Worker 3 (Claude): first backend adapter (starts after SETUP-001 is ready)
-make task-worktree TASK_ID=ADPT-001 PREFIX=claude
+curl http://localhost:8000/api/conversations
 ```
 
-Worktree paths created:
+Example — create a conversation:
+
 ```bash
-<worktree-root>/setup-backend-layout
-<worktree-root>/setup-frontend-shell
-<worktree-root>/adpt-claude-cli
+curl -X POST http://localhost:8000/api/conversations \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Design debate: auth module"}'
 ```
 
-### 5) Start CLI agents in each worktree
-Example (Claude workers):
-```bash
-cd <worktree-root>/ui-conversations && claude
-cd <worktree-root>/orch-batch-runner && claude
-cd <worktree-root>/data-schema-v1 && claude
+## Project Structure
+
+```
+backend/          Python (FastAPI) — API, adapters, orchestrator, storage
+frontend/         TypeScript + React 19 — Vite, Vitest, Testing Library
+config/           Task registry, agent personality profiles
+docs/             Design docs, specs, coordination, ADRs, playbooks
 ```
 
-Example (Codex worker on another task):
-```bash
-make task-worktree TASK_ID=UI-002 PREFIX=codex
-cd <worktree-root>/ui-chat-timeline && codex
-```
+## Current Status
 
-### 5.1) Generate task-specific prompt text
-From repo root, generate a prompt and paste it into the matching agent terminal:
-```bash
-make task-prompt TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-setup
-make task-prompt TASK_ID=SETUP-002 PREFIX=codex WORKER=codex-setup
-make task-prompt TASK_ID=ADPT-001 PREFIX=claude WORKER=claude-adapter
-```
+This project is under active development. The backend API, adapter layer, orchestration engine, and frontend shell are functional. The UI is being built out incrementally. See [TASKS.md](./TASKS.md) for the full backlog.
 
-### 5.2) One-command task prepare flow (recommended)
-Create/sync worktree + write `TASK_PROMPT.md` inside that worktree:
-```bash
-make task-ready TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-setup
-```
+## License
 
-Create/sync worktree + write prompt + open interactive shell in that worktree:
-```bash
-make task-shell TASK_ID=SETUP-001 PREFIX=claude WORKER=claude-setup
-```
-
-Then inside that shell:
-```bash
-claude
-# tell claude: read TASK_PROMPT.md and execute
-```
-
-### 6) Monitor current parallel state
-```bash
-make parallel-status
-git -C <repo-root> worktree list
-```
-
-### 7) Integration policy
-- Workers never merge directly to `master`.
-- Merge coordinator merges one branch at a time.
-- Update `docs/coordination/task-board.md` status: `Todo -> In Progress -> Review -> Done`.
-
-## Common Commands
-```bash
-make serve
-make test-ui
-make test-api-conversations
-make test-integration
-make test-all
-make ui-shot
-make verify
-make parallel-init AGENTS="codex-ui claude-orch ollama-data"
-make parallel-status
-make handoff-packs
-make task-worktree TASK_ID=UI-001 PREFIX=claude
-```
-
-## Task Planning Status
-- Broad project task list exists in `TASKS.md` (multi-phase backlog).
-- Execution-level slices exist in `docs/coordination/task-board.md` + `config/tasks.json`.
-- This is a strong **v1 backlog**, but not final. You should keep adding tasks as architecture and implementation evolve.
-
-## Documentation
-- `TASKS.md` - task tracker
-- `docs/DESIGN.md` - high-level design
-- `docs/IMPLEMENTATION_PLAN_V1.md` - sprint implementation plan
-- `docs/DEV_ENV.md` - environment and autonomous test loop
-- `docs/specs/` - section-by-section implementation contracts
-- `docs/coordination/PARALLEL_AGENT_WORKFLOW.md` - multi-agent parallel development workflow
-- `docs/coordination/task-board.md` - assign/track independent slices per agent
-- `docs/coordination/CROSS_TOOL_HANDOFF.md` - codex-code/claude-code manager protocol
-- `docs/handoff/*/KICKOFF.md` - generated manager handoff packets
-- `config/tasks.json` - machine-readable task registry (ID -> branch slug/scope)
+Licensed under the [Mrunmoy + Claude + Codex Appreciation License v1.0](./LICENSE).
+Usage requires a visible acknowledgment thanking **Mrunmoy**, **Claude**, and **Codex**.
