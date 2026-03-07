@@ -20,7 +20,7 @@ Execution board for active parallel slices.
 
 | ID | Title | Scope | Priority | Owner | Status | Depends On | Branch |
 |---|---|---|---|---|---|---|---|
-| SETUP-001 | Backend Python package layout | `backend/*` | P0 | unassigned | Todo | none | - |
+| SETUP-001 | Backend Python package layout | `backend/*` | P0 | claude-backend | Review | none | claude/setup-backend-layout |
 | SETUP-002 | Frontend TypeScript app shell | `frontend/*` | P0 | claude-frontend | Done | none | claude/setup-frontend-shell |
 | DATA-001 | SQLite schema v1 | `backend/storage/schema.sql` | P0 | unassigned | Todo | SETUP-001 | - |
 | ORCH-001 | Domain models | `backend/orchestrator/models.py` | P0 | unassigned | Todo | SETUP-001,DATA-001 | - |
