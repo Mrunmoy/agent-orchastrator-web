@@ -56,7 +56,7 @@ This is the source-of-truth backlog for current known scope.
 ## Epic COORD - Parallel Delivery and Merge Safety
 - [ ] `COORD-001` Implement merge-coordinator queue model and serialized integration flow
 - [ ] `COORD-002` Implement branch/task lock policy to avoid multi-agent file conflicts
-- [ ] `COORD-003` Implement notifications for `Needs Input`, `Blocked`, `Completed`, `Queued`
+- [x] `COORD-003` Implement notifications for `Needs Input`, `Blocked`, `Completed`, `Queued`
 
 ## Epic TEST - Test and Quality Gates
 - [ ] `TEST-001` Backend unit tests for scheduler, batch runner, state transitions
