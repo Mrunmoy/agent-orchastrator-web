@@ -150,8 +150,8 @@ export async function removeAgentFromConversation(
   agentId: string,
 ): Promise<void> {
   await request<Record<string, unknown>>(
-    `/conversations/${conversationId}/agents/${agentId}/remove`,
-    { method: "POST" },
+    `/conversations/${conversationId}/agents/${agentId}`,
+    { method: "DELETE" },
   );
 }
 
