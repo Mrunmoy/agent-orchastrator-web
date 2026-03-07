@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Codex: Domain Models (ORCH-001)</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,#0c0f16 55%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,#1b2130,#111521); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--gold); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li { color:var(--ink); line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#2a2d3a; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Domain Models</h1>
+    <div class="meta">Design Codex Entry &middot; 2026-03-07 &middot; ORCH-001</div>
+
+    <h2>Context</h2>
+    <p>The orchestration core needs canonical Python data structures that mirror the domain model spec (<code>docs/specs/12-domain-model.md</code>). These models define agents, conversations, tasks, artifacts, message events, scheduler runs, and resource snapshots. They are the shared vocabulary between the storage layer, the scheduler, and the API.</p>
+
+    <h2>Decisions</h2>
+    <ul>
+      <li>All domain entities are Python <code>@dataclass</code> classes with full type hints.</li>
+      <li>Nine enums capture the finite state values: <code>Provider</code>, <code>AgentRole</code>, <code>AgentStatus</code>, <code>ConversationState</code>, <code>Phase</code>, <code>GateStatus</code>, <code>TaskStatus</code>, <code>RunStatus</code>, <code>ArtifactType</code>.</li>
+      <li>Enum values use lowercase strings matching the SQL column values (e.g., <code>Provider.CODEX = "codex"</code>).</li>
+      <li>Optional fields use <code>Optional[T]</code> and default to <code>None</code>.</li>
+      <li>Fields with SQL defaults (like <code>priority</code>, <code>active</code>, <code>enabled</code>, JSON columns) carry matching Python defaults.</li>
+      <li>Timestamp fields are typed as <code>str</code> to match SQLite TEXT storage.</li>
+      <li>Integer primary keys (<code>MessageEvent.id</code>, <code>ResourceSnapshot.id</code>) are <code>Optional[int]</code> since they are auto-incremented.</li>
+    </ul>
+
+    <h2>Rationale</h2>
+    <ul>
+      <li>Dataclasses provide a clean, lightweight representation with no ORM coupling.</li>
+      <li>String-valued enums allow direct round-tripping with SQLite without conversion.</li>
+      <li>Defaults mirror SQL defaults so Python-constructed instances are DB-ready.</li>
+      <li>No frozen dataclasses here &mdash; domain models need to be mutable for state transitions and updates.</li>
+    </ul>
+
+    <h2>Entities</h2>
+    <ul>
+      <li><code>Agent</code> &mdash; 11 fields: identity, provider/model, role/status, session, capabilities, timestamps.</li>
+      <li><code>Conversation</code> &mdash; 13 fields: title, project path, state machine (state/phase/gate), priority, summary, timestamps, soft delete.</li>
+      <li><code>ConversationAgent</code> &mdash; 8 fields: join table linking agents to conversations with turn order and permissions.</li>
+      <li><code>Task</code> &mdash; 13 fields: conversation-scoped work items with status, ownership, dependencies, evidence.</li>
+      <li><code>Artifact</code> &mdash; 6 fields: typed structured outputs (agreement maps, checkpoints, etc.).</li>
+      <li><code>MessageEvent</code> &mdash; 9 fields: chat stream and event timeline entries.</li>
+      <li><code>SchedulerRun</code> &mdash; 8 fields: batch execution lifecycle tracking.</li>
+      <li><code>ResourceSnapshot</code> &mdash; 7 fields: machine resource telemetry for auto-throttle.</li>
+    </ul>
+
+    <h2>Test Strategy</h2>
+    <p>TDD with tests covering: enum member completeness, dataclass instantiation with valid data, optional field defaults, enum field acceptance, and type consistency. All tests written before implementation.</p>
+
+    <h2>Files</h2>
+    <ul>
+      <li><code>backend/src/agent_orchestrator/orchestrator/models.py</code> &mdash; All models and enums.</li>
+      <li><code>backend/src/agent_orchestrator/orchestrator/__init__.py</code> &mdash; Re-exports.</li>
+      <li><code>backend/tests/test_orchestrator_models.py</code> &mdash; Test suite.</li>
+    </ul>
+  </article>
+</body>
+</html>

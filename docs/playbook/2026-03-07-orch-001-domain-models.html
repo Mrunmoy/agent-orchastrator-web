@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playbook: Domain Models (ORCH-001)</title>
+  <style>
+    :root { --ink:#e9f1ef; --muted:#9cb2b0; --teal:#62d7c8; }
+    body { margin:0; background:radial-gradient(circle at top,#20474e,#0d1218 60%); color:var(--ink); font-family: Georgia, serif; }
+    .page { max-width:980px; margin:32px auto; padding:32px; border:1px solid #2f7b72; border-radius:16px; background:linear-gradient(180deg,#16232a,#0f161b); box-shadow:0 16px 48px #0008; }
+    h1,h2 { color:var(--teal); margin:0 0 12px; }
+    h1 { font-size:2rem; }
+    h2 { font-size:1.2rem; margin-top:22px; }
+    p,li,code { line-height:1.6; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    code { background:#1a2a2e; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <h1>Domain Models</h1>
+    <div class="meta">Playbook Entry &middot; 2026-03-07 &middot; ORCH-001</div>
+
+    <h2>What it does</h2>
+    <p>Defines 9 enums and 8 dataclasses that form the canonical data structures for the orchestration core. These models represent agents, conversations, tasks, artifacts, message events, scheduler runs, and resource snapshots.</p>
+
+    <h2>How to run tests</h2>
+    <p><code>cd backend && python -m pytest tests/test_orchestrator_models.py -q</code></p>
+    <p>43 tests covering enum completeness, dataclass instantiation, optional field defaults, and re-export from <code>__init__.py</code>.</p>
+
+    <h2>Key design choices</h2>
+    <ul>
+      <li>Enums inherit from both <code>str</code> and <code>Enum</code>, so their values are plain strings that round-trip directly to/from SQLite TEXT columns.</li>
+      <li>No ORM dependency &mdash; pure <code>@dataclass</code> classes with type hints.</li>
+      <li>Fields with SQL <code>DEFAULT</code> values carry matching Python defaults (e.g., <code>priority=100</code>, <code>active=0</code>, <code>depends_on_json="[]"</code>).</li>
+      <li>Auto-increment integer PKs (<code>MessageEvent.id</code>, <code>ResourceSnapshot.id</code>) are <code>int | None</code> defaulting to <code>None</code>.</li>
+      <li>Timestamps are <code>str</code> to match SQLite TEXT storage &mdash; no datetime parsing at the model layer.</li>
+    </ul>
+
+    <h2>Gotchas</h2>
+    <ul>
+      <li>Ruff enforces <code>X | Y</code> union syntax over <code>Optional[X]</code> &mdash; the auto-fix handles this.</li>
+      <li>Import sorting (<code>I001</code>) requires <code>from __future__ import annotations</code> to be in the right block position. Let ruff fix it.</li>
+      <li>Dataclass fields with defaults must come after fields without defaults. Required fields are ordered first, then defaulted fields.</li>
+    </ul>
+
+    <h2>Files</h2>
+    <ul>
+      <li><code>backend/src/agent_orchestrator/orchestrator/models.py</code> &mdash; 9 enums + 8 dataclasses</li>
+      <li><code>backend/src/agent_orchestrator/orchestrator/__init__.py</code> &mdash; Re-exports all 17 symbols</li>
+      <li><code>backend/tests/test_orchestrator_models.py</code> &mdash; 43 tests</li>
+    </ul>
+  </article>
+</body>
+</html>
