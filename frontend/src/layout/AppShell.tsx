@@ -21,7 +21,10 @@ import {
 import "./AppShell.css";
 import { TopBar } from "./TopBar";
 import { ConversationSummary, HistoryPane } from "./HistoryPane";
-import { ChatMessage, ChatPane } from "./ChatPane";
+import type { ChatMessageData } from "../features/chat/types";
+import type { DebatePhase } from "../features/debate/types";
+import { PhaseBanner } from "../features/debate/PhaseBanner";
+import { ChatPane } from "./ChatPane";
 import { IntelligencePane } from "./IntelligencePane";
 import { BottomControls } from "./BottomControls";
 
@@ -108,7 +111,7 @@ export function AppShell() {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [messagesByConversation, setMessagesByConversation] = useState<
-    Record<string, ChatMessage[]>
+    Record<string, ChatMessageData[]>
   >({});
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [agentEditor, setAgentEditor] = useState<AgentEditorState | null>(null);
@@ -121,6 +124,10 @@ export function AppShell() {
   const [gateStatus, setGateStatus] = useState("Open");
   const [memoSummary, setMemoSummary] = useState("No memo available.");
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [phase] = useState<DebatePhase>("Design Debate");
+  const [round] = useState(1);
+  const [totalRounds] = useState(5);
+  const [speakingAgent] = useState<string | null>(null);
 
   const selectedConversation = useMemo(
     () => conversations.find((c) => c.id === selectedConversationId) ?? null,
@@ -282,13 +289,20 @@ export function AppShell() {
     return createConversation(generateDefaultTitle(conversations.length), getWorkingDirectory());
   };
 
-  const appendLocalMessage = (conversationId: string, sender: string, text: string) => {
+  const appendLocalMessage = (
+    conversationId: string,
+    sender: string,
+    text: string,
+    type: ChatMessageData["type"] = "steer",
+  ) => {
     const now = new Date().toISOString();
-    const newMessage: ChatMessage = {
+    const newMessage: ChatMessageData = {
       id: `${conversationId}-${Date.now()}`,
-      sender,
+      agentName: sender,
       text,
       timestamp: now,
+      isUser: type === "steer",
+      type,
     };
     setMessagesByConversation((prev) => ({
       ...prev,
@@ -303,7 +317,7 @@ export function AppShell() {
     );
   };
 
-  const sendMessage = async (text: string, target: string) => {
+  const sendMessage = async (text: string, target: string | null) => {
     const conversationId = await ensureConversation();
     if (!conversationId) return;
     try {
@@ -463,6 +477,12 @@ export function AppShell() {
         gateStatus={gateStatus}
         onRunNewBatch={() => void runNewBatch()}
         onStopRun={() => void stopRun()}
+      />
+      <PhaseBanner
+        phase={phase}
+        round={round}
+        totalRounds={totalRounds}
+        speakingAgent={speakingAgent}
       />
       {errorText ? (
         <div className="app-shell__error" role="status">

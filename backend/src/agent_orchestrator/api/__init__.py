@@ -14,7 +14,9 @@ from agent_orchestrator.api.routes.conversation_agents import (
 from agent_orchestrator.api.routes.conversations import router as conversations_router
 from agent_orchestrator.api.routes.events import router as events_router
 from agent_orchestrator.api.routes.health import router as health_router
+from agent_orchestrator.api.routes.artifacts import router as artifacts_router
 from agent_orchestrator.api.routes.orchestration import router as orchestration_router
+from agent_orchestrator.api.routes.tasks import router as tasks_router
 
 
 def _allowed_origins_from_env() -> list[str]:
@@ -52,6 +54,8 @@ def create_app() -> FastAPI:
     application.include_router(agents_router, prefix="/api")
     application.include_router(conversation_agents_router, prefix="/api")
     application.include_router(orchestration_router, prefix="/api")
+    application.include_router(tasks_router, prefix="/api")
+    application.include_router(artifacts_router, prefix="/api")
     return application
 
 

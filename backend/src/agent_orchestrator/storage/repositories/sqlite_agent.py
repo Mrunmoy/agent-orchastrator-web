@@ -60,6 +60,7 @@ def _row_to_agent(row: tuple) -> Agent:
         updated_at=d["updated_at"],
         personality_key=d["personality_key"],
         session_id=d["session_id"],
+        sort_order=d["sort_order"],
     )
 
 

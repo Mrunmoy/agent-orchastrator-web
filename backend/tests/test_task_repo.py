@@ -16,6 +16,27 @@ from agent_orchestrator.storage.repositories.sqlite_task import SQLiteTaskReposi
 
 _NOW = "2026-03-07T00:00:00Z"
 
+# Happy-path lifecycle sequence for walking tasks to a target status.
+_LIFECYCLE = [
+    TaskStatus.TODO,
+    TaskStatus.DESIGN,
+    TaskStatus.TDD,
+    TaskStatus.IMPLEMENTING,
+    TaskStatus.TESTING,
+    TaskStatus.PR_RAISED,
+    TaskStatus.IN_REVIEW,
+    TaskStatus.MERGING,
+    TaskStatus.DONE,
+]
+
+
+def _advance_to(repo: SQLiteTaskRepository, task_id: str, target: TaskStatus) -> None:
+    """Walk a task from TODO through the happy path up to *target*."""
+    for status in _LIFECYCLE[1:]:
+        repo.update_status(task_id, status)
+        if status == target:
+            return
+
 
 def _seed_conversations(db: DatabaseManager) -> None:
     """Insert conversation and agent rows used by task repo tests."""
@@ -117,7 +138,7 @@ class TestDependencyGateBlocked:
     ):
         dep_a = repo.create("conv-1", "Dep A", "{}")
         dep_b = repo.create("conv-1", "Dep B", "{}")
-        repo.update_status(dep_a.id, TaskStatus.DONE)
+        _advance_to(repo, dep_a.id, TaskStatus.DONE)
         # dep_b still 'todo'
         task = repo.create(
             "conv-1", "Main task", "{}", depends_on=[dep_a.id, dep_b.id]
@@ -144,8 +165,8 @@ class TestDependencyGateSuccess:
     def test_succeeds_when_all_deps_done(self, repo: SQLiteTaskRepository):
         dep_a = repo.create("conv-1", "Dep A", "{}")
         dep_b = repo.create("conv-1", "Dep B", "{}")
-        repo.update_status(dep_a.id, TaskStatus.DONE)
-        repo.update_status(dep_b.id, TaskStatus.DONE)
+        _advance_to(repo, dep_a.id, TaskStatus.DONE)
+        _advance_to(repo, dep_b.id, TaskStatus.DONE)
 
         task = repo.create(
             "conv-1", "Main task", "{}", depends_on=[dep_a.id, dep_b.id]
@@ -174,7 +195,7 @@ class TestDependencyGateSuccess:
 
     def test_sets_finished_at_on_done(self, repo: SQLiteTaskRepository):
         task = repo.create("conv-1", "Task A", "{}")
-        repo.update_status(task.id, TaskStatus.DONE)
+        _advance_to(repo, task.id, TaskStatus.DONE)
 
         updated = repo.get_by_id(task.id)
         assert updated is not None
@@ -199,7 +220,7 @@ class TestListByConversation:
     def test_status_filter_returns_matching_only(self, repo: SQLiteTaskRepository):
         task_a = repo.create("conv-1", "Task A", "{}")
         repo.create("conv-1", "Task B", "{}")
-        repo.update_status(task_a.id, TaskStatus.DONE)
+        _advance_to(repo, task_a.id, TaskStatus.DONE)
 
         done_tasks = repo.list_by_conversation(
             "conv-1", status_filter=TaskStatus.DONE

@@ -1,20 +1,19 @@
 import { useState } from "react";
+import type { ChatMessageData } from "../features/chat/types";
+import { ChatTimeline } from "../features/chat/ChatTimeline";
 import "./ChatPane.css";
-
-export type ChatMessage = {
-  id: string;
-  sender: string;
-  text: string;
-  timestamp: string;
-};
 
 type ChatPaneProps = {
   activeConversationTitle?: string | null;
-  messages?: ChatMessage[];
+  messages?: ChatMessageData[];
   onSend?: (text: string) => void;
 };
 
-export function ChatPane({ activeConversationTitle = null, messages = [], onSend }: ChatPaneProps) {
+export function ChatPane({
+  activeConversationTitle = null,
+  messages = [],
+  onSend,
+}: ChatPaneProps) {
   const [text, setText] = useState("");
 
   const send = () => {
@@ -30,17 +29,7 @@ export function ChatPane({ activeConversationTitle = null, messages = [], onSend
       <div className="chat-pane__subbar">
         <span>{activeConversationTitle ?? "No active conversation"}</span>
       </div>
-      <div className="chat-pane__stream" data-testid="message-stream">
-        {messages.length === 0 ? (
-          <div className="chat-pane__empty">Select or create a conversation to begin.</div>
-        ) : (
-          messages.map((message) => (
-            <div key={message.id} className="chat-message">
-              <strong>{message.sender}</strong> <span>{message.text}</span>
-            </div>
-          ))
-        )}
-      </div>
+      <ChatTimeline messages={messages} />
       <div className="chat-pane__composer" data-testid="composer">
         <input
           type="text"
