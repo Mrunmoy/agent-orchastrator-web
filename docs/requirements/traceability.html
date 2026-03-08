@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Traceability Matrix — Agent Orchestrator</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; --bg:#0c0f16; --panel:#1b2130; --surface:#232840; --ok:#4ade80; --warn:#facc15; --err:#f87171; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,var(--bg) 55%); color:var(--ink); font-family: Georgia, serif; min-height:100vh; }
+    .page { max-width:1400px; margin:32px auto; padding:36px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,var(--panel),#111521); box-shadow:0 16px 48px #0008; }
+    h1 { color:var(--gold); font-size:2.2rem; margin:0 0 6px; }
+    h2 { color:var(--gold); font-size:1.4rem; margin:32px 0 12px; border-bottom:1px solid #5a4728; padding-bottom:6px; }
+    p { line-height:1.7; }
+    a { color:var(--gold); }
+    .meta { color:var(--muted); margin-bottom:24px; font-size:0.95em; }
+
+    /* Nav */
+    .nav { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
+    .nav a { display:inline-block; padding:6px 14px; background:var(--surface); border:1px solid #5a4728; border-radius:6px; color:var(--gold); text-decoration:none; font-size:0.85em; transition:background 0.15s; }
+    .nav a:hover { background:#3a3f5a; }
+    .nav a.active { background:#3a3f5a; }
+
+    /* Progress bars */
+    .progress-section { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:24px 0; }
+    .progress-card { background:var(--surface); border-radius:8px; padding:16px; }
+    .progress-card h3 { color:var(--gold); margin:0 0 8px; font-size:0.95em; }
+    .progress-bar { height:8px; background:#1a1d2e; border-radius:4px; overflow:hidden; margin:6px 0; }
+    .progress-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+    .fill-design { background:var(--gold); }
+    .fill-tasks { background:#38bdf8; }
+    .fill-tests { background:var(--ok); }
+    .fill-done { background:var(--ok); }
+    .progress-label { font-size:0.8em; color:var(--muted); display:flex; justify-content:space-between; }
+
+    /* Overall stats */
+    .stats { display:flex; gap:16px; flex-wrap:wrap; margin:16px 0; padding:16px; background:var(--surface); border-radius:8px; }
+    .stat { text-align:center; min-width:80px; }
+    .stat-num { font-size:2em; font-weight:bold; color:var(--gold); }
+    .stat-label { font-size:0.75em; color:var(--muted); }
+
+    /* Filters */
+    .filters { display:flex; gap:12px; flex-wrap:wrap; margin:16px 0; align-items:center; }
+    .filters label { color:var(--muted); font-size:0.85em; }
+    .filters select, .filters input { background:var(--surface); color:var(--ink); border:1px solid #5a4728; border-radius:4px; padding:4px 8px; font-size:0.85em; font-family:inherit; }
+
+    /* Table */
+    .matrix { width:100%; border-collapse:collapse; margin:12px 0; font-size:0.85em; }
+    .matrix th { background:var(--surface); color:var(--gold); border:1px solid #5a4728; padding:6px 10px; text-align:left; position:sticky; top:0; cursor:pointer; user-select:none; }
+    .matrix th:hover { background:#3a3f5a; }
+    .matrix td { border:1px solid #5a4728; padding:6px 10px; }
+    .matrix tr:hover td { background:rgba(214,177,100,0.05); }
+    .priority { display:inline-block; padding:1px 8px; border-radius:4px; font-size:0.8em; font-weight:bold; }
+    .p0 { background:#dc2626; color:#fff; }
+    .p1 { background:#f59e0b; color:#111; }
+    .p2 { background:#3b82f6; color:#fff; }
+    .status { display:inline-block; padding:1px 8px; border-radius:4px; font-size:0.8em; font-weight:bold; }
+    .status-todo { background:#64748b; color:#fff; }
+    .status-in_design { background:#a78bfa; color:#111; }
+    .status-implementing { background:#38bdf8; color:#111; }
+    .status-testing { background:#facc15; color:#111; }
+    .status-done { background:#4ade80; color:#111; }
+    .check { color:var(--ok); font-weight:bold; }
+    .cross { color:var(--err); }
+    .doc-tag { display:inline-block; padding:1px 6px; border-radius:3px; font-size:0.75em; background:#2a2d3a; color:var(--muted); }
+    .loading { text-align:center; padding:60px; color:var(--muted); font-size:1.2em; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <div class="nav" id="nav"></div>
+    <h1>Traceability Matrix</h1>
+    <div class="meta">Agent Orchestrator Web &middot; Requirement → Design → Task → Test</div>
+    <div id="content"><div class="loading">Loading all requirements...</div></div>
+  </article>
+
+  <script>
+    const DOCS = [
+      { key: '01-product',           label: '01 Product' },
+      { key: '02-ui-ux',             label: '02 UI/UX' },
+      { key: '03-backend-api',       label: '03 Backend' },
+      { key: '04-orchestration',     label: '04 Orchestration' },
+      { key: '05-integration',       label: '05 Integration' },
+      { key: '06-merge-coordination', label: '06 Merge' },
+    ];
+
+    function buildNav() {
+      const nav = document.getElementById('nav');
+      nav.innerHTML = '<a class="active" href="traceability.html">Traceability Matrix</a>';
+      for (const d of DOCS) {
+        const a = document.createElement('a');
+        a.href = `viewer.html?doc=${d.key}`;
+        a.textContent = d.label;
+        nav.appendChild(a);
+      }
+    }
+
+    function getAllReqs(doc) {
+      const reqs = [];
+      for (const sec of doc.sections) {
+        for (const sub of (sec.subsections || [])) {
+          for (const r of (sub.requirements || [])) {
+            reqs.push({ ...r, _doc: doc.id, _docTitle: doc.title });
+          }
+        }
+      }
+      return reqs;
+    }
+
+    function pct(n, d) { return d === 0 ? 0 : Math.round((n / d) * 100); }
+
+    function statusLabel(s) { return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+
+    function renderOverallStats(allReqs) {
+      const total = allReqs.length;
+      const done = allReqs.filter(r => r.status === 'done').length;
+      const hasDesign = allReqs.filter(r => r.design_ref).length;
+      const hasTasks = allReqs.filter(r => r.tasks && r.tasks.length).length;
+      const hasTests = allReqs.filter(r => r.tests && r.tests.length).length;
+      const p0 = allReqs.filter(r => r.priority === 'P0').length;
+      const p0done = allReqs.filter(r => r.priority === 'P0' && r.status === 'done').length;
+
+      return `<div class="stats">
+        <div class="stat"><div class="stat-num">${total}</div><div class="stat-label">Total Reqs</div></div>
+        <div class="stat"><div class="stat-num" style="color:#dc2626">${p0}</div><div class="stat-label">P0 Critical</div></div>
+        <div class="stat"><div class="stat-num" style="color:var(--ok)">${done}</div><div class="stat-label">Done</div></div>
+        <div class="stat"><div class="stat-num">${hasDesign}</div><div class="stat-label">Designed</div></div>
+        <div class="stat"><div class="stat-num">${hasTasks}</div><div class="stat-label">Has Tasks</div></div>
+        <div class="stat"><div class="stat-num">${hasTests}</div><div class="stat-label">Has Tests</div></div>
+        <div class="stat"><div class="stat-num" style="color:${p0done === p0 && p0 > 0 ? 'var(--ok)' : 'var(--err)'}">${pct(p0done,p0)}%</div><div class="stat-label">P0 Complete</div></div>
+      </div>`;
+    }
+
+    function renderProgressCards(allReqs) {
+      const byDoc = {};
+      for (const r of allReqs) {
+        if (!byDoc[r._doc]) byDoc[r._doc] = { title: r._docTitle, reqs: [] };
+        byDoc[r._doc].reqs.push(r);
+      }
+
+      let html = '<div class="progress-section">';
+      for (const [id, group] of Object.entries(byDoc)) {
+        const t = group.reqs.length;
+        const d = group.reqs.filter(r => r.design_ref).length;
+        const tk = group.reqs.filter(r => r.tasks && r.tasks.length).length;
+        const te = group.reqs.filter(r => r.tests && r.tests.length).length;
+        const dn = group.reqs.filter(r => r.status === 'done').length;
+        html += `<div class="progress-card">
+          <h3>${group.title} (${t})</h3>
+          <div class="progress-label"><span>Design</span><span>${d}/${t}</span></div>
+          <div class="progress-bar"><div class="progress-fill fill-design" style="width:${pct(d,t)}%"></div></div>
+          <div class="progress-label"><span>Tasks</span><span>${tk}/${t}</span></div>
+          <div class="progress-bar"><div class="progress-fill fill-tasks" style="width:${pct(tk,t)}%"></div></div>
+          <div class="progress-label"><span>Tests</span><span>${te}/${t}</span></div>
+          <div class="progress-bar"><div class="progress-fill fill-tests" style="width:${pct(te,t)}%"></div></div>
+          <div class="progress-label"><span>Done</span><span>${dn}/${t}</span></div>
+          <div class="progress-bar"><div class="progress-fill fill-done" style="width:${pct(dn,t)}%"></div></div>
+        </div>`;
+      }
+      html += '</div>';
+      return html;
+    }
+
+    let sortCol = 0;
+    let sortAsc = true;
+    let currentReqs = [];
+
+    function sortReqs(col) {
+      if (sortCol === col) { sortAsc = !sortAsc; }
+      else { sortCol = col; sortAsc = true; }
+      renderTable();
+    }
+
+    function filterReqs() {
+      const doc = document.getElementById('f-doc').value;
+      const pri = document.getElementById('f-pri').value;
+      const sta = document.getElementById('f-sta').value;
+      const cov = document.getElementById('f-cov').value;
+      const search = document.getElementById('f-search').value.toLowerCase();
+
+      let filtered = currentReqs;
+      if (doc) filtered = filtered.filter(r => r._doc === doc);
+      if (pri) filtered = filtered.filter(r => r.priority === pri);
+      if (sta) filtered = filtered.filter(r => r.status === sta);
+      if (cov === 'no-design') filtered = filtered.filter(r => !r.design_ref);
+      if (cov === 'no-tasks') filtered = filtered.filter(r => !r.tasks || !r.tasks.length);
+      if (cov === 'no-tests') filtered = filtered.filter(r => !r.tests || !r.tests.length);
+      if (cov === 'fully-covered') filtered = filtered.filter(r => r.design_ref && r.tasks?.length && r.tests?.length);
+      if (search) filtered = filtered.filter(r => r.id.toLowerCase().includes(search) || r.text.toLowerCase().includes(search));
+
+      renderTableWith(filtered);
+    }
+
+    function renderTable() { filterReqs(); }
+
+    function renderTableWith(reqs) {
+      const cols = ['id','_doc','priority','area','status','design_ref','tasks','tests','text'];
+      const sorted = [...reqs].sort((a, b) => {
+        let va = a[cols[sortCol]] ?? '';
+        let vb = b[cols[sortCol]] ?? '';
+        if (cols[sortCol] === 'tasks' || cols[sortCol] === 'tests') {
+          va = Array.isArray(va) ? va.length : 0;
+          vb = Array.isArray(vb) ? vb.length : 0;
+        }
+        if (typeof va === 'string') va = va.toLowerCase();
+        if (typeof vb === 'string') vb = vb.toLowerCase();
+        if (va < vb) return sortAsc ? -1 : 1;
+        if (va > vb) return sortAsc ? 1 : -1;
+        return 0;
+      });
+
+      const arrow = col => col === sortCol ? (sortAsc ? ' ▲' : ' ▼') : '';
+      const headers = ['ID','Doc','Priority','Area','Status','Design','Tasks','Tests','Requirement'];
+
+      let html = `<table class="matrix"><thead><tr>`;
+      headers.forEach((h, i) => {
+        html += `<th onclick="sortReqs(${i})">${h}${arrow(i)}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      for (const r of sorted) {
+        const d = r.design_ref ? `<span class="check">✓</span> ${r.design_ref}` : `<span class="cross">—</span>`;
+        const t = r.tasks && r.tasks.length ? `<span class="check">✓</span> ${r.tasks.join(', ')}` : `<span class="cross">—</span>`;
+        const te = r.tests && r.tests.length ? `<span class="check">✓</span> ${r.tests.length} test(s)` : `<span class="cross">—</span>`;
+        const textShort = r.text.length > 120 ? r.text.slice(0, 120) + '…' : r.text;
+        html += `<tr>
+          <td><strong>${r.id}</strong></td>
+          <td><span class="doc-tag">${r._doc}</span></td>
+          <td><span class="priority ${r.priority.toLowerCase()}">${r.priority}</span></td>
+          <td>${r.area}</td>
+          <td><span class="status status-${r.status}">${statusLabel(r.status)}</span></td>
+          <td>${d}</td>
+          <td>${t}</td>
+          <td>${te}</td>
+          <td title="${r.text.replace(/"/g, '&quot;')}">${textShort}</td>
+        </tr>`;
+      }
+      html += '</tbody></table>';
+      html += `<p style="color:var(--muted);font-size:0.85em">Showing ${sorted.length} of ${currentReqs.length} requirements</p>`;
+      document.getElementById('table-container').innerHTML = html;
+    }
+
+    function main() {
+      buildNav();
+      const el = document.getElementById('content');
+      const data = window.__REQ_DATA__;
+
+      if (!data) {
+        el.innerHTML = `<div style="color:var(--err);padding:40px">_bundle.js not loaded.<br/>Run <code>python3 build.py</code> to generate it.</div>`;
+        return;
+      }
+
+      const results = DOCS.map(d => data[d.key]).filter(Boolean);
+      const allReqs = results.flatMap(doc => getAllReqs(doc));
+      currentReqs = allReqs;
+
+      let html = renderOverallStats(allReqs);
+      html += renderProgressCards(allReqs);
+
+      html += `<h2>Requirements Matrix</h2>`;
+      html += `<div class="filters">
+        <label>Doc:</label>
+        <select id="f-doc" onchange="filterReqs()">
+          <option value="">All</option>
+        </select>
+        <label>Priority:</label>
+        <select id="f-pri" onchange="filterReqs()">
+          <option value="">All</option>
+          <option value="P0">P0</option>
+          <option value="P1">P1</option>
+          <option value="P2">P2</option>
+        </select>
+        <label>Status:</label>
+        <select id="f-sta" onchange="filterReqs()">
+          <option value="">All</option>
+          <option value="todo">Todo</option>
+          <option value="in_design">In Design</option>
+          <option value="implementing">Implementing</option>
+          <option value="testing">Testing</option>
+          <option value="done">Done</option>
+        </select>
+        <label>Coverage:</label>
+        <select id="f-cov" onchange="filterReqs()">
+          <option value="">All</option>
+          <option value="no-design">Missing Design</option>
+          <option value="no-tasks">Missing Tasks</option>
+          <option value="no-tests">Missing Tests</option>
+          <option value="fully-covered">Fully Covered</option>
+        </select>
+        <label>Search:</label>
+        <input id="f-search" type="text" placeholder="ID or text..." oninput="filterReqs()" />
+      </div>`;
+
+      html += '<div id="table-container"></div>';
+      el.innerHTML = html;
+
+      const fDoc = document.getElementById('f-doc');
+      const docIds = [...new Set(allReqs.map(r => r._doc))];
+      for (const id of docIds) {
+        const label = results.find(d => d.id === id)?.title || id;
+        fDoc.innerHTML += `<option value="${id}">${label}</option>`;
+      }
+
+      renderTable();
+    }
+  </script>
+  <script src="_bundle.js"></script>
+  <script>main();</script>
+</body>
+</html>

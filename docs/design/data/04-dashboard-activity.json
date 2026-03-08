@@ -1,0 +1,66 @@
+{
+  "id": "DES-04",
+  "title": "Dashboard & Activity Viewer",
+  "date": "2026-03-08",
+  "requirements": ["UI-R040", "UI-R041", "UI-R042", "UI-R043", "UI-R050", "UI-R051", "UI-R052", "UI-R053", "UI-R054", "PRD-016", "PRD-017", "PRD-018", "PRD-019"],
+  "sections": [
+    {
+      "title": "Overview",
+      "content": "Two complementary views for observability: the Dashboard (Kanban board for project-level status) and the Activity Viewer (per-agent real-time stream). The Dashboard replaces the Chat in the center pane; the Activity Viewer replaces the Roster in the right pane. Both are toggled — the user can always return to the chat or roster.",
+      "decisions": []
+    },
+    {
+      "title": "Dashboard — Kanban Board",
+      "content": "The Dashboard is a horizontal scrolling Kanban board (UI-R050) with columns for each task status:\n\n```\n┌──────┬────────┬───────┬────────────┬─────────┬──────────┬───────────┬───────────────┬─────────┬──────┐\n│ Todo │ Design │  TDD  │Implementing│ Testing │ PR Raised│ In Review │Fixing Comments│ Merging │ Done │\n├──────┼────────┼───────┼────────────┼─────────┼──────────┼───────────┼───────────────┼─────────┼──────┤\n│[card]│[card]  │       │[card]      │         │[card]    │[card]     │               │         │[card]│\n│[card]│        │       │[card]      │         │          │           │               │         │[card]│\n└──────┴────────┴───────┴────────────┴─────────┴──────────┴───────────┴───────────────┴─────────┴──────┘\n```\n\nEach column header shows the count of tasks in that status. Empty columns are shown but dimmed.",
+      "decisions": [
+        {
+          "id": "D-030",
+          "title": "Horizontal scroll Kanban over swimlanes",
+          "decision": "Use horizontal columns that scroll, not agent-based swimlanes.",
+          "rationale": "UI-R050 specifies status-based columns. Status view gives a clear project-level picture. Agent assignment is shown on each card instead.",
+          "alternatives": ["Agent swimlanes — rejected: status-centric view is more useful for the customer", "List view — acceptable as a secondary view toggle"]
+        }
+      ]
+    },
+    {
+      "title": "Task Card Component",
+      "content": "Each task card (UI-R051) displays:\n\n- **Title**: Task title, truncated with tooltip for full text.\n- **Agent badge**: Small avatar + name of the assigned agent, color-coded. Shows \"Unassigned\" if owner_agent_id is NULL.\n- **PR link**: If the task has a PR, show the PR number as a clickable link (opens GitHub).\n- **Reviewer**: If a reviewer is assigned, show a small reviewer badge.\n- **Status accent**: Left border color matches the column (each status has a theme color).\n\nClicking a card opens the **Task Detail Modal** (UI-R054).",
+      "decisions": []
+    },
+    {
+      "title": "Task Detail Modal",
+      "content": "The task detail view (UI-R054) is a modal overlay showing:\n\n- **Header**: Task title, status badge, priority badge.\n- **Description**: Full task spec rendered as markdown.\n- **Scope**: List of files/modules this task touches.\n- **Dependencies**: List of dependent tasks with their status (done/in-progress/blocked).\n- **Agent**: Assigned agent with link to their activity viewer.\n- **PR Status**: PR number, URL, CI status, review status, merge queue position.\n- **Activity Log**: Filtered timeline of events related to this task (from message_event where metadata references this task_id).\n\nThe modal is read-only for now. Future enhancement: allow customer to reassign, reprioritize, or cancel tasks.",
+      "decisions": []
+    },
+    {
+      "title": "Agent Status Bar",
+      "content": "Below (or above) the Kanban board, a compact agent status bar shows each agent's current state (UI-R052):\n\n```\n┌─────────────────────────────────────────────────────────────┐\n│ 🟢 Rick (Claude) — implementing: UI-015 Add Kanban board   │\n│ 🔵 Morty (Codex) — in_review: UI-012 Theme system          │\n│ 🟢 TeamLead (Ollama) — idle                                │\n└─────────────────────────────────────────────────────────────┘\n```\n\nEach row shows: status dot, agent name, provider, current activity. Clicking an agent opens their activity viewer.",
+      "decisions": []
+    },
+    {
+      "title": "Merge Queue Display",
+      "content": "The merge queue (UI-R053) is shown as a sidebar panel or a section below the Kanban board:\n\n```\nMerge Queue (2 pending)\n  1. 🔄 PR #42 — UI-012 Theme (Rick) — rebasing...\n  2. ⏳ PR #45 — UI-014 Agents (Morty) — waiting\n```\n\nEach entry shows: position, status icon, PR number, task title, author agent, and current status (waiting/rebasing/testing/merging). The currently-merging PR is highlighted.",
+      "decisions": []
+    },
+    {
+      "title": "Activity Viewer",
+      "content": "The Activity Viewer (UI-R040, PRD-016) is a terminal-like panel that shows an agent's real-time work stream:\n\n- **Terminal aesthetic**: Dark background, monospace font, green/amber text (UI-R042).\n- **Event stream**: Shows events from the agent's SSE activity stream:\n  - `thinking` — dimmed italic text\n  - `text` — normal output\n  - `tool_call` — highlighted with tool name badge\n  - `tool_result` — indented under the tool call\n  - `file_edit` — shows filename + diff snippet\n  - `shell_command` — shows command + output\n  - `error` — red text\n- **Auto-scroll**: Scrolls to bottom as new events arrive. User can scroll up to review history; a \"Resume\" button re-enables auto-scroll.\n- **Toggle**: Clicking an agent in the roster opens this view (UI-R041). Clicking \"Back to Roster\" or the X closes it.\n\n**Critical rule** (UI-R043, PRD-017): Internal activity (thinking, tool calls) NEVER appears in the main chat. Only deliberate messages (debate turns, status updates) appear there. The activity viewer is the only place to see internal agent work.",
+      "decisions": [
+        {
+          "id": "D-031",
+          "title": "Replace roster with activity viewer on click",
+          "decision": "The activity viewer replaces the right pane content (roster) when active.",
+          "rationale": "UI-R041 says clicking an agent opens their activity stream and closing it returns to clean chat. Using the right pane avoids cluttering the chat area. A back button returns to the roster.",
+          "alternatives": ["Bottom panel — rejected: too small for terminal output", "New window/tab — rejected: loses context of the main view", "Overlay/modal — rejected: blocks interaction with chat"]
+        },
+        {
+          "id": "D-032",
+          "title": "SSE-driven activity stream",
+          "decision": "Activity viewer connects to GET /api/agents/{id}/activity SSE endpoint.",
+          "rationale": "Real-time streaming is essential for watching agent work. SSE provides automatic reconnection. The backend buffers recent events for reconnection via Last-Event-ID.",
+          "alternatives": ["Polling — rejected: high latency for real-time viewing", "WebSocket — rejected: overkill for unidirectional stream"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,633 @@
+[
+  {
+    "id": "T-101",
+    "title": "Database schema migration v4: merge_queue table",
+    "description": "Add the merge_queue table (DES-02) to schema.sql and create migration v4 in db.py. The table tracks serialized merge queue entries with fields: id, conversation_id, task_id, pr_number, pr_url, pr_branch, author_agent_id, reviewer_agent_id, position, status, queued_at, merged_at, created_at. Add appropriate indexes. Acceptance criteria: (1) schema.sql includes merge_queue with all columns and FK constraints, (2) migration v4 in _MIGRATIONS creates the table idempotently, (3) _SCHEMA_VERSION bumped to 4, (4) existing databases migrate cleanly.",
+    "design_refs": ["DES-02"],
+    "requirements": ["MG-R060", "MG-R061", "BE-R051"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/schema.sql",
+        "backend/src/agent_orchestrator/storage/db.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/storage/"]
+    },
+    "complexity": "S",
+    "parallel_group": "foundation-schema",
+    "tests": [
+      {
+        "id": "TT-101-01",
+        "description": "Test that initialize() on a fresh DB creates the merge_queue table with all expected columns",
+        "type": "unit",
+        "file": "backend/tests/test_schema_merge_queue.py"
+      },
+      {
+        "id": "TT-101-02",
+        "description": "Test that migration from v3 to v4 adds merge_queue without data loss in existing tables",
+        "type": "integration",
+        "file": "backend/tests/test_schema_merge_queue.py"
+      },
+      {
+        "id": "TT-101-03",
+        "description": "Test that merge_queue FK constraints enforce valid conversation_id, task_id, and author_agent_id references",
+        "type": "unit",
+        "file": "backend/tests/test_schema_merge_queue.py"
+      }
+    ]
+  },
+  {
+    "id": "T-102",
+    "title": "Database schema: add missing FK constraints and indexes",
+    "description": "Harden existing schema.sql by adding FK constraints on task.conversation_id -> conversation(id), task.owner_agent_id -> agent(id), artifact.conversation_id -> conversation(id), message_event.conversation_id -> conversation(id), message_event.source_id -> agent(id). Add migration v5 to apply these on existing databases (requires table recreation for SQLite FK additions). Also add index on message_event(event_id) for SSE Last-Event-ID lookups. Acceptance criteria: (1) all FK constraints enforced, (2) migration is idempotent, (3) indexes exist for FK columns.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R001", "BE-R020", "BE-R030", "BE-R040", "BE-R051"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/schema.sql",
+        "backend/src/agent_orchestrator/storage/db.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/storage/"]
+    },
+    "complexity": "M",
+    "parallel_group": "foundation-schema",
+    "tests": [
+      {
+        "id": "TT-102-01",
+        "description": "Test that inserting a task with invalid conversation_id raises IntegrityError",
+        "type": "unit",
+        "file": "backend/tests/test_schema_fk.py"
+      },
+      {
+        "id": "TT-102-02",
+        "description": "Test that inserting an artifact with invalid conversation_id raises IntegrityError",
+        "type": "unit",
+        "file": "backend/tests/test_schema_fk.py"
+      },
+      {
+        "id": "TT-102-03",
+        "description": "Test that inserting a message_event with invalid conversation_id raises IntegrityError",
+        "type": "unit",
+        "file": "backend/tests/test_schema_fk.py"
+      },
+      {
+        "id": "TT-102-04",
+        "description": "Test that migration from v4 to v5 preserves existing data while adding constraints",
+        "type": "integration",
+        "file": "backend/tests/test_schema_fk.py"
+      }
+    ]
+  },
+  {
+    "id": "T-103",
+    "title": "Storage abstraction layer: repository interfaces",
+    "description": "Create abstract repository interfaces (ABCs) for each entity: ConversationRepository, AgentRepository, TaskRepository, MessageEventRepository, ArtifactRepository, MergeQueueRepository. Define method signatures for CRUD operations (create, get_by_id, list, update, delete). Place in backend/src/agent_orchestrator/storage/repositories/__init__.py with individual files per entity. This decouples route handlers from raw SQL and enables future backend swaps. Acceptance criteria: (1) all ABCs defined with type-hinted signatures, (2) methods match the data model entities from DES-02, (3) no concrete implementation yet (separate tasks).",
+    "design_refs": ["DES-01", "DES-02"],
+    "requirements": ["BE-R001", "BE-R010", "BE-R020", "BE-R030", "BE-R040", "BE-R050"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/repositories/__init__.py",
+        "backend/src/agent_orchestrator/storage/repositories/base.py",
+        "backend/src/agent_orchestrator/storage/repositories/conversation.py",
+        "backend/src/agent_orchestrator/storage/repositories/agent.py",
+        "backend/src/agent_orchestrator/storage/repositories/task.py",
+        "backend/src/agent_orchestrator/storage/repositories/message_event.py",
+        "backend/src/agent_orchestrator/storage/repositories/artifact.py",
+        "backend/src/agent_orchestrator/storage/repositories/merge_queue.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/storage/repositories/"]
+    },
+    "complexity": "M",
+    "parallel_group": "foundation-schema",
+    "tests": [
+      {
+        "id": "TT-103-01",
+        "description": "Test that all repository ABCs cannot be instantiated directly (abstract methods enforced)",
+        "type": "unit",
+        "file": "backend/tests/test_repository_interfaces.py"
+      },
+      {
+        "id": "TT-103-02",
+        "description": "Test that all repository ABCs define the required CRUD method signatures with correct type hints",
+        "type": "unit",
+        "file": "backend/tests/test_repository_interfaces.py"
+      },
+      {
+        "id": "TT-103-03",
+        "description": "Test that a minimal concrete subclass can be created by implementing all abstract methods",
+        "type": "unit",
+        "file": "backend/tests/test_repository_interfaces.py"
+      }
+    ]
+  },
+  {
+    "id": "T-104",
+    "title": "Conversation CRUD repository (SQLite implementation)",
+    "description": "Implement SQLiteConversationRepository that fulfills the ConversationRepository ABC. Methods: create(title, project_path) -> Conversation, get_by_id(id) -> Conversation|None, list_active() -> list[Conversation] (excludes soft-deleted), update(id, fields) -> Conversation, soft_delete(id), clear_all(), select(id) (deactivate all others, activate target). Must use the Conversation dataclass from orchestrator/models.py. Refactor existing conversations.py route handlers to use this repository instead of inline SQL. Acceptance criteria: (1) all methods implemented with proper transactions, (2) soft-delete filters in list, (3) select atomically deactivates others, (4) routes use repository.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R001", "BE-R002", "BE-R003", "BE-R050"],
+    "dependencies": ["T-103"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/repositories/sqlite_conversation.py",
+        "backend/src/agent_orchestrator/api/routes/conversations.py"
+      ],
+      "directories": [
+        "backend/src/agent_orchestrator/storage/repositories/",
+        "backend/src/agent_orchestrator/api/routes/"
+      ]
+    },
+    "complexity": "M",
+    "parallel_group": "foundation-crud",
+    "tests": [
+      {
+        "id": "TT-104-01",
+        "description": "Test create conversation returns a Conversation with generated UUID, correct defaults for phase/gate_status/active",
+        "type": "unit",
+        "file": "backend/tests/test_conversation_repo.py"
+      },
+      {
+        "id": "TT-104-02",
+        "description": "Test soft_delete sets deleted_at and list_active excludes the deleted conversation",
+        "type": "unit",
+        "file": "backend/tests/test_conversation_repo.py"
+      },
+      {
+        "id": "TT-104-03",
+        "description": "Test select atomically deactivates all others and activates the target conversation",
+        "type": "unit",
+        "file": "backend/tests/test_conversation_repo.py"
+      },
+      {
+        "id": "TT-104-04",
+        "description": "Test clear_all soft-deletes all conversations and returns the count",
+        "type": "unit",
+        "file": "backend/tests/test_conversation_repo.py"
+      }
+    ]
+  },
+  {
+    "id": "T-105",
+    "title": "Agent CRUD repository (SQLite implementation)",
+    "description": "Implement SQLiteAgentRepository fulfilling the AgentRepository ABC. Methods: create(display_name, provider, model, role, personality_key?) -> Agent, get_by_id(id) -> Agent|None, list_all() -> list[Agent] (ordered by sort_order, display_name), update(id, fields) -> Agent, delete(id) (hard delete, cascade remove from conversation_agent), update_sort_order(id, order). Validate provider against Provider enum and role against AgentRole enum. Refactor agents.py route handlers to use this repository. Acceptance criteria: (1) all CRUD methods implemented, (2) provider/role validation, (3) cascade delete removes conversation_agent rows, (4) routes use repository.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R010", "BE-R050"],
+    "dependencies": ["T-103"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/repositories/sqlite_agent.py",
+        "backend/src/agent_orchestrator/api/routes/agents.py"
+      ],
+      "directories": [
+        "backend/src/agent_orchestrator/storage/repositories/",
+        "backend/src/agent_orchestrator/api/routes/"
+      ]
+    },
+    "complexity": "M",
+    "parallel_group": "foundation-crud",
+    "tests": [
+      {
+        "id": "TT-105-01",
+        "description": "Test create agent with valid provider/role returns Agent with generated UUID and idle status",
+        "type": "unit",
+        "file": "backend/tests/test_agent_repo.py"
+      },
+      {
+        "id": "TT-105-02",
+        "description": "Test create agent with invalid provider raises ValueError",
+        "type": "unit",
+        "file": "backend/tests/test_agent_repo.py"
+      },
+      {
+        "id": "TT-105-03",
+        "description": "Test delete agent cascades to remove conversation_agent join rows",
+        "type": "integration",
+        "file": "backend/tests/test_agent_repo.py"
+      },
+      {
+        "id": "TT-105-04",
+        "description": "Test list_all returns agents ordered by sort_order ascending, then display_name",
+        "type": "unit",
+        "file": "backend/tests/test_agent_repo.py"
+      }
+    ]
+  },
+  {
+    "id": "T-106",
+    "title": "Conversation-Agent join repository (SQLite implementation)",
+    "description": "Implement SQLiteConversationAgentRepository for managing the conversation_agent join table. Methods: add_agent_to_conversation(conversation_id, agent_id, permission_profile?) -> ConversationAgent (auto-assigns turn_order as max+1), remove_agent(conversation_id, agent_id), list_agents(conversation_id) -> list with turn_order, reorder(conversation_id, agent_ids: list[str]), set_merge_coordinator(conversation_id, agent_id). Enforce UNIQUE(conversation_id, agent_id). Refactor conversation_agents.py route handlers. Acceptance criteria: (1) turn_order auto-increment works, (2) reorder updates all turn_orders atomically, (3) merge coordinator flag is exclusive per conversation.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R011", "BE-R012", "BE-R013"],
+    "dependencies": ["T-103", "T-104", "T-105"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/repositories/sqlite_conversation_agent.py",
+        "backend/src/agent_orchestrator/api/routes/conversation_agents.py"
+      ],
+      "directories": [
+        "backend/src/agent_orchestrator/storage/repositories/",
+        "backend/src/agent_orchestrator/api/routes/"
+      ]
+    },
+    "complexity": "M",
+    "parallel_group": "foundation-crud",
+    "tests": [
+      {
+        "id": "TT-106-01",
+        "description": "Test add_agent auto-assigns turn_order as max(existing)+1, starting from 1",
+        "type": "unit",
+        "file": "backend/tests/test_conversation_agent_repo.py"
+      },
+      {
+        "id": "TT-106-02",
+        "description": "Test adding same agent to same conversation twice raises IntegrityError (UNIQUE constraint)",
+        "type": "unit",
+        "file": "backend/tests/test_conversation_agent_repo.py"
+      },
+      {
+        "id": "TT-106-03",
+        "description": "Test reorder updates turn_order for all agents atomically in the specified order",
+        "type": "unit",
+        "file": "backend/tests/test_conversation_agent_repo.py"
+      },
+      {
+        "id": "TT-106-04",
+        "description": "Test set_merge_coordinator clears existing coordinator and sets the new one",
+        "type": "unit",
+        "file": "backend/tests/test_conversation_agent_repo.py"
+      }
+    ]
+  },
+  {
+    "id": "T-107",
+    "title": "Task CRUD repository (SQLite implementation)",
+    "description": "Implement SQLiteTaskRepository fulfilling the TaskRepository ABC. Methods: create(conversation_id, title, spec_json, priority?, depends_on?) -> Task, get_by_id(id) -> Task|None, list_by_conversation(conversation_id, status_filter?) -> list[Task], update_status(id, status) with validation against TaskStatus enum and dependency checks, assign_owner(id, agent_id), update_result(id, result_summary, evidence_json). Task status transitions: validate that implementing cannot be entered unless all depends_on tasks are done. Acceptance criteria: (1) all CRUD methods implemented, (2) dependency check blocks invalid status transitions, (3) status values match BE-R021 enum.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R020", "BE-R021", "BE-R022", "BE-R050"],
+    "dependencies": ["T-103"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/repositories/sqlite_task.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/storage/repositories/"]
+    },
+    "complexity": "L",
+    "parallel_group": "foundation-crud",
+    "tests": [
+      {
+        "id": "TT-107-01",
+        "description": "Test create task returns Task with default status 'todo' and correct conversation_id",
+        "type": "unit",
+        "file": "backend/tests/test_task_repo.py"
+      },
+      {
+        "id": "TT-107-02",
+        "description": "Test update_status to 'implementing' is blocked when dependency tasks are not 'done'",
+        "type": "unit",
+        "file": "backend/tests/test_task_repo.py"
+      },
+      {
+        "id": "TT-107-03",
+        "description": "Test update_status to 'implementing' succeeds when all dependency tasks are 'done'",
+        "type": "unit",
+        "file": "backend/tests/test_task_repo.py"
+      },
+      {
+        "id": "TT-107-04",
+        "description": "Test list_by_conversation with status_filter returns only matching tasks",
+        "type": "unit",
+        "file": "backend/tests/test_task_repo.py"
+      }
+    ]
+  },
+  {
+    "id": "T-108",
+    "title": "MessageEvent CRUD repository (SQLite implementation)",
+    "description": "Implement SQLiteMessageEventRepository fulfilling the MessageEventRepository ABC. Methods: append(conversation_id, source_type, source_id, text, event_type, metadata_json?) -> MessageEvent (generates UUID event_id), get_by_event_id(event_id) -> MessageEvent|None, list_by_conversation(conversation_id, after_id?, limit?) -> list[MessageEvent] for pagination, list_by_type(conversation_id, event_type) -> list[MessageEvent]. Events are append-only: no update or delete methods. Validate event_type against BE-R031 taxonomy. Acceptance criteria: (1) all methods implemented, (2) append generates UUID event_id, (3) pagination via after_id works correctly, (4) no update/delete methods exist.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R030", "BE-R031", "BE-R032", "BE-R050"],
+    "dependencies": ["T-103"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/repositories/sqlite_message_event.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/storage/repositories/"]
+    },
+    "complexity": "M",
+    "parallel_group": "foundation-crud",
+    "tests": [
+      {
+        "id": "TT-108-01",
+        "description": "Test append creates a message_event with unique UUID event_id and auto-increment id",
+        "type": "unit",
+        "file": "backend/tests/test_message_event_repo.py"
+      },
+      {
+        "id": "TT-108-02",
+        "description": "Test list_by_conversation with after_id returns only events after the specified cursor",
+        "type": "unit",
+        "file": "backend/tests/test_message_event_repo.py"
+      },
+      {
+        "id": "TT-108-03",
+        "description": "Test list_by_type filters events to only the specified event_type",
+        "type": "unit",
+        "file": "backend/tests/test_message_event_repo.py"
+      },
+      {
+        "id": "TT-108-04",
+        "description": "Test that repository exposes no update or delete methods (append-only enforcement)",
+        "type": "unit",
+        "file": "backend/tests/test_message_event_repo.py"
+      }
+    ]
+  },
+  {
+    "id": "T-109",
+    "title": "Artifact CRUD repository (SQLite implementation)",
+    "description": "Implement SQLiteArtifactRepository fulfilling the ArtifactRepository ABC. Methods: create(conversation_id, type, payload_json, batch_id?) -> Artifact, get_by_id(id) -> Artifact|None, list_by_conversation(conversation_id, type_filter?) -> list[Artifact] ordered by created_at DESC, get_latest(conversation_id) -> Artifact|None. Validate type against ArtifactType enum (design_doc, task_plan, summary, checkpoint, agreement_map, etc.). Acceptance criteria: (1) all methods implemented, (2) type validation, (3) get_latest returns most recent artifact for a conversation.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R040", "BE-R050"],
+    "dependencies": ["T-103"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/repositories/sqlite_artifact.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/storage/repositories/"]
+    },
+    "complexity": "S",
+    "parallel_group": "foundation-crud",
+    "tests": [
+      {
+        "id": "TT-109-01",
+        "description": "Test create artifact returns Artifact with generated UUID and correct type",
+        "type": "unit",
+        "file": "backend/tests/test_artifact_repo.py"
+      },
+      {
+        "id": "TT-109-02",
+        "description": "Test list_by_conversation with type_filter returns only matching artifact types",
+        "type": "unit",
+        "file": "backend/tests/test_artifact_repo.py"
+      },
+      {
+        "id": "TT-109-03",
+        "description": "Test get_latest returns the most recently created artifact for a conversation",
+        "type": "unit",
+        "file": "backend/tests/test_artifact_repo.py"
+      }
+    ]
+  },
+  {
+    "id": "T-110",
+    "title": "MergeQueue CRUD repository (SQLite implementation)",
+    "description": "Implement SQLiteMergeQueueRepository fulfilling the MergeQueueRepository ABC. Methods: enqueue(conversation_id, task_id, author_agent_id, pr_number?, pr_url?, pr_branch?) -> MergeQueueEntry (auto-assigns position as max+1), get_by_id(id) -> entry|None, list_by_conversation(conversation_id) -> list ordered by position, update_status(id, status), assign_reviewer(id, reviewer_agent_id), reorder(conversation_id, entry_ids), get_current_merging(conversation_id) -> entry|None. Enforce: only one entry can have status='merging' at a time per conversation. Acceptance criteria: (1) all methods implemented, (2) position auto-increment, (3) merging exclusivity enforced.",
+    "design_refs": ["DES-02"],
+    "requirements": ["MG-R060", "MG-R061", "BE-R050"],
+    "dependencies": ["T-101", "T-103"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/repositories/sqlite_merge_queue.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/storage/repositories/"]
+    },
+    "complexity": "M",
+    "parallel_group": "foundation-crud",
+    "tests": [
+      {
+        "id": "TT-110-01",
+        "description": "Test enqueue auto-assigns position as max(existing)+1 for the conversation",
+        "type": "unit",
+        "file": "backend/tests/test_merge_queue_repo.py"
+      },
+      {
+        "id": "TT-110-02",
+        "description": "Test update_status to 'merging' fails if another entry is already 'merging' in the same conversation",
+        "type": "unit",
+        "file": "backend/tests/test_merge_queue_repo.py"
+      },
+      {
+        "id": "TT-110-03",
+        "description": "Test list_by_conversation returns entries ordered by position ascending",
+        "type": "unit",
+        "file": "backend/tests/test_merge_queue_repo.py"
+      },
+      {
+        "id": "TT-110-04",
+        "description": "Test assign_reviewer updates the reviewer_agent_id field",
+        "type": "unit",
+        "file": "backend/tests/test_merge_queue_repo.py"
+      }
+    ]
+  },
+  {
+    "id": "T-111",
+    "title": "JSONL event log: dual-write integration with MessageEvent repository",
+    "description": "Extend the existing EventLogWriter/EventLogReader (storage/event_log.py) to integrate with the SQLite MessageEvent repository as a dual-write system. Create a DualWriteMessageEventRepository that wraps SQLiteMessageEventRepository and EventLogWriter: every append() writes to both SQLite and JSONL. Add a conversation_id-scoped log path strategy (already exists as conversation_log_path). Ensure the JSONL log is supplementary — SQLite is the source of truth, JSONL is for debugging/grep. Acceptance criteria: (1) dual-write wrapper appends to both stores atomically, (2) JSONL contains all fields from the MessageEvent, (3) EventLogReader.read_since works with event_id for SSE reconnection.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R052", "BE-R030", "BE-R032"],
+    "dependencies": ["T-108"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/event_log.py",
+        "backend/src/agent_orchestrator/storage/repositories/dual_write_message_event.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/storage/"]
+    },
+    "complexity": "M",
+    "parallel_group": "foundation-events",
+    "tests": [
+      {
+        "id": "TT-111-01",
+        "description": "Test DualWriteMessageEventRepository.append writes to both SQLite and JSONL file",
+        "type": "integration",
+        "file": "backend/tests/test_dual_write_events.py"
+      },
+      {
+        "id": "TT-111-02",
+        "description": "Test that JSONL entries contain event_id, conversation_id, source_type, event_type, text, and timestamp",
+        "type": "unit",
+        "file": "backend/tests/test_dual_write_events.py"
+      },
+      {
+        "id": "TT-111-03",
+        "description": "Test EventLogReader.read_since with a known event_id returns only subsequent events",
+        "type": "unit",
+        "file": "backend/tests/test_dual_write_events.py"
+      },
+      {
+        "id": "TT-111-04",
+        "description": "Test that JSONL write failure does not prevent SQLite write (graceful degradation)",
+        "type": "unit",
+        "file": "backend/tests/test_dual_write_events.py"
+      }
+    ]
+  },
+  {
+    "id": "T-112",
+    "title": "Checkpoint builder: SQLite-backed checkpoint storage",
+    "description": "Extend the existing CheckpointBuilder (storage/checkpoint.py) to persist CheckpointPack instances to the artifact table via the ArtifactRepository. Add methods: save(pack) -> Artifact (serializes CheckpointPack to JSON and stores as artifact type='checkpoint'), load_latest(conversation_id) -> CheckpointPack|None (retrieves most recent checkpoint artifact and deserializes). Update conversation.summary_snapshot and latest_artifact_id when a checkpoint is saved. Acceptance criteria: (1) save() persists to artifact table with type='checkpoint', (2) load_latest retrieves and deserializes correctly, (3) conversation metadata updated on save, (4) compact() + save() workflow produces a within-budget checkpoint.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R040", "BE-R133"],
+    "dependencies": ["T-109", "T-104"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/storage/checkpoint.py",
+        "backend/src/agent_orchestrator/storage/repositories/sqlite_artifact.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/storage/"]
+    },
+    "complexity": "M",
+    "parallel_group": "foundation-events",
+    "tests": [
+      {
+        "id": "TT-112-01",
+        "description": "Test save() creates an artifact with type='checkpoint' containing serialized CheckpointPack",
+        "type": "integration",
+        "file": "backend/tests/test_checkpoint_storage.py"
+      },
+      {
+        "id": "TT-112-02",
+        "description": "Test load_latest returns the most recently saved CheckpointPack for a conversation",
+        "type": "integration",
+        "file": "backend/tests/test_checkpoint_storage.py"
+      },
+      {
+        "id": "TT-112-03",
+        "description": "Test save() updates conversation.summary_snapshot and latest_artifact_id",
+        "type": "integration",
+        "file": "backend/tests/test_checkpoint_storage.py"
+      },
+      {
+        "id": "TT-112-04",
+        "description": "Test round-trip: build -> compact -> save -> load_latest produces equivalent CheckpointPack",
+        "type": "integration",
+        "file": "backend/tests/test_checkpoint_storage.py"
+      }
+    ]
+  },
+  {
+    "id": "T-113",
+    "title": "Configuration management: AppConfig from environment",
+    "description": "Create a configuration module at backend/src/agent_orchestrator/config.py that loads settings from environment variables with sensible defaults. Fields: DB_PATH (default: ~/.agent-orchestrator/orchestrator.db), HOST (default: 0.0.0.0), PORT (default: 8000), DEV_MODE (default: false), OLLAMA_URL (default: http://localhost:11434), LOG_DIR (default: ~/.agent-orchestrator/logs/), PERSONALITIES_PATH (default: config/personalities.json). Use a frozen dataclass or Pydantic BaseSettings. Provide a singleton get_config() function. Update db_provider.py to use config for DB_PATH instead of hardcoded :memory:. Acceptance criteria: (1) all config fields loadable from env vars, (2) sensible defaults work when no env vars set, (3) DEV_MODE controls CORS behavior, (4) db_provider uses configured path.",
+    "design_refs": ["DES-01"],
+    "requirements": ["BE-R140", "BE-R142", "BE-R050", "BE-R062"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/config.py",
+        "backend/src/agent_orchestrator/api/db_provider.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/"]
+    },
+    "complexity": "S",
+    "parallel_group": "foundation-schema",
+    "tests": [
+      {
+        "id": "TT-113-01",
+        "description": "Test default config values are used when no environment variables are set",
+        "type": "unit",
+        "file": "backend/tests/test_config.py"
+      },
+      {
+        "id": "TT-113-02",
+        "description": "Test that environment variables override default config values",
+        "type": "unit",
+        "file": "backend/tests/test_config.py"
+      },
+      {
+        "id": "TT-113-03",
+        "description": "Test that DEV_MODE=true is parsed correctly from string env var",
+        "type": "unit",
+        "file": "backend/tests/test_config.py"
+      },
+      {
+        "id": "TT-113-04",
+        "description": "Test that DB_PATH expands ~ to user home directory",
+        "type": "unit",
+        "file": "backend/tests/test_config.py"
+      }
+    ]
+  },
+  {
+    "id": "T-114",
+    "title": "Personality profiles loader",
+    "description": "Create a personality loader module at backend/src/agent_orchestrator/config_loaders/personalities.py that reads config/personalities.json and provides structured access. Define a PersonalityProfile dataclass with fields: key, display_name, system_prompt_fragments (list[str]), temperature (float), behavioral_constraints (list[str]). Provide load_personalities(path?) -> dict[str, PersonalityProfile] and get_personality(key) -> PersonalityProfile|None. Cache loaded profiles (load once on first access). Acceptance criteria: (1) loads from configurable path, (2) returns structured dataclasses, (3) handles missing file gracefully (empty dict), (4) validates required fields.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R141"],
+    "dependencies": ["T-113"],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/config_loaders/__init__.py",
+        "backend/src/agent_orchestrator/config_loaders/personalities.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/config_loaders/"]
+    },
+    "complexity": "S",
+    "parallel_group": "foundation-events",
+    "tests": [
+      {
+        "id": "TT-114-01",
+        "description": "Test load_personalities parses a valid personalities.json into PersonalityProfile dataclasses",
+        "type": "unit",
+        "file": "backend/tests/test_personalities_loader.py"
+      },
+      {
+        "id": "TT-114-02",
+        "description": "Test load_personalities returns empty dict when file does not exist",
+        "type": "unit",
+        "file": "backend/tests/test_personalities_loader.py"
+      },
+      {
+        "id": "TT-114-03",
+        "description": "Test get_personality returns None for unknown key",
+        "type": "unit",
+        "file": "backend/tests/test_personalities_loader.py"
+      }
+    ]
+  },
+  {
+    "id": "T-115",
+    "title": "TaskStatus enum alignment with requirements",
+    "description": "Update the TaskStatus enum in orchestrator/models.py to match the full status lifecycle from BE-R021: todo, design, tdd, implementing, testing, pr_raised, in_review, fixing_comments, merging, done, blocked. The current enum only has todo, in_progress, blocked, done, failed. Add a VALID_TRANSITIONS dict that defines allowed status transitions (e.g., todo -> design, design -> tdd, etc.). Add a MergeQueueStatus enum for merge queue entries: queued, rebasing, testing, merging, merged, failed, blocked. Add EventType enum: chat_message, debate_turn, phase_change, gate_approval, steer, task_update, system_notice. Acceptance criteria: (1) TaskStatus matches BE-R021, (2) transitions map defined, (3) MergeQueueStatus defined, (4) EventType matches BE-R031.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R021", "BE-R031", "MG-R060"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "backend/src/agent_orchestrator/orchestrator/models.py"
+      ],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "S",
+    "parallel_group": "foundation-schema",
+    "tests": [
+      {
+        "id": "TT-115-01",
+        "description": "Test TaskStatus enum contains all 11 statuses from BE-R021",
+        "type": "unit",
+        "file": "backend/tests/test_models_enums.py"
+      },
+      {
+        "id": "TT-115-02",
+        "description": "Test VALID_TRANSITIONS allows todo -> design but blocks todo -> implementing",
+        "type": "unit",
+        "file": "backend/tests/test_models_enums.py"
+      },
+      {
+        "id": "TT-115-03",
+        "description": "Test EventType enum contains all 7 event types from BE-R031",
+        "type": "unit",
+        "file": "backend/tests/test_models_enums.py"
+      },
+      {
+        "id": "TT-115-04",
+        "description": "Test MergeQueueStatus enum contains all 7 statuses (queued through blocked)",
+        "type": "unit",
+        "file": "backend/tests/test_models_enums.py"
+      }
+    ]
+  }
+]

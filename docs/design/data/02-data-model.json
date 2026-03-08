@@ -1,0 +1,103 @@
+{
+  "id": "DES-02",
+  "title": "Data Model & Persistence",
+  "date": "2026-03-08",
+  "requirements": ["BE-R001", "BE-R002", "BE-R003", "BE-R010", "BE-R011", "BE-R012", "BE-R013", "BE-R020", "BE-R021", "BE-R022", "BE-R030", "BE-R031", "BE-R032", "BE-R040", "BE-R050", "BE-R051", "BE-R052", "MG-R060", "MG-R061"],
+  "sections": [
+    {
+      "title": "Overview",
+      "content": "The data layer uses SQLite with WAL mode as the primary store, supplemented by a JSONL append-only event log. SQLite is chosen for simplicity (single-file, no daemon), performance (WAL enables concurrent reads), and portability (local-first deployment). The schema supports forward migrations via a user_version pragma.",
+      "decisions": [
+        {
+          "id": "D-010",
+          "title": "SQLite over Postgres",
+          "decision": "Use SQLite with WAL mode as the sole database.",
+          "rationale": "Local-first requirement (PRD-020). No daemon to manage. Single file for backup/portability. WAL mode gives good concurrent read performance. Sufficient for single-user multi-agent workloads.",
+          "alternatives": ["PostgreSQL — rejected: requires daemon, overkill for local single-user", "DuckDB — rejected: less mature for OLTP workloads"]
+        },
+        {
+          "id": "D-011",
+          "title": "JSONL event log as supplement",
+          "decision": "Maintain a JSONL file alongside SQLite for debugging and potential replay.",
+          "rationale": "BE-R052 requires an append-only debug log. JSONL is human-readable, grep-friendly, and trivial to implement. It supplements SQLite — not a replacement.",
+          "alternatives": ["SQLite-only — acceptable for MVP but loses easy grep/tail debugging"]
+        }
+      ]
+    },
+    {
+      "title": "Entity Relationship Diagram",
+      "content": "```\n┌──────────────┐       ┌───────────────────┐       ┌──────────────┐\n│ conversation │──1:N──│ conversation_agent │──N:1──│    agent     │\n│              │       │                   │       │              │\n│ id (PK)      │       │ id (PK)           │       │ id (PK)      │\n│ title        │       │ conversation_id   │       │ display_name │\n│ project_path │       │ agent_id          │       │ provider     │\n│ phase        │       │ turn_order        │       │ model        │\n│ gate_status  │       │ enabled           │       │ role         │\n│ active       │       │ permission_profile│       │ status       │\n│ deleted_at   │       │ is_merge_coord    │       │ personality  │\n│ updated_at   │       │ UNIQUE(conv,agent)│       │ sort_order   │\n└──────┬───────┘       └───────────────────┘       └──────────────┘\n       │\n       ├──1:N──┌──────────────┐\n       │       │    task      │\n       │       │ id (PK)      │\n       │       │ conv_id (FK) │\n       │       │ title        │\n       │       │ status       │\n       │       │ owner_agent  │\n       │       │ depends_on   │\n       │       │ spec_json    │\n       │       └──────────────┘\n       │\n       ├──1:N──┌──────────────┐\n       │       │ message_event│\n       │       │ id (auto PK) │\n       │       │ conv_id      │\n       │       │ event_id (U) │\n       │       │ source_type  │\n       │       │ source_id    │\n       │       │ event_type   │\n       │       │ text         │\n       │       │ metadata     │\n       │       └──────────────┘\n       │\n       ├──1:N──┌──────────────┐\n       │       │  artifact    │\n       │       │ id (PK)      │\n       │       │ conv_id      │\n       │       │ type         │\n       │       │ payload_json │\n       │       └──────────────┘\n       │\n       └──1:N──┌──────────────┐\n               │ merge_queue  │\n               │ id (PK)      │\n               │ conv_id      │\n               │ task_id      │\n               │ pr_number    │\n               │ author_agent │\n               │ reviewer     │\n               │ position     │\n               │ status       │\n               └──────────────┘\n```",
+      "decisions": []
+    },
+    {
+      "title": "Conversation Table",
+      "content": "The conversation table is the top-level entity. Key design points:\n\n- **phase**: Enum stored as TEXT — `debate`, `task_planning`, `execution`, `review`, `merge`, `done`.\n- **gate_status**: Enum — `open`, `pending_approval`, `approved`, `rejected`. Controls phase transitions.\n- **active**: Only one conversation is active at a time (BE-R003). The `select` endpoint sets active=1 and deactivates all others in a single transaction.\n- **deleted_at**: Soft-delete support (BE-R002). All list queries filter WHERE deleted_at IS NULL.\n- **summary_snapshot**: JSON blob for checkpoint-based resume. Stores a compact summary of the conversation state.\n- **latest_artifact_id**: Quick pointer to the most recent artifact (design doc, task plan, etc.).",
+      "decisions": [
+        {
+          "id": "D-012",
+          "title": "Soft delete over hard delete",
+          "decision": "Conversations use deleted_at timestamp for soft deletion.",
+          "rationale": "BE-R002 requires soft delete. Allows recovery. clear-all can be a bulk soft-delete. Hard delete available as a future admin operation.",
+          "alternatives": ["Hard delete — rejected: no recovery, violates BE-R002"]
+        }
+      ]
+    },
+    {
+      "title": "Agent & Conversation-Agent Tables",
+      "content": "Agents exist globally (unique ID, provider, model) but participate in conversations via the join table.\n\n**agent table**: Global agent definition. The `status` field reflects the agent's current process state (idle/running/blocked/offline). `sort_order` is a legacy global ordering field.\n\n**conversation_agent table**: Binds an agent to a conversation with:\n- **turn_order**: Determines round-robin sequence during debate (1, 2, 3...). Auto-assigned as max(existing) + 1 on insert (BE-R012).\n- **enabled**: Can disable an agent without removing it from the conversation.\n- **permission_profile**: Controls what the agent is allowed to do (e.g., read-only, full-auto).\n- **is_merge_coordinator**: Flags the Ollama Team Lead as the merge queue manager (BE-R013).\n- **UNIQUE(conversation_id, agent_id)**: An agent can only be in a conversation once.",
+      "decisions": [
+        {
+          "id": "D-013",
+          "title": "Global agents with conversation-scoped participation",
+          "decision": "Agents are created globally and joined to conversations. An agent can participate in multiple conversations.",
+          "rationale": "BE-R010 requires globally unique agents. BE-R011 requires conversation scoping. The join table provides per-conversation configuration (turn order, permissions) without duplicating agent definitions.",
+          "alternatives": ["Conversation-local agents — rejected: can't reuse agent configs across conversations"]
+        }
+      ]
+    },
+    {
+      "title": "Task Table",
+      "content": "Tasks belong to a conversation and track the full work lifecycle.\n\n- **status**: Follows the fixed work order — `todo` → `design` → `tdd` → `implementing` → `testing` → `pr_raised` → `in_review` → `fixing_comments` → `merging` → `done`. Also `blocked` for dependency/conflict holds (BE-R021).\n- **depends_on_json**: JSON array of task IDs. The orchestration engine checks all deps are `done` before allowing a task to start (BE-R022).\n- **spec_json**: Structured task specification — title, description, scope (files/modules), acceptance criteria.\n- **evidence_json**: Links to artifacts produced during the task (design doc, test results, PR URL).\n- **owner_agent_id**: The Developer agent currently assigned to this task. NULL if unassigned.",
+      "decisions": [
+        {
+          "id": "D-014",
+          "title": "JSON columns for flexible structured data",
+          "decision": "Use TEXT columns with JSON content for spec, dependencies, and evidence.",
+          "rationale": "SQLite has good JSON support (json_extract). Avoids over-normalizing into many small tables. The data is read as a unit, not queried field-by-field.",
+          "alternatives": ["Separate dependency table — acceptable but adds join complexity for a simple list"]
+        }
+      ]
+    },
+    {
+      "title": "Message Event Table",
+      "content": "All events in a conversation are stored in a single append-only table (BE-R030, BE-R032).\n\n- **event_id**: UUID, unique across the system. Used for SSE Last-Event-ID reconnection.\n- **source_type**: `customer`, `agent`, `system` — who generated the event.\n- **source_id**: Agent ID if source_type is `agent`, NULL for customer/system.\n- **event_type**: Taxonomy from BE-R031 — `chat_message`, `debate_turn`, `phase_change`, `gate_approval`, `steer`, `task_update`, `system_notice`.\n- **metadata_json**: Flexible payload — target_agent_id for directed messages, round number for debate turns, old/new phase for transitions.\n\nThe auto-increment `id` provides natural ordering. The conversation_id + id index enables efficient pagination with `?after=` cursors.",
+      "decisions": [
+        {
+          "id": "D-015",
+          "title": "Single event table for all event types",
+          "decision": "Store all event types (chat, debate, system, phase) in one table with an event_type discriminator.",
+          "rationale": "Simplifies querying (single table for timeline), SSE streaming (one source), and pagination. The metadata_json column handles type-specific fields.",
+          "alternatives": ["Separate tables per event type — rejected: complicates timeline queries and SSE fan-out"]
+        }
+      ]
+    },
+    {
+      "title": "Merge Queue Table",
+      "content": "A new table (MG-R060) for tracking the serialized merge queue:\n\n```sql\nCREATE TABLE IF NOT EXISTS merge_queue (\n  id TEXT PRIMARY KEY,\n  conversation_id TEXT NOT NULL REFERENCES conversation(id),\n  task_id TEXT NOT NULL REFERENCES task(id),\n  pr_number INTEGER,\n  pr_url TEXT,\n  pr_branch TEXT,\n  author_agent_id TEXT NOT NULL REFERENCES agent(id),\n  reviewer_agent_id TEXT REFERENCES agent(id),\n  position INTEGER NOT NULL,\n  status TEXT NOT NULL,  -- queued, rebasing, testing, merging, merged, failed, blocked\n  queued_at TEXT NOT NULL,\n  merged_at TEXT,\n  created_at TEXT NOT NULL\n);\n```\n\nThe `position` column determines queue order (FIFO, re-prioritizable by customer). Only one entry can have status `merging` at a time.",
+      "decisions": []
+    },
+    {
+      "title": "Migration Strategy",
+      "content": "Schema versions are tracked via SQLite's `PRAGMA user_version`. On startup, the backend reads the current version and applies any pending migrations sequentially.\n\nMigrations are defined as Python functions in the storage module. Each migration is idempotent (uses IF NOT EXISTS, checks before ALTER). The migration runner:\n\n1. Read current `user_version`\n2. For each migration above current version, execute in a transaction\n3. Set `user_version` to new version\n4. Log applied migrations\n\nDestructive migrations (DROP + CREATE) are acceptable during early development. Once the system is in production use, migrations must be additive only.",
+      "decisions": [
+        {
+          "id": "D-016",
+          "title": "Pragma-based versioning over migration files",
+          "decision": "Use SQLite user_version pragma with in-code migration functions.",
+          "rationale": "BE-R051 requires forward migrations. Pragma is built into SQLite — no extra tooling. Migration functions are co-located with the schema code for easy discovery.",
+          "alternatives": ["Alembic — rejected: heavy dependency for a SQLite-only project", "SQL migration files — acceptable but less flexible for conditional logic"]
+        }
+      ]
+    }
+  ]
+}

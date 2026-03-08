@@ -1,0 +1,1254 @@
+[
+  {
+    "id": "T-401",
+    "title": "Debate engine turn state tracker",
+    "description": "Implement the DebateState dataclass and DebateEngine class that tracks current_round, current_turn_index, max_rounds, and paused status. The engine must cycle through agents by turn_order from conversation_agent records, increment rounds when all agents have spoken, and stop at max_rounds. Acceptance criteria: (1) DebateState tracks round/turn/pause state, (2) advance_turn() correctly cycles through agents and increments rounds, (3) is_complete() returns true when max_rounds exceeded.",
+    "design_refs": ["DES-05"],
+    "requirements": ["OR-R001", "OR-R002"],
+    "dependencies": ["T-101", "T-102"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/debate.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-debate",
+    "tests": [
+      {
+        "id": "TT-401-01",
+        "description": "Round-robin cycles through all agents in turn_order, then increments round",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-401-02",
+        "description": "Skips disabled agents (enabled=0) in the rotation",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-401-03",
+        "description": "is_complete() returns true after max_rounds rounds",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-401-04",
+        "description": "State correctly resets when starting a new debate session",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      }
+    ]
+  },
+  {
+    "id": "T-402",
+    "title": "Customer message injection in debate",
+    "description": "Implement customer-as-participant: when the customer sends a message during a debate, it is stored as a chat_message event and made visible to all agents on their next turn. Customer messages do not consume a turn slot in the round-robin. Acceptance criteria: (1) customer messages are injected into agent context without taking a turn, (2) all agents see customer messages on their next turn, (3) multiple customer messages between turns are all included.",
+    "design_refs": ["DES-05"],
+    "requirements": ["OR-R003"],
+    "dependencies": ["T-401"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/debate.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "S",
+    "parallel_group": "orch-debate",
+    "tests": [
+      {
+        "id": "TT-402-01",
+        "description": "Customer message appears in all agents' context on their next turn",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-402-02",
+        "description": "Customer message does not advance the turn counter or round",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-402-03",
+        "description": "Multiple customer messages between turns are all preserved in order",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      }
+    ]
+  },
+  {
+    "id": "T-403",
+    "title": "Directed message interrupt-and-resume",
+    "description": "When the customer addresses a specific agent via @mention, the targeted agent gets an immediate out-of-order turn. After the targeted agent responds, the round-robin resumes from the interrupted position (not from the beginning). Acceptance criteria: (1) @mention detection sets target_agent_id in message metadata, (2) targeted agent gets next turn immediately, (3) round-robin resumes from interrupted position, (4) no agent is skipped or gets an extra turn.",
+    "design_refs": ["DES-05"],
+    "requirements": ["OR-R010"],
+    "dependencies": ["T-401"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/debate.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-debate",
+    "tests": [
+      {
+        "id": "TT-403-01",
+        "description": "Directed message gives targeted agent immediate next turn",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-403-02",
+        "description": "Round-robin resumes from interrupted position after directed turn",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-403-03",
+        "description": "Directed message mid-round does not cause any agent to be skipped",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      }
+    ]
+  },
+  {
+    "id": "T-404",
+    "title": "Clarification pause on agent @Customer mention",
+    "description": "When an agent's response contains @Customer (or a structured marker), the debate engine pauses (paused=true), emits a clarification_needed event, and stops cycling until the customer responds. When the customer responds, paused is set to false and the next agent in turn order proceeds. Acceptance criteria: (1) @Customer detection in agent response triggers pause, (2) clarification_needed event is emitted, (3) debate stops cycling while paused, (4) customer response resumes debate from correct position.",
+    "design_refs": ["DES-05"],
+    "requirements": ["OR-R011"],
+    "dependencies": ["T-401", "T-402"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/debate.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-debate",
+    "tests": [
+      {
+        "id": "TT-404-01",
+        "description": "Agent response with @Customer triggers paused state and clarification_needed event",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-404-02",
+        "description": "No turns are dispatched while debate is paused",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-404-03",
+        "description": "Customer response unpauses debate and next agent in order proceeds",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      }
+    ]
+  },
+  {
+    "id": "T-405",
+    "title": "Agreement detection (structured + text)",
+    "description": "Implement dual agreement detection: (1) parse structured JSON markers ({\"agreement\": {\"option\": ..., \"confidence\": ...}}) from agent responses, (2) fallback text analysis for phrases like 'I agree with option X'. When all agents agree on the same option, emit a system_notice and set gate_status to pending_approval. Agreement does NOT auto-advance phases. Acceptance criteria: (1) structured JSON agreement markers are parsed, (2) text-based agreement phrases are detected, (3) unanimous agreement triggers system_notice and pending_approval gate, (4) partial agreement is tracked but does not trigger gate.",
+    "design_refs": ["DES-05"],
+    "requirements": ["OR-R020"],
+    "dependencies": ["T-401"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/agreement.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "L",
+    "parallel_group": "orch-debate",
+    "tests": [
+      {
+        "id": "TT-405-01",
+        "description": "Structured JSON agreement marker is parsed correctly from agent response",
+        "type": "unit",
+        "file": "backend/tests/test_agreement.py"
+      },
+      {
+        "id": "TT-405-02",
+        "description": "Text-based agreement phrases are detected as fallback",
+        "type": "unit",
+        "file": "backend/tests/test_agreement.py"
+      },
+      {
+        "id": "TT-405-03",
+        "description": "Unanimous agreement emits system_notice and sets gate to pending_approval",
+        "type": "unit",
+        "file": "backend/tests/test_agreement.py"
+      },
+      {
+        "id": "TT-405-04",
+        "description": "Partial agreement (2/3 agents) does not trigger gate change",
+        "type": "unit",
+        "file": "backend/tests/test_agreement.py"
+      }
+    ]
+  },
+  {
+    "id": "T-406",
+    "title": "Auto-summary after max rounds",
+    "description": "When the debate reaches max_rounds without agreement, send each agent a final prompt requesting a structured summary (position, pros, cons, recommendation). Collect all summaries, emit a system_notice with a formatted comparison, and set gate_status to pending_approval. Acceptance criteria: (1) max_rounds triggers summary prompt to all agents, (2) structured summary format is enforced, (3) comparison is formatted and emitted as system_notice, (4) gate_status set to pending_approval.",
+    "design_refs": ["DES-05"],
+    "requirements": ["OR-R021", "OR-R002"],
+    "dependencies": ["T-401", "T-405"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/debate.py", "backend/src/agent_orchestrator/orchestrator/agreement.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-debate",
+    "tests": [
+      {
+        "id": "TT-406-01",
+        "description": "Reaching max_rounds sends summary prompt to all agents",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-406-02",
+        "description": "Structured summary responses are collected and formatted into comparison",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      },
+      {
+        "id": "TT-406-03",
+        "description": "System notice with comparison is emitted and gate set to pending_approval",
+        "type": "unit",
+        "file": "backend/tests/test_debate_engine.py"
+      }
+    ]
+  },
+  {
+    "id": "T-407",
+    "title": "Debate context builder",
+    "description": "Build the context payload sent to each agent on their debate turn: conversation_id, phase, round number, max_rounds, agent role/name, conversation history, customer_messages_since_your_last_turn, and system_prompt. Acceptance criteria: (1) context includes all required fields per DES-05, (2) customer messages since agent's last turn are isolated correctly, (3) system prompt is generated based on agent role and debate phase.",
+    "design_refs": ["DES-05"],
+    "requirements": ["OR-R030"],
+    "dependencies": ["T-401", "T-402"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/context.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-debate",
+    "tests": [
+      {
+        "id": "TT-407-01",
+        "description": "Context payload includes all required fields (conversation_id, phase, round, etc.)",
+        "type": "unit",
+        "file": "backend/tests/test_context_builder.py"
+      },
+      {
+        "id": "TT-407-02",
+        "description": "customer_messages_since_your_last_turn returns only messages after agent's last turn",
+        "type": "unit",
+        "file": "backend/tests/test_context_builder.py"
+      },
+      {
+        "id": "TT-407-03",
+        "description": "System prompt varies correctly based on agent role",
+        "type": "unit",
+        "file": "backend/tests/test_context_builder.py"
+      }
+    ]
+  },
+  {
+    "id": "T-408",
+    "title": "Context windowing and rolling summary",
+    "description": "When conversation history exceeds a configurable token threshold (default ~100K tokens), create a rolling summary checkpoint using Ollama (free). Agents receive: summary + last N messages instead of full history. Acceptance criteria: (1) token count estimation for history, (2) threshold triggers summary generation via Ollama, (3) agents receive summary + recent messages, (4) summary is stored as a checkpoint artifact.",
+    "design_refs": ["DES-05"],
+    "requirements": ["OR-R031"],
+    "dependencies": ["T-407", "T-601"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/context.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "L",
+    "parallel_group": "orch-debate",
+    "tests": [
+      {
+        "id": "TT-408-01",
+        "description": "History below token threshold returns full history unchanged",
+        "type": "unit",
+        "file": "backend/tests/test_context_builder.py"
+      },
+      {
+        "id": "TT-408-02",
+        "description": "History above threshold triggers Ollama summary and returns summary + recent messages",
+        "type": "integration",
+        "file": "backend/tests/test_context_builder.py"
+      },
+      {
+        "id": "TT-408-03",
+        "description": "Generated summary checkpoint is stored as an artifact",
+        "type": "unit",
+        "file": "backend/tests/test_context_builder.py"
+      }
+    ]
+  },
+  {
+    "id": "T-501",
+    "title": "Phase/gate state machine with full lifecycle",
+    "description": "Extend the existing StateMachine (state_machine.py) to implement the phase-gate lifecycle: debate -> task_planning -> execution -> review -> merge -> done. Add GateStatus transitions (open, pending_approval, approved, rejected) and enforce that phase transitions require customer gate approval. Refactor existing ConversationState enum and Phase enum to align with the DES-06 phase list. Acceptance criteria: (1) phases follow correct order, (2) gate_status transitions are enforced, (3) phase never auto-advances without approved gate, (4) rejected gate keeps conversation in current phase.",
+    "design_refs": ["DES-06"],
+    "requirements": ["OR-R040", "OR-R041", "OR-R042"],
+    "dependencies": ["T-101", "T-102"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/state_machine.py", "backend/src/agent_orchestrator/orchestrator/models.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "L",
+    "parallel_group": "orch-execution",
+    "tests": [
+      {
+        "id": "TT-501-01",
+        "description": "Valid phase transitions succeed (debate -> task_planning -> execution -> etc.)",
+        "type": "unit",
+        "file": "backend/tests/test_phase_gate.py"
+      },
+      {
+        "id": "TT-501-02",
+        "description": "Phase transition without approved gate raises error",
+        "type": "unit",
+        "file": "backend/tests/test_phase_gate.py"
+      },
+      {
+        "id": "TT-501-03",
+        "description": "Rejected gate keeps conversation in current phase",
+        "type": "unit",
+        "file": "backend/tests/test_phase_gate.py"
+      },
+      {
+        "id": "TT-501-04",
+        "description": "Invalid phase transitions (e.g., debate -> merge) raise InvalidTransition",
+        "type": "unit",
+        "file": "backend/tests/test_phase_gate.py"
+      }
+    ]
+  },
+  {
+    "id": "T-502",
+    "title": "Phase rollback support",
+    "description": "Allow the customer to move a conversation back to a previous phase (e.g., from execution back to debate). Reset gate_status to open on rollback. Emit a system_notice documenting the rollback. Acceptance criteria: (1) rollback transitions to earlier phases are valid, (2) gate_status resets to open on rollback, (3) system_notice is emitted for audit trail.",
+    "design_refs": ["DES-06"],
+    "requirements": ["OR-R043"],
+    "dependencies": ["T-501"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/state_machine.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "S",
+    "parallel_group": "orch-execution",
+    "tests": [
+      {
+        "id": "TT-502-01",
+        "description": "Rollback from execution to debate succeeds and resets gate to open",
+        "type": "unit",
+        "file": "backend/tests/test_phase_gate.py"
+      },
+      {
+        "id": "TT-502-02",
+        "description": "Rollback emits system_notice event with rollback details",
+        "type": "unit",
+        "file": "backend/tests/test_phase_gate.py"
+      },
+      {
+        "id": "TT-502-03",
+        "description": "Cannot rollback from done or completed phases",
+        "type": "unit",
+        "file": "backend/tests/test_phase_gate.py"
+      }
+    ]
+  },
+  {
+    "id": "T-503",
+    "title": "Task planning phase parser",
+    "description": "Implement parsing of agent-generated structured task lists during the task_planning phase. Parse the JSON task list format (title, description, scope, dependencies, complexity) from agent responses and create Task records. Validate task structure, detect parallelizable tasks (no dependencies), and present for customer approval. Acceptance criteria: (1) structured task list JSON is parsed from agent response, (2) Task records are created with correct fields, (3) parallelizable tasks (no deps) are identified, (4) invalid task format returns clear error.",
+    "design_refs": ["DES-06"],
+    "requirements": ["OR-R050"],
+    "dependencies": ["T-501"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/task_planner.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-execution",
+    "tests": [
+      {
+        "id": "TT-503-01",
+        "description": "Valid structured task list JSON is parsed into Task records",
+        "type": "unit",
+        "file": "backend/tests/test_task_planner.py"
+      },
+      {
+        "id": "TT-503-02",
+        "description": "Tasks with no dependencies are identified as parallelizable",
+        "type": "unit",
+        "file": "backend/tests/test_task_planner.py"
+      },
+      {
+        "id": "TT-503-03",
+        "description": "Invalid task JSON format returns descriptive error",
+        "type": "unit",
+        "file": "backend/tests/test_task_planner.py"
+      }
+    ]
+  },
+  {
+    "id": "T-504",
+    "title": "Task assignment engine",
+    "description": "Implement task assignment logic: query unassigned tasks where all dependencies are done, ordered by priority. Match idle Developer agents to highest-priority tasks. Set task.owner_agent_id and task.status='design', agent.status='running'. One task per agent at a time. Format assignment context for Ollama Team Lead evaluation. Acceptance criteria: (1) only tasks with all dependencies done are assignable, (2) idle agents get highest-priority available task, (3) one task per agent enforced, (4) assignment updates task and agent status correctly.",
+    "design_refs": ["DES-06"],
+    "requirements": ["OR-R050", "OR-R051", "OR-R052"],
+    "dependencies": ["T-503", "T-601"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/task_assigner.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "L",
+    "parallel_group": "orch-execution",
+    "tests": [
+      {
+        "id": "TT-504-01",
+        "description": "Only tasks with all dependencies done are returned as assignable",
+        "type": "unit",
+        "file": "backend/tests/test_task_assigner.py"
+      },
+      {
+        "id": "TT-504-02",
+        "description": "Idle agent gets highest-priority available task assigned",
+        "type": "unit",
+        "file": "backend/tests/test_task_assigner.py"
+      },
+      {
+        "id": "TT-504-03",
+        "description": "Agent already working on a task does not get a second assignment",
+        "type": "unit",
+        "file": "backend/tests/test_task_assigner.py"
+      },
+      {
+        "id": "TT-504-04",
+        "description": "Assignment updates task owner_agent_id, task status, and agent status",
+        "type": "unit",
+        "file": "backend/tests/test_task_assigner.py"
+      }
+    ]
+  },
+  {
+    "id": "T-505",
+    "title": "Batch execution with steering integration",
+    "description": "Enhance the existing BatchRunner to integrate with SteeringManager and debate context. The batch runner should: (1) include pending steering notes in prompts, (2) use the context builder to create proper agent context payloads, (3) track scheduler_run records with status and timestamps, (4) support continue/stop/steer controls. Acceptance criteria: (1) steering notes are injected into agent prompts, (2) context payload is properly built per turn, (3) scheduler_run records status transitions, (4) continue resumes from paused state.",
+    "design_refs": ["DES-06"],
+    "requirements": ["OR-R060", "OR-R061", "OR-R062"],
+    "dependencies": ["T-401", "T-407"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/batch_runner.py", "backend/src/agent_orchestrator/orchestrator/steering.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "L",
+    "parallel_group": "orch-execution",
+    "tests": [
+      {
+        "id": "TT-505-01",
+        "description": "Steering notes appear in agent prompt prefix when pending",
+        "type": "unit",
+        "file": "backend/tests/test_batch_runner.py"
+      },
+      {
+        "id": "TT-505-02",
+        "description": "Batch pauses after batch_size turns and records scheduler_run as completed",
+        "type": "unit",
+        "file": "backend/tests/test_batch_runner.py"
+      },
+      {
+        "id": "TT-505-03",
+        "description": "Continue from paused state resumes with a new batch",
+        "type": "unit",
+        "file": "backend/tests/test_batch_runner.py"
+      },
+      {
+        "id": "TT-505-04",
+        "description": "Directed steer message (@AgentName) targets specific agent",
+        "type": "unit",
+        "file": "backend/tests/test_batch_runner.py"
+      }
+    ]
+  },
+  {
+    "id": "T-506",
+    "title": "Work order enforcement (task status transitions)",
+    "description": "Implement the task work order state machine: todo -> design -> tdd -> implementing -> testing -> pr_raised, with additional states for in_review, fixing_comments, merging, done, blocked. Enforce valid transitions server-side, reject invalid transitions with 409 Conflict. Support configurable work orders per conversation (e.g., skip TDD for docs tasks). Acceptance criteria: (1) valid transitions succeed, (2) invalid transitions raise error, (3) testing -> implementing allowed on test failure, (4) work order is configurable per conversation.",
+    "design_refs": ["DES-06"],
+    "requirements": ["OR-R070", "OR-R071"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/work_order.py", "backend/src/agent_orchestrator/orchestrator/models.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-execution",
+    "tests": [
+      {
+        "id": "TT-506-01",
+        "description": "Valid work order transitions succeed (design -> tdd -> implementing -> etc.)",
+        "type": "unit",
+        "file": "backend/tests/test_work_order.py"
+      },
+      {
+        "id": "TT-506-02",
+        "description": "Invalid transition (e.g., design -> implementing skipping tdd) raises error",
+        "type": "unit",
+        "file": "backend/tests/test_work_order.py"
+      },
+      {
+        "id": "TT-506-03",
+        "description": "testing -> implementing is allowed (test failure rollback)",
+        "type": "unit",
+        "file": "backend/tests/test_work_order.py"
+      },
+      {
+        "id": "TT-506-04",
+        "description": "Configurable work order can skip TDD step for docs tasks",
+        "type": "unit",
+        "file": "backend/tests/test_work_order.py"
+      }
+    ]
+  },
+  {
+    "id": "T-507",
+    "title": "Agent priority loop evaluator",
+    "description": "Implement the priority loop that determines an agent's next action after raising a PR: (1) fix own PR comments, (2) merge own approved PR, (3) review others' PRs, (4) pick next task, (5) idle. The evaluation is performed by Ollama Team Lead. Format the evaluation context (agent's PRs, review assignments, available tasks) for Ollama consumption. Acceptance criteria: (1) priority order is correctly enforced, (2) agent with comments on own PR gets 'fix_comments' action, (3) agent with approved PR gets 'merge' action, (4) idle agent with no work gets 'idle' action.",
+    "design_refs": ["DES-06"],
+    "requirements": ["OR-R080", "OR-R081"],
+    "dependencies": ["T-504", "T-506", "T-601"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/priority_loop.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "L",
+    "parallel_group": "orch-execution",
+    "tests": [
+      {
+        "id": "TT-507-01",
+        "description": "Agent with comments on own PR gets fix_comments as highest priority action",
+        "type": "unit",
+        "file": "backend/tests/test_priority_loop.py"
+      },
+      {
+        "id": "TT-507-02",
+        "description": "Agent with approved PR and no comments gets merge action",
+        "type": "unit",
+        "file": "backend/tests/test_priority_loop.py"
+      },
+      {
+        "id": "TT-507-03",
+        "description": "Agent assigned as reviewer gets review action when no own PR work needed",
+        "type": "unit",
+        "file": "backend/tests/test_priority_loop.py"
+      },
+      {
+        "id": "TT-507-04",
+        "description": "Agent with no work returns idle action",
+        "type": "unit",
+        "file": "backend/tests/test_priority_loop.py"
+      }
+    ]
+  },
+  {
+    "id": "T-508",
+    "title": "Resource monitor and concurrency limiter",
+    "description": "Implement resource monitoring: capture CPU load, RAM usage, and GPU status periodically (every 60s) and store as resource_snapshot records. Enforce a configurable concurrency limit (max simultaneous agent processes). Integrate with the existing CapacityThrottle to use real system metrics. Acceptance criteria: (1) resource snapshots are captured at configured intervals, (2) concurrency limit blocks new agent starts when at max, (3) queued tasks advance when a slot frees up, (4) dashboard-ready resource data is available via API.",
+    "design_refs": ["DES-06"],
+    "requirements": ["OR-R090", "OR-R091"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/resource_monitor.py", "backend/src/agent_orchestrator/orchestrator/throttle.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-execution",
+    "tests": [
+      {
+        "id": "TT-508-01",
+        "description": "Resource snapshot captures CPU load and RAM usage from system",
+        "type": "unit",
+        "file": "backend/tests/test_resource_monitor.py"
+      },
+      {
+        "id": "TT-508-02",
+        "description": "Concurrency limit blocks new agent processes when at max capacity",
+        "type": "unit",
+        "file": "backend/tests/test_resource_monitor.py"
+      },
+      {
+        "id": "TT-508-03",
+        "description": "Queued task starts when active agent slot is freed",
+        "type": "unit",
+        "file": "backend/tests/test_resource_monitor.py"
+      }
+    ]
+  },
+  {
+    "id": "T-601",
+    "title": "BaseAdapter streaming interface refactor",
+    "description": "Refactor the existing BaseAdapter (base.py) to support streaming via AsyncIterator[AdapterEvent]. Add the AdapterEvent dataclass with typed events (thinking, text, tool_call, tool_result, file_edit, shell_command, error, done). Add stop() method for graceful cancellation. Keep backward compatibility with the existing AdapterResult for non-streaming use cases. Acceptance criteria: (1) AdapterEvent dataclass with all event types defined, (2) send_prompt returns AsyncIterator[AdapterEvent], (3) resume_session returns AsyncIterator[AdapterEvent], (4) stop() method added to BaseAdapter, (5) existing AdapterResult is preserved for non-streaming callers.",
+    "design_refs": ["DES-07"],
+    "requirements": ["IN-R001", "IN-R002", "IN-R003"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/adapters/base.py"],
+      "directories": ["backend/src/agent_orchestrator/adapters/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-adapters",
+    "tests": [
+      {
+        "id": "TT-601-01",
+        "description": "AdapterEvent has all required type variants (thinking, text, tool_call, etc.)",
+        "type": "unit",
+        "file": "backend/tests/test_adapter_base.py"
+      },
+      {
+        "id": "TT-601-02",
+        "description": "send_prompt returns AsyncIterator[AdapterEvent] that can be consumed",
+        "type": "unit",
+        "file": "backend/tests/test_adapter_base.py"
+      },
+      {
+        "id": "TT-601-03",
+        "description": "stop() cancels an in-progress operation and yields a done event",
+        "type": "unit",
+        "file": "backend/tests/test_adapter_base.py"
+      }
+    ]
+  },
+  {
+    "id": "T-602",
+    "title": "Claude adapter streaming JSON output",
+    "description": "Refactor the existing ClaudeAdapter to use --output-format stream-json and parse streaming JSON lines into AdapterEvent stream. Map Claude CLI event types (thinking, text, tool_use, tool_result) to AdapterEvent types. Support configurable model, max_tokens, and permission profile (--dangerously-skip-permissions). Acceptance criteria: (1) CLI invoked with --output-format stream-json, (2) JSON lines parsed into typed AdapterEvents as they arrive, (3) model/max_tokens/permission_profile configurable per instance, (4) session resume via --session-id works.",
+    "design_refs": ["DES-07"],
+    "requirements": ["IN-R010", "IN-R011", "IN-R012"],
+    "dependencies": ["T-601"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/adapters/claude_adapter.py"],
+      "directories": ["backend/src/agent_orchestrator/adapters/"]
+    },
+    "complexity": "L",
+    "parallel_group": "orch-adapters",
+    "tests": [
+      {
+        "id": "TT-602-01",
+        "description": "Claude CLI is invoked with --output-format stream-json flag",
+        "type": "unit",
+        "file": "backend/tests/test_claude_adapter.py"
+      },
+      {
+        "id": "TT-602-02",
+        "description": "Streaming JSON lines are parsed into correct AdapterEvent types",
+        "type": "unit",
+        "file": "backend/tests/test_claude_adapter.py"
+      },
+      {
+        "id": "TT-602-03",
+        "description": "Model, max_tokens, and permission_profile are configurable per instance",
+        "type": "unit",
+        "file": "backend/tests/test_claude_adapter.py"
+      },
+      {
+        "id": "TT-602-04",
+        "description": "Session resume uses --session-id flag and returns streaming events",
+        "type": "unit",
+        "file": "backend/tests/test_claude_adapter.py"
+      }
+    ]
+  },
+  {
+    "id": "T-603",
+    "title": "Codex adapter streaming and normalization",
+    "description": "Refactor the existing CodexAdapter to support streaming output and normalize Codex CLI events into the standard AdapterEvent stream. Invoke with --approval-mode full-auto and --quiet. Parse Codex-specific output format and map to standard event types. Acceptance criteria: (1) CLI invoked with --approval-mode full-auto, (2) output normalized to AdapterEvent stream, (3) error handling for non-zero exit codes, (4) timeout handling with graceful process cleanup.",
+    "design_refs": ["DES-07"],
+    "requirements": ["IN-R020", "IN-R021"],
+    "dependencies": ["T-601"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/adapters/codex_adapter.py"],
+      "directories": ["backend/src/agent_orchestrator/adapters/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-adapters",
+    "tests": [
+      {
+        "id": "TT-603-01",
+        "description": "Codex CLI is invoked with --approval-mode full-auto flag",
+        "type": "unit",
+        "file": "backend/tests/test_codex_adapter.py"
+      },
+      {
+        "id": "TT-603-02",
+        "description": "Codex output is normalized into standard AdapterEvent stream",
+        "type": "unit",
+        "file": "backend/tests/test_codex_adapter.py"
+      },
+      {
+        "id": "TT-603-03",
+        "description": "Non-zero exit code yields error AdapterEvent",
+        "type": "unit",
+        "file": "backend/tests/test_codex_adapter.py"
+      }
+    ]
+  },
+  {
+    "id": "T-604",
+    "title": "Ollama adapter HTTP API streaming",
+    "description": "Refactor the existing Ollama adapter from CLI-based (ollama run) to HTTP API-based (localhost:11434/api/generate). Implement as a class extending BaseAdapter. Support streaming responses, model selection, and availability checking via /api/tags. Enforce role restriction: Ollama is for Team Lead coordination only, not code generation. Acceptance criteria: (1) communicates via HTTP API not CLI, (2) streaming response parsed into AdapterEvent stream, (3) is_available() checks /api/tags, (4) model is configurable per agent.",
+    "design_refs": ["DES-07"],
+    "requirements": ["IN-R030", "IN-R031", "IN-R032"],
+    "dependencies": ["T-601"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/adapters/ollama_adapter.py"],
+      "directories": ["backend/src/agent_orchestrator/adapters/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-adapters",
+    "tests": [
+      {
+        "id": "TT-604-01",
+        "description": "Ollama adapter uses HTTP API (POST /api/generate) not CLI subprocess",
+        "type": "unit",
+        "file": "backend/tests/test_ollama_adapter.py"
+      },
+      {
+        "id": "TT-604-02",
+        "description": "Streaming HTTP response is parsed into AdapterEvent stream",
+        "type": "unit",
+        "file": "backend/tests/test_ollama_adapter.py"
+      },
+      {
+        "id": "TT-604-03",
+        "description": "is_available() checks /api/tags endpoint and returns bool",
+        "type": "unit",
+        "file": "backend/tests/test_ollama_adapter.py"
+      },
+      {
+        "id": "TT-604-04",
+        "description": "Model is configurable and passed correctly in API request",
+        "type": "unit",
+        "file": "backend/tests/test_ollama_adapter.py"
+      }
+    ]
+  },
+  {
+    "id": "T-605",
+    "title": "Adapter registry and factory",
+    "description": "Implement an adapter registry that maps Provider enum values to adapter classes. Provide a factory function that creates the correct adapter instance based on agent configuration (provider, model, permissions). Support runtime registration of new adapter types for extensibility. Acceptance criteria: (1) get_adapter(provider) returns correct adapter class, (2) factory creates configured instances from agent records, (3) new adapters can be registered at runtime, (4) unknown provider raises clear error.",
+    "design_refs": ["DES-07"],
+    "requirements": ["IN-R040"],
+    "dependencies": ["T-601", "T-602", "T-603", "T-604"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/adapters/__init__.py", "backend/src/agent_orchestrator/adapters/registry.py"],
+      "directories": ["backend/src/agent_orchestrator/adapters/"]
+    },
+    "complexity": "S",
+    "parallel_group": "orch-adapters",
+    "tests": [
+      {
+        "id": "TT-605-01",
+        "description": "Registry returns correct adapter for each known provider (claude, codex, ollama)",
+        "type": "unit",
+        "file": "backend/tests/test_adapter_registry.py"
+      },
+      {
+        "id": "TT-605-02",
+        "description": "Factory creates configured adapter instance from agent configuration",
+        "type": "unit",
+        "file": "backend/tests/test_adapter_registry.py"
+      },
+      {
+        "id": "TT-605-03",
+        "description": "Unknown provider raises ValueError with descriptive message",
+        "type": "unit",
+        "file": "backend/tests/test_adapter_registry.py"
+      }
+    ]
+  },
+  {
+    "id": "T-606",
+    "title": "Git worktree manager",
+    "description": "Implement a WorktreeManager that creates, lists, and cleans up git worktrees for agent tasks. Path convention: {worktree_base}/{task-slug}/. Branch convention: {provider}/{task-slug}. Configurable worktree base directory (default: ../agent-orchestrator-worktrees/). Lifecycle: create on task assignment, cleanup on merge completion. Acceptance criteria: (1) create_worktree() creates worktree + branch, (2) path follows {base}/{task-slug} convention, (3) branch follows {provider}/{task-slug} convention, (4) cleanup removes worktree and deletes branch.",
+    "design_refs": ["DES-07"],
+    "requirements": ["IN-R090", "IN-R091", "IN-R092"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/adapters/worktree.py"],
+      "directories": ["backend/src/agent_orchestrator/adapters/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-adapters",
+    "tests": [
+      {
+        "id": "TT-606-01",
+        "description": "create_worktree produces correct path and branch name from task slug and provider",
+        "type": "unit",
+        "file": "backend/tests/test_worktree.py"
+      },
+      {
+        "id": "TT-606-02",
+        "description": "cleanup_worktree removes worktree directory and deletes branch",
+        "type": "unit",
+        "file": "backend/tests/test_worktree.py"
+      },
+      {
+        "id": "TT-606-03",
+        "description": "Worktree base directory is configurable and defaults to ../agent-orchestrator-worktrees/",
+        "type": "unit",
+        "file": "backend/tests/test_worktree.py"
+      }
+    ]
+  },
+  {
+    "id": "T-607",
+    "title": "PR detection and metadata capture",
+    "description": "Detect when an agent creates a PR (by monitoring git state or parsing agent output for 'gh pr create' commands). Capture PR metadata (number, URL, branch, title) and store with the task record. Acceptance criteria: (1) PR creation detected from agent output stream, (2) PR metadata (number, URL, branch) extracted and stored, (3) task record updated with PR reference, (4) PR detection works for both gh CLI output and git push output.",
+    "design_refs": ["DES-07"],
+    "requirements": ["IN-R060"],
+    "dependencies": ["T-601", "T-606"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/adapters/github.py"],
+      "directories": ["backend/src/agent_orchestrator/adapters/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-adapters",
+    "tests": [
+      {
+        "id": "TT-607-01",
+        "description": "PR creation detected from agent output containing 'gh pr create' results",
+        "type": "unit",
+        "file": "backend/tests/test_github_integration.py"
+      },
+      {
+        "id": "TT-607-02",
+        "description": "PR metadata (number, URL, branch, title) correctly extracted",
+        "type": "unit",
+        "file": "backend/tests/test_github_integration.py"
+      },
+      {
+        "id": "TT-607-03",
+        "description": "Task record updated with PR reference after detection",
+        "type": "unit",
+        "file": "backend/tests/test_github_integration.py"
+      }
+    ]
+  },
+  {
+    "id": "T-608",
+    "title": "GitHub operations helper (gh CLI wrapper)",
+    "description": "Implement a GitHubOps helper that wraps the gh CLI for PR operations: list PRs, read review comments, check CI status, post review comments. All operations are performed by the system process or Ollama, not paid agents. Acceptance criteria: (1) list_prs() returns PR metadata, (2) get_review_comments() returns comments for a PR, (3) check_ci_status() returns pass/fail/pending, (4) post_review() posts a review comment.",
+    "design_refs": ["DES-07"],
+    "requirements": ["IN-R061", "IN-R071"],
+    "dependencies": ["T-607"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/adapters/github.py"],
+      "directories": ["backend/src/agent_orchestrator/adapters/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-adapters",
+    "tests": [
+      {
+        "id": "TT-608-01",
+        "description": "list_prs() invokes gh pr list and returns structured PR metadata",
+        "type": "unit",
+        "file": "backend/tests/test_github_integration.py"
+      },
+      {
+        "id": "TT-608-02",
+        "description": "get_review_comments() returns parsed review comments for a PR",
+        "type": "unit",
+        "file": "backend/tests/test_github_integration.py"
+      },
+      {
+        "id": "TT-608-03",
+        "description": "check_ci_status() returns correct status (passed, failed, pending)",
+        "type": "unit",
+        "file": "backend/tests/test_github_integration.py"
+      },
+      {
+        "id": "TT-608-04",
+        "description": "post_review() invokes gh pr review with correct arguments",
+        "type": "unit",
+        "file": "backend/tests/test_github_integration.py"
+      }
+    ]
+  },
+  {
+    "id": "T-609",
+    "title": "CI status monitoring",
+    "description": "Implement CI status polling for open PRs every 60 seconds. CI failures are surfaced as task events. The owning agent is notified to fix. Poll CI via 'gh pr checks' command. Acceptance criteria: (1) CI status polled at configurable interval (default 60s), (2) CI failure creates task event, (3) owning agent is notified of CI failure, (4) CI pass transitions merge queue status.",
+    "design_refs": ["DES-07"],
+    "requirements": ["IN-R080"],
+    "dependencies": ["T-608"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/adapters/ci_monitor.py"],
+      "directories": ["backend/src/agent_orchestrator/adapters/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-adapters",
+    "tests": [
+      {
+        "id": "TT-609-01",
+        "description": "CI status is polled at the configured interval for open PRs",
+        "type": "unit",
+        "file": "backend/tests/test_ci_monitor.py"
+      },
+      {
+        "id": "TT-609-02",
+        "description": "CI failure creates a task event and notifies the owning agent",
+        "type": "unit",
+        "file": "backend/tests/test_ci_monitor.py"
+      },
+      {
+        "id": "TT-609-03",
+        "description": "CI pass advances merge queue status from testing to merging",
+        "type": "unit",
+        "file": "backend/tests/test_ci_monitor.py"
+      }
+    ]
+  },
+  {
+    "id": "T-610",
+    "title": "File access boundary enforcement",
+    "description": "Ensure agents can only access files within their worktree and the conversation's project_path. The adapter sets working_dir to the worktree path. Capture all file reads/writes in agent activity logs for the activity viewer. Acceptance criteria: (1) adapter working_dir is set to worktree path, (2) attempts to access files outside boundary are blocked, (3) file operations are logged in activity log.",
+    "design_refs": ["DES-07"],
+    "requirements": ["IN-R110", "IN-R111"],
+    "dependencies": ["T-606"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/adapters/sandbox.py"],
+      "directories": ["backend/src/agent_orchestrator/adapters/"]
+    },
+    "complexity": "S",
+    "parallel_group": "orch-adapters",
+    "tests": [
+      {
+        "id": "TT-610-01",
+        "description": "Adapter working_dir is set to the agent's worktree path",
+        "type": "unit",
+        "file": "backend/tests/test_sandbox.py"
+      },
+      {
+        "id": "TT-610-02",
+        "description": "File operations outside worktree boundary are detected and logged",
+        "type": "unit",
+        "file": "backend/tests/test_sandbox.py"
+      },
+      {
+        "id": "TT-610-03",
+        "description": "Agent file activity (reads/writes) is captured in activity log",
+        "type": "unit",
+        "file": "backend/tests/test_sandbox.py"
+      }
+    ]
+  },
+  {
+    "id": "T-701",
+    "title": "Merge queue data model and FIFO operations",
+    "description": "Extend the existing MergeCoordinator (merge_queue.py) to support the full merge queue lifecycle: queued -> rebasing -> testing -> merging -> merged, with blocked and failed states. Add PR metadata fields (pr_number, pr_url, author_agent_id, reviewer_agent_id, position). Support customer re-prioritization of queue order. Store queue in merge_queue table. Acceptance criteria: (1) full status lifecycle implemented, (2) FIFO ordering enforced, (3) only one PR active (rebasing/testing/merging) at a time, (4) customer can re-order queue, (5) merge_queue table schema matches MG-R060.",
+    "design_refs": ["DES-08"],
+    "requirements": ["MG-R001", "MG-R002", "MG-R003", "MG-R060"],
+    "dependencies": ["T-101", "T-102"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/merge_queue.py", "backend/src/agent_orchestrator/orchestrator/models.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "L",
+    "parallel_group": "orch-merge",
+    "tests": [
+      {
+        "id": "TT-701-01",
+        "description": "Queue enforces FIFO: first-approved PR is first to process",
+        "type": "unit",
+        "file": "backend/tests/test_merge_queue.py"
+      },
+      {
+        "id": "TT-701-02",
+        "description": "Only one PR can be in rebasing/testing/merging at any time",
+        "type": "unit",
+        "file": "backend/tests/test_merge_queue.py"
+      },
+      {
+        "id": "TT-701-03",
+        "description": "Customer re-prioritization changes queue order",
+        "type": "unit",
+        "file": "backend/tests/test_merge_queue.py"
+      },
+      {
+        "id": "TT-701-04",
+        "description": "Full status lifecycle: queued -> rebasing -> testing -> merging -> merged",
+        "type": "unit",
+        "file": "backend/tests/test_merge_queue.py"
+      }
+    ]
+  },
+  {
+    "id": "T-702",
+    "title": "Merge process flow (rebase, test, merge)",
+    "description": "Implement the merge process: when a PR reaches queue front, (1) git fetch origin main + git rebase origin/main, (2) if conflict -> mark blocked + notify author, (3) if clean -> force-push + advance to testing, (4) wait for CI checks, (5) if CI passes -> merge (squash or regular, configurable), (6) if CI fails -> mark fixing_comments + notify author. Acceptance criteria: (1) rebase executed correctly, (2) conflict detected and marked as blocked, (3) CI pass triggers merge, (4) merge strategy (squash/regular) is configurable.",
+    "design_refs": ["DES-08"],
+    "requirements": ["MG-R010", "MG-R011"],
+    "dependencies": ["T-701", "T-606", "T-608"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/merge_process.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "XL",
+    "parallel_group": "orch-merge",
+    "tests": [
+      {
+        "id": "TT-702-01",
+        "description": "Clean rebase advances PR status from rebasing to testing",
+        "type": "unit",
+        "file": "backend/tests/test_merge_process.py"
+      },
+      {
+        "id": "TT-702-02",
+        "description": "Rebase conflict marks PR as blocked and emits notification",
+        "type": "unit",
+        "file": "backend/tests/test_merge_process.py"
+      },
+      {
+        "id": "TT-702-03",
+        "description": "CI pass triggers merge with configured strategy (squash default)",
+        "type": "unit",
+        "file": "backend/tests/test_merge_process.py"
+      },
+      {
+        "id": "TT-702-04",
+        "description": "While one PR is merging, no other PR can enter rebasing/testing/merging",
+        "type": "unit",
+        "file": "backend/tests/test_merge_process.py"
+      }
+    ]
+  },
+  {
+    "id": "T-703",
+    "title": "Team Lead coordinator loop",
+    "description": "Implement the Ollama Team Lead coordinator loop that runs every 30 seconds (configurable) plus triggers on events (PR raised, PR approved, merge completed). The loop checks: (1) is anything currently merging, (2) advance next queued PR, (3) check rebase results, (4) check CI status, (5) assign reviewers for unreviewed PRs. All coordination runs on Ollama (free). Acceptance criteria: (1) loop runs at configured interval, (2) events trigger immediate evaluation, (3) queue advances automatically when active merge completes, (4) error handling for rebase conflicts, CI failures, merge timeouts.",
+    "design_refs": ["DES-08"],
+    "requirements": ["MG-R020", "MG-R021", "MG-R022"],
+    "dependencies": ["T-701", "T-702", "T-604"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/coordinator.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "XL",
+    "parallel_group": "orch-merge",
+    "tests": [
+      {
+        "id": "TT-703-01",
+        "description": "Coordinator loop advances next queued PR when no active merge exists",
+        "type": "unit",
+        "file": "backend/tests/test_coordinator.py"
+      },
+      {
+        "id": "TT-703-02",
+        "description": "Event trigger (PR approved) causes immediate queue evaluation",
+        "type": "unit",
+        "file": "backend/tests/test_coordinator.py"
+      },
+      {
+        "id": "TT-703-03",
+        "description": "Rebase conflict marks PR as blocked and notifies author + customer",
+        "type": "unit",
+        "file": "backend/tests/test_coordinator.py"
+      },
+      {
+        "id": "TT-703-04",
+        "description": "Merge timeout (>10 min) alerts customer",
+        "type": "unit",
+        "file": "backend/tests/test_coordinator.py"
+      }
+    ]
+  },
+  {
+    "id": "T-704",
+    "title": "Review-to-merge flow orchestration",
+    "description": "Implement the full review-to-merge flow: (1) agent raises PR (pr_raised), (2) Team Lead assigns reviewer (in_review), (3) reviewer posts comments or approves, (4) if comments: author fixes (fixing_comments) + re-review loop, (5) if approved: PR enters merge queue (merging). Integrate with work order status transitions. Acceptance criteria: (1) PR raised triggers reviewer assignment, (2) review comments trigger fixing_comments status, (3) re-review loop works after fixes, (4) approval enters PR into merge queue.",
+    "design_refs": ["DES-08"],
+    "requirements": ["MG-R030"],
+    "dependencies": ["T-701", "T-506", "T-507"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/review_flow.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "L",
+    "parallel_group": "orch-merge",
+    "tests": [
+      {
+        "id": "TT-704-01",
+        "description": "PR raised triggers automatic reviewer assignment by Team Lead",
+        "type": "unit",
+        "file": "backend/tests/test_review_flow.py"
+      },
+      {
+        "id": "TT-704-02",
+        "description": "Review comments transition task to fixing_comments status",
+        "type": "unit",
+        "file": "backend/tests/test_review_flow.py"
+      },
+      {
+        "id": "TT-704-03",
+        "description": "Approval enters PR into merge queue with correct position",
+        "type": "unit",
+        "file": "backend/tests/test_review_flow.py"
+      },
+      {
+        "id": "TT-704-04",
+        "description": "Re-review after fixes cycles back through review correctly",
+        "type": "unit",
+        "file": "backend/tests/test_review_flow.py"
+      }
+    ]
+  },
+  {
+    "id": "T-705",
+    "title": "Reviewer assignment logic",
+    "description": "Implement the reviewer selection algorithm: (1) must NOT be the PR author, (2) prefer idle agents, (3) if multiple idle, prefer lightest review load, (4) if no reviewer available (single-developer), flag for customer review. The system enforces non-author reviewer as a hard rule. Acceptance criteria: (1) author is never assigned as own reviewer, (2) idle agents are preferred, (3) lightest load breaks ties, (4) single-developer falls back to customer review.",
+    "design_refs": ["DES-08"],
+    "requirements": ["MG-R031", "MG-R032"],
+    "dependencies": ["T-703"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/reviewer.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-merge",
+    "tests": [
+      {
+        "id": "TT-705-01",
+        "description": "Author agent is never assigned as reviewer of own PR",
+        "type": "unit",
+        "file": "backend/tests/test_reviewer.py"
+      },
+      {
+        "id": "TT-705-02",
+        "description": "Idle agent with lightest review load is selected as reviewer",
+        "type": "unit",
+        "file": "backend/tests/test_reviewer.py"
+      },
+      {
+        "id": "TT-705-03",
+        "description": "Single-developer conversation flags PR for customer review",
+        "type": "unit",
+        "file": "backend/tests/test_reviewer.py"
+      }
+    ]
+  },
+  {
+    "id": "T-706",
+    "title": "Conflict resolution workflow",
+    "description": "When git rebase produces conflicts: (1) identify conflicting files from rebase output, (2) create a system_notice event with conflicting files and diff context, (3) prompt the author agent to resolve conflicts in worktree and force-push, (4) restart merge process from rebase step after push, (5) escalate to customer after 3 failed attempts (configurable). Acceptance criteria: (1) conflicting files identified from git output, (2) author agent receives conflict resolution prompt, (3) retry restarts from rebase, (4) escalation after max attempts.",
+    "design_refs": ["DES-08"],
+    "requirements": ["MG-R040", "MG-R041"],
+    "dependencies": ["T-702"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/conflict_resolver.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "L",
+    "parallel_group": "orch-merge",
+    "tests": [
+      {
+        "id": "TT-706-01",
+        "description": "Conflicting files are correctly identified from git rebase output",
+        "type": "unit",
+        "file": "backend/tests/test_conflict_resolver.py"
+      },
+      {
+        "id": "TT-706-02",
+        "description": "Author agent receives prompt with conflict details and resolution instructions",
+        "type": "unit",
+        "file": "backend/tests/test_conflict_resolver.py"
+      },
+      {
+        "id": "TT-706-03",
+        "description": "After agent push, merge process restarts from rebase step",
+        "type": "unit",
+        "file": "backend/tests/test_conflict_resolver.py"
+      },
+      {
+        "id": "TT-706-04",
+        "description": "Escalation to customer after 3 failed resolution attempts",
+        "type": "unit",
+        "file": "backend/tests/test_conflict_resolver.py"
+      }
+    ]
+  },
+  {
+    "id": "T-707",
+    "title": "Post-merge broadcast and cleanup",
+    "description": "After each successful merge: (1) broadcast main_updated event to all agents in the conversation, (2) advise agents with open branches to rebase, (3) immediately trigger next PR in queue (no polling delay), (4) set merged task status to done, (5) clean up worktree and delete branch. Log merge events as message_event entries for audit trail. Acceptance criteria: (1) main_updated event broadcast to all agents, (2) next PR triggered immediately, (3) task status set to done, (4) worktree and branch cleaned up, (5) merge events logged.",
+    "design_refs": ["DES-08"],
+    "requirements": ["MG-R050", "MG-R051", "MG-R012", "MG-R061"],
+    "dependencies": ["T-702", "T-606"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/orchestrator/merge_process.py", "backend/src/agent_orchestrator/orchestrator/coordinator.py"],
+      "directories": ["backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "orch-merge",
+    "tests": [
+      {
+        "id": "TT-707-01",
+        "description": "main_updated event is broadcast to all conversation agents after merge",
+        "type": "unit",
+        "file": "backend/tests/test_merge_process.py"
+      },
+      {
+        "id": "TT-707-02",
+        "description": "Next PR in queue is triggered immediately (no 30s polling delay)",
+        "type": "unit",
+        "file": "backend/tests/test_merge_process.py"
+      },
+      {
+        "id": "TT-707-03",
+        "description": "Merged task status set to done and worktree cleaned up",
+        "type": "unit",
+        "file": "backend/tests/test_merge_process.py"
+      },
+      {
+        "id": "TT-707-04",
+        "description": "Merge events are logged as message_event entries for audit trail",
+        "type": "unit",
+        "file": "backend/tests/test_merge_process.py"
+      }
+    ]
+  },
+  {
+    "id": "T-708",
+    "title": "Merge queue dashboard data API",
+    "description": "Expose merge queue data for the dashboard: PR title, author agent, queue position, current status (waiting/rebasing/merging/merged/failed). Provide API endpoint that returns the full queue state. Acceptance criteria: (1) API returns all queue entries with metadata, (2) queue position is accurate, (3) status reflects current merge pipeline state, (4) response includes timing data (queued_at, merged_at).",
+    "design_refs": ["DES-08"],
+    "requirements": ["MG-R004"],
+    "dependencies": ["T-701"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/merge.py"],
+      "directories": ["backend/src/agent_orchestrator/api/routes/"]
+    },
+    "complexity": "S",
+    "parallel_group": "orch-merge",
+    "tests": [
+      {
+        "id": "TT-708-01",
+        "description": "API returns all merge queue entries with PR title, author, position, status",
+        "type": "integration",
+        "file": "backend/tests/test_merge_api.py"
+      },
+      {
+        "id": "TT-708-02",
+        "description": "Queue position accurately reflects FIFO order",
+        "type": "unit",
+        "file": "backend/tests/test_merge_api.py"
+      },
+      {
+        "id": "TT-708-03",
+        "description": "Response includes timing data (queued_at, merged_at)",
+        "type": "unit",
+        "file": "backend/tests/test_merge_api.py"
+      }
+    ]
+  }
+]

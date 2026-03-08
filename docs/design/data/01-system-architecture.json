@@ -1,0 +1,83 @@
+{
+  "id": "DES-01",
+  "title": "System Architecture",
+  "date": "2026-03-08",
+  "requirements": ["PRD-020", "PRD-021", "PRD-022", "BE-R060", "BE-R061", "BE-R062", "BE-R070", "BE-R080", "BE-R081", "BE-R090", "BE-R091", "BE-R100", "BE-R110", "BE-R120", "BE-R121", "BE-R122", "BE-R130", "BE-R131", "BE-R132", "BE-R133", "BE-R140", "BE-R141", "BE-R142", "BE-R150", "BE-R151"],
+  "sections": [
+    {
+      "title": "Overview",
+      "content": "The Agent Orchestrator is a local-first web application with a Python backend (FastAPI) and a TypeScript frontend (React + Vite). It runs on the user's machine, is LAN-accessible, and coordinates AI agents via CLI subprocesses and HTTP APIs. The system is designed around a conversation-centric model where all work happens within the context of a conversation tied to a project directory.",
+      "decisions": [
+        {
+          "id": "D-001",
+          "title": "Local-first deployment",
+          "decision": "Single-machine deployment with uvicorn serving the API and optionally the built frontend as static files.",
+          "rationale": "PRD-020 requires local-only operation. No cloud hosting needed. LAN access is provided by binding to 0.0.0.0.",
+          "alternatives": ["Docker-based deployment — rejected: adds complexity for a single-user local tool", "Electron wrapper — rejected: browser-based is simpler and LAN-accessible"]
+        },
+        {
+          "id": "D-002",
+          "title": "Monorepo with backend/frontend split",
+          "decision": "Single repository with backend/ (Python) and frontend/ (TypeScript) directories. Vite proxies /api/* to uvicorn in dev mode.",
+          "rationale": "Keeps deployment simple. One repo to clone, one dev shell to enter. Frontend build output can be served by the backend in production.",
+          "alternatives": ["Separate repos — rejected: coordination overhead for a single project"]
+        },
+        {
+          "id": "D-003",
+          "title": "Nix dev shell for reproducibility",
+          "decision": "All dev dependencies (Python 3.12, Node 22, tools) provided via nix develop. No global installs required.",
+          "rationale": "Ensures consistent environments across machines. Auto-bootstraps frontend deps on shell entry.",
+          "alternatives": ["Docker dev environment — rejected: heavier, slower iteration", "Manual install docs — rejected: fragile across OS versions"]
+        }
+      ]
+    },
+    {
+      "title": "Component Diagram",
+      "content": "```\n┌─────────────────────────────────────────────────────────┐\n│                     Browser (React)                      │\n│  ┌──────────┐ ┌──────────┐ ┌────────────┐ ┌───────────┐ │\n│  │ Chat View│ │Dashboard │ │ Activity   │ │  Roster   │ │\n│  │          │ │ (Kanban) │ │ Viewer     │ │           │ │\n│  └────┬─────┘ └────┬─────┘ └─────┬──────┘ └─────┬─────┘ │\n│       └────────────┼─────────────┼───────────────┘       │\n│                    │   REST + SSE │                       │\n└────────────────────┼─────────────┼───────────────────────┘\n                     │             │\n              ┌──────▼─────────────▼──────┐\n              │      FastAPI Backend       │\n              │  ┌──────────────────────┐  │\n              │  │   API Routes (/api)  │  │\n              │  └──────────┬───────────┘  │\n              │  ┌──────────▼───────────┐  │\n              │  │  Orchestration Engine │  │\n              │  │  (Debate + Execution) │  │\n              │  └──────────┬───────────┘  │\n              │  ┌──────────▼───────────┐  │\n              │  │   Adapter Layer       │  │\n              │  │  Claude│Codex│Ollama  │  │\n              │  └──┬───────┬───────┬───┘  │\n              │  ┌──▼──┐ ┌──▼──┐ ┌──▼──┐  │\n              │  │ CLI  │ │ CLI │ │HTTP │  │\n              │  │proc  │ │proc │ │API  │  │\n              │  └──────┘ └─────┘ └─────┘  │\n              │  ┌──────────────────────┐  │\n              │  │  SQLite + JSONL Log  │  │\n              │  └──────────────────────┘  │\n              └────────────────────────────┘\n```",
+      "decisions": []
+    },
+    {
+      "title": "Communication Patterns",
+      "content": "The frontend communicates with the backend via two channels:\n\n1. **REST API** — All CRUD operations (conversations, agents, tasks, messages) use standard HTTP methods with JSON envelope responses.\n\n2. **Server-Sent Events (SSE)** — Real-time updates flow from backend to frontend via SSE streams. Two stream types: conversation-level (messages, phase changes, task updates) and agent-level (activity/thinking/tool calls).\n\nThe backend communicates with agents via:\n\n1. **CLI subprocess** — Claude and Codex agents are invoked as CLI processes with streaming JSON output parsed in real-time.\n\n2. **HTTP API** — Ollama communicates via its REST API at localhost:11434. No subprocess management needed.\n\n3. **MCP (future)** — Optional MCP client support for agents that expose MCP servers.",
+      "decisions": [
+        {
+          "id": "D-004",
+          "title": "SSE over WebSockets for streaming",
+          "decision": "Use Server-Sent Events for real-time updates from backend to frontend.",
+          "rationale": "SSE is simpler than WebSockets for unidirectional server-to-client streaming. Built-in browser reconnection. REST handles client-to-server. No need for bidirectional socket.",
+          "alternatives": ["WebSockets — rejected: bidirectional not needed, more complex lifecycle", "Long polling — rejected: higher latency, more HTTP overhead"]
+        },
+        {
+          "id": "D-005",
+          "title": "Standard API envelope",
+          "decision": "All API responses use { ok: bool, data: T, error?: string }.",
+          "rationale": "Consistent error handling across all endpoints. Frontend can have a single request() wrapper that handles success/failure uniformly.",
+          "alternatives": ["HTTP status codes only — rejected: less structured error messages", "GraphQL — rejected: overkill for this application"]
+        }
+      ]
+    },
+    {
+      "title": "Cost Architecture",
+      "content": "A key architectural principle: the Ollama Team Lead handles all coordination work (task assignment, PR review assignment, merge queue management, status polling) at zero cost. Paid agent tokens (Claude, Codex) are spent only on productive work:\n\n- **Free tier** (Ollama): Coordination, queue management, status polling, reviewer assignment, merge orchestration.\n- **Paid tier** (Claude/Codex): Design debate, code generation, code review, test writing, documentation.\n\nThe backend is responsible for formatting inputs to Ollama in a way that minimizes model complexity — structured prompts with clear choices rather than open-ended reasoning.",
+      "decisions": [
+        {
+          "id": "D-006",
+          "title": "Ollama for free coordination",
+          "decision": "Use a locally-running Ollama model as the Team Lead for all coordination overhead.",
+          "rationale": "PRD-021 requires zero-cost coordination. PRD-022 prohibits spending paid tokens on overhead. Ollama runs locally with no API costs. Even a small model (7B) can handle structured coordination tasks.",
+          "alternatives": ["Backend code handles coordination without LLM — possible for simple cases but loses flexibility for nuanced decisions like reviewer assignment based on workload"]
+        }
+      ]
+    },
+    {
+      "title": "Security Boundaries",
+      "content": "- The system runs locally — no authentication needed for single-user operation.\n- Agent processes are confined to the conversation's project_path and designated worktree directories (IN-R110).\n- API keys for paid providers are stored in environment variables only, never in the database (BE-R142).\n- CORS is configured for localhost + LAN IPs in dev mode. In production, the frontend is served from the same origin (BE-R062).",
+      "decisions": []
+    },
+    {
+      "title": "Directory Layout",
+      "content": "```\nagent-orchestrator-web/\n├── backend/\n│   └── src/agent_orchestrator/\n│       ├── api/routes/          # FastAPI route modules\n│       ├── orchestrator/        # Debate + execution engines\n│       ├── adapters/            # Claude, Codex, Ollama adapters\n│       ├── storage/             # SQLite, JSONL, schema, migrations\n│       └── runtime/             # Resource monitor, capacity scheduler\n├── frontend/\n│   └── src/\n│       ├── layout/              # AppShell, TopBar, panes\n│       ├── features/            # agents/, chat/, dashboard/, activity/\n│       ├── api/                 # client.ts, SSE hooks\n│       └── hooks/               # Shared React hooks\n├── config/                      # tasks.json, personalities.json\n├── docs/\n│   ├── requirements/data/       # JSON requirement files\n│   └── design/data/             # JSON design files\n└── scripts/                     # Dev tooling, worktree management\n```",
+      "decisions": []
+    }
+  ]
+}

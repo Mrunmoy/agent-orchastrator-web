@@ -1,0 +1,88 @@
+{
+  "id": "DES-07",
+  "title": "Agent Adapters & Integration",
+  "date": "2026-03-08",
+  "requirements": ["IN-R001", "IN-R002", "IN-R003", "IN-R010", "IN-R011", "IN-R012", "IN-R020", "IN-R021", "IN-R030", "IN-R031", "IN-R032", "IN-R040", "IN-R050", "IN-R051", "IN-R052", "IN-R053", "IN-R060", "IN-R061", "IN-R070", "IN-R071", "IN-R080", "IN-R090", "IN-R091", "IN-R092", "IN-R100", "IN-R101", "IN-R110", "IN-R111"],
+  "sections": [
+    {
+      "title": "Overview",
+      "content": "The adapter layer abstracts communication with different AI agent providers behind a uniform interface. Each adapter manages its own subprocess or HTTP connection, streams events in a normalized format, and handles lifecycle (start, run, cleanup). The architecture is pluggable — new providers can be added by implementing the BaseAdapter interface.",
+      "decisions": []
+    },
+    {
+      "title": "BaseAdapter Interface",
+      "content": "```python\nclass AdapterEvent:\n    type: str       # thinking, text, tool_call, tool_result, file_edit, shell_command, error, done\n    content: str    # Event payload\n    metadata: dict  # Type-specific data (tool name, file path, etc.)\n    timestamp: str  # ISO 8601\n\nclass BaseAdapter(ABC):\n    @abstractmethod\n    async def send_prompt(\n        self,\n        prompt: str,\n        context: dict,\n        working_dir: Path,\n    ) -> AsyncIterator[AdapterEvent]:\n        \"\"\"Send a prompt and stream response events.\"\"\"\n    \n    @abstractmethod\n    async def resume_session(\n        self,\n        session_id: str,\n        prompt: str,\n        context: dict,\n        working_dir: Path,\n    ) -> AsyncIterator[AdapterEvent]:\n        \"\"\"Resume an existing session and stream events.\"\"\"\n    \n    @abstractmethod\n    async def is_available(self) -> bool:\n        \"\"\"Check if the provider is accessible.\"\"\"\n    \n    @abstractmethod\n    async def stop(self) -> None:\n        \"\"\"Gracefully stop the current operation.\"\"\"\n```\n\nAll adapters return the same `AdapterEvent` stream (IN-R002). The orchestration engine consumes events uniformly regardless of provider. Events are both stored in the database (as message_events) and forwarded to SSE streams.",
+      "decisions": [
+        {
+          "id": "D-060",
+          "title": "Async iterator for streaming",
+          "decision": "Adapter output is an async iterator of typed events.",
+          "rationale": "IN-R002 requires streaming. Async iterators integrate naturally with Python's async/await and FastAPI's StreamingResponse. Each event can be processed as it arrives — stored, forwarded to SSE, and analyzed.",
+          "alternatives": ["Callback-based — rejected: harder to compose and reason about", "Return full response — rejected: no real-time streaming"]
+        }
+      ]
+    },
+    {
+      "title": "Claude Adapter",
+      "content": "The Claude adapter invokes the `claude` CLI as a subprocess (IN-R010):\n\n```python\nclass ClaudeAdapter(BaseAdapter):\n    async def send_prompt(self, prompt, context, working_dir):\n        cmd = [\n            \"claude\",\n            \"--output-format\", \"stream-json\",\n            \"--model\", self.model,\n            \"--max-tokens\", str(self.max_tokens),\n            \"--prompt\", prompt,\n        ]\n        if self.permission_profile == \"full-auto\":\n            cmd.append(\"--dangerously-skip-permissions\")\n        \n        proc = await asyncio.create_subprocess_exec(\n            *cmd,\n            cwd=working_dir,\n            stdout=asyncio.subprocess.PIPE,\n            stderr=asyncio.subprocess.PIPE,\n        )\n        \n        async for line in proc.stdout:\n            event = self._parse_json_line(line)\n            yield event\n```\n\n**Session resume**: Uses `--session-id` flag to continue an existing conversation (IN-R010). The session ID is stored in the agent table.\n\n**Output parsing** (IN-R011): Claude CLI with `--output-format stream-json` emits JSON lines. Each line is parsed and mapped to AdapterEvent types:\n- `{\"type\": \"thinking\", ...}` → `AdapterEvent(type=\"thinking\")`\n- `{\"type\": \"text\", ...}` → `AdapterEvent(type=\"text\")`\n- `{\"type\": \"tool_use\", ...}` → `AdapterEvent(type=\"tool_call\")`\n- `{\"type\": \"tool_result\", ...}` → `AdapterEvent(type=\"tool_result\")`\n\n**Configuration** (IN-R012): Model, max tokens, and permission profile are configurable per agent.",
+      "decisions": [
+        {
+          "id": "D-061",
+          "title": "CLI subprocess over API",
+          "decision": "Use the Claude CLI as a subprocess rather than the Claude API directly.",
+          "rationale": "The CLI provides built-in tool use (file editing, shell commands), session management, and permission profiles. Going through the API would require reimplementing all of Claude Code's capabilities. The CLI is the product the user already uses.",
+          "alternatives": ["Direct API calls — possible but loses tool use capabilities", "Agent SDK — future consideration as it matures"]
+        }
+      ]
+    },
+    {
+      "title": "Codex Adapter",
+      "content": "The Codex adapter invokes the `codex` CLI (IN-R020):\n\n```python\nclass CodexAdapter(BaseAdapter):\n    async def send_prompt(self, prompt, context, working_dir):\n        cmd = [\n            \"codex\",\n            \"--approval-mode\", \"full-auto\",\n            \"--quiet\",\n            prompt,\n        ]\n        proc = await asyncio.create_subprocess_exec(\n            *cmd,\n            cwd=working_dir,\n            stdout=asyncio.subprocess.PIPE,\n            stderr=asyncio.subprocess.PIPE,\n        )\n        async for line in proc.stdout:\n            event = self._parse_codex_output(line)\n            yield event\n```\n\n**Output normalization** (IN-R021): Codex output format differs from Claude. The adapter normalizes it into the standard AdapterEvent stream. The exact parsing logic depends on Codex CLI's output format (JSON, markdown, or plain text).\n\n**Full-auto mode**: Codex runs with `--approval-mode full-auto` for autonomous execution — no user confirmation needed for file edits or shell commands.",
+      "decisions": []
+    },
+    {
+      "title": "Ollama Adapter",
+      "content": "The Ollama adapter communicates via HTTP API (IN-R030) — no subprocess needed:\n\n```python\nclass OllamaAdapter(BaseAdapter):\n    def __init__(self, model=\"llama3\", base_url=\"http://localhost:11434\"):\n        self.model = model\n        self.base_url = base_url\n    \n    async def send_prompt(self, prompt, context, working_dir):\n        async with aiohttp.ClientSession() as session:\n            async with session.post(\n                f\"{self.base_url}/api/generate\",\n                json={\"model\": self.model, \"prompt\": prompt, \"stream\": True},\n            ) as resp:\n                async for line in resp.content:\n                    data = json.loads(line)\n                    yield AdapterEvent(\n                        type=\"text\",\n                        content=data.get(\"response\", \"\"),\n                        metadata={\"done\": data.get(\"done\", False)},\n                    )\n    \n    async def is_available(self):\n        try:\n            async with aiohttp.ClientSession() as session:\n                async with session.get(f\"{self.base_url}/api/tags\") as resp:\n                    return resp.status == 200\n        except:\n            return False\n```\n\n**Role restriction** (IN-R031): The Ollama adapter is used exclusively for the Team Lead role — coordination, task assignment, PR review assignment, merge queue management. It does NOT generate code.\n\n**Model selection** (IN-R032): The model is configurable per agent (llama3, mistral, codellama, etc.).",
+      "decisions": [
+        {
+          "id": "D-062",
+          "title": "HTTP API for Ollama, not CLI",
+          "decision": "Communicate with Ollama via its REST API, not a CLI subprocess.",
+          "rationale": "Ollama runs as a persistent server — no need to spawn processes. The HTTP API supports streaming, model management, and is well-documented. Lower overhead than process management.",
+          "alternatives": ["ollama CLI subprocess — rejected: unnecessary process overhead when the server API exists"]
+        }
+      ]
+    },
+    {
+      "title": "MCP Integration Strategy",
+      "content": "MCP (Model Context Protocol) is evaluated as an opt-in enhancement (IN-R050, IN-R053):\n\n**Phase 1 — Evaluate**: Assess which providers support MCP and what benefits it provides over direct CLI/API integration. Key questions: Does MCP simplify streaming? Does it provide better tool use integration? Does it standardize session management?\n\n**Phase 2 — MCP Client** (IN-R051): If beneficial, implement an `McpAdapter` that speaks MCP to connect to MCP-compatible agent servers. This adapter implements the same BaseAdapter interface.\n\n**Phase 3 — MCP Server** (IN-R052, P2): Optionally expose the orchestrator's capabilities (conversation management, task assignment, steering) as an MCP server. This allows external MCP clients to interact with the orchestrator.\n\n**Key principle**: MCP is never a hard dependency. The system works with pure CLI adapters. MCP is an additional transport option for providers that support it.",
+      "decisions": [
+        {
+          "id": "D-063",
+          "title": "MCP as opt-in adapter, not core dependency",
+          "decision": "MCP integration is implemented as another adapter type, not as a replacement for the existing adapter layer.",
+          "rationale": "IN-R053 requires MCP to be opt-in. Not all providers support MCP. The BaseAdapter interface already abstracts provider differences. An McpAdapter is just another implementation.",
+          "alternatives": ["MCP as core transport — rejected: not all providers support it", "Skip MCP entirely — acceptable for MVP but limits future extensibility"]
+        }
+      ]
+    },
+    {
+      "title": "Git Worktree Management",
+      "content": "Each agent working on a task operates in an isolated git worktree (IN-R090, PRD-009):\n\n**Creation**:\n```bash\n# Create worktree for a task\ngit worktree add ../agent-orchestrator-worktrees/ui-add-kanban -b claude/ui-add-kanban\n```\n\n- **Path convention** (IN-R091): `{worktree_base}/{task-slug}/`\n- **Branch convention** (IN-R092): `{provider}/{task-slug}`\n- **Worktree base**: Configurable, default `../agent-orchestrator-worktrees/`\n\n**Lifecycle**:\n1. Task assigned → create worktree + branch\n2. Agent works in the worktree directory\n3. Agent raises PR from the branch\n4. PR merged → clean up worktree and delete branch\n\n**Cleanup**:\n```bash\ngit worktree remove ../agent-orchestrator-worktrees/ui-add-kanban\ngit branch -d claude/ui-add-kanban\n```\n\n**File access boundary** (IN-R110): Agents can only access files within their worktree. The adapter sets `working_dir` to the worktree path.",
+      "decisions": [
+        {
+          "id": "D-064",
+          "title": "Worktrees over branches with checkout",
+          "decision": "Use git worktrees for isolation, not branch switching in a single working directory.",
+          "rationale": "PRD-009 requires isolation to prevent file conflicts. Worktrees provide true filesystem isolation — each agent has its own copy of the repo. Branch switching in a shared directory would cause conflicts when multiple agents run simultaneously.",
+          "alternatives": ["Separate clones — rejected: wastes disk space, slow to create", "Branch switching — rejected: can't run agents in parallel"]
+        }
+      ]
+    },
+    {
+      "title": "GitHub Integration",
+      "content": "The system integrates with GitHub for PR management:\n\n**PR Detection** (IN-R060): When an agent's output includes `gh pr create` or the adapter detects a PR was created, the system captures PR metadata (number, URL, branch) and stores it with the task.\n\n**PR Operations** (IN-R061): The Team Lead (Ollama) or backend system process uses `gh` CLI for:\n- `gh pr list` — check PR status\n- `gh pr view --json reviews` — read review comments\n- `gh pr checks` — check CI status\n- `gh pr review` — post review comments\n\nThese operations are performed by the system or Ollama, not paid agents.\n\n**Review Assignment** (IN-R070): When the Team Lead assigns a reviewer, the system provides the reviewing agent with the PR diff and context.\n\n**CI Monitoring** (IN-R080): The system polls CI status on open PRs every 60 seconds. CI failures are surfaced as task events.",
+      "decisions": []
+    }
+  ]
+}
