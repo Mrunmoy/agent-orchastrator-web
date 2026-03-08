@@ -1,0 +1,3135 @@
+{
+  "id": "REQ-03",
+  "title": "Backend & API Requirements",
+  "date": "2026-03-08",
+  "sections": [
+    {
+      "title": "Data Model",
+      "subsections": [
+        {
+          "title": "Conversations",
+          "requirements": [
+            {
+              "id": "BE-R001",
+              "priority": "P0",
+              "area": "Data Model",
+              "text": "A conversation shall be the top-level entity, tied to a project directory path. It shall track: title, project_path, current phase, gate status, and active flag.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-102",
+                "T-103",
+                "T-104",
+                "T-206"
+              ],
+              "tests": [
+                {
+                  "id": "TT-206-01",
+                  "task_id": "T-206",
+                  "description": "GET /api/conversations/{id}/phase returns current phase and gate_status",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-206-02",
+                  "task_id": "T-206",
+                  "description": "POST /gate with approve advances phase to next in sequence",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-206-03",
+                  "task_id": "T-206",
+                  "description": "POST /gate with reject sets gate_status to rejected, phase unchanged",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-206-04",
+                  "task_id": "T-206",
+                  "description": "POST /gate on a done conversation returns 409",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-102-01",
+                  "task_id": "T-102",
+                  "description": "Test that inserting a task with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-02",
+                  "task_id": "T-102",
+                  "description": "Test that inserting an artifact with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-03",
+                  "task_id": "T-102",
+                  "description": "Test that inserting a message_event with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-04",
+                  "task_id": "T-102",
+                  "description": "Test that migration from v4 to v5 preserves existing data while adding constraints",
+                  "type": "integration",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-103-01",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs cannot be instantiated directly (abstract methods enforced)",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-02",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs define the required CRUD method signatures with correct type hints",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-03",
+                  "task_id": "T-103",
+                  "description": "Test that a minimal concrete subclass can be created by implementing all abstract methods",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-104-01",
+                  "task_id": "T-104",
+                  "description": "Test create conversation returns a Conversation with generated UUID, correct defaults for phase/gate_status/active",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-02",
+                  "task_id": "T-104",
+                  "description": "Test soft_delete sets deleted_at and list_active excludes the deleted conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-03",
+                  "task_id": "T-104",
+                  "description": "Test select atomically deactivates all others and activates the target conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-04",
+                  "task_id": "T-104",
+                  "description": "Test clear_all soft-deletes all conversations and returns the count",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R002",
+              "priority": "P0",
+              "area": "Data Model",
+              "text": "Conversations shall support soft deletion (via deleted_at timestamp). Listing endpoints shall exclude soft-deleted conversations by default.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-104"
+              ],
+              "tests": [
+                {
+                  "id": "TT-104-01",
+                  "task_id": "T-104",
+                  "description": "Test create conversation returns a Conversation with generated UUID, correct defaults for phase/gate_status/active",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-02",
+                  "task_id": "T-104",
+                  "description": "Test soft_delete sets deleted_at and list_active excludes the deleted conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-03",
+                  "task_id": "T-104",
+                  "description": "Test select atomically deactivates all others and activates the target conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-04",
+                  "task_id": "T-104",
+                  "description": "Test clear_all soft-deletes all conversations and returns the count",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R003",
+              "priority": "P0",
+              "area": "Data Model",
+              "text": "Only one conversation shall be active at a time. Selecting a conversation shall deactivate all others.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-104"
+              ],
+              "tests": [
+                {
+                  "id": "TT-104-01",
+                  "task_id": "T-104",
+                  "description": "Test create conversation returns a Conversation with generated UUID, correct defaults for phase/gate_status/active",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-02",
+                  "task_id": "T-104",
+                  "description": "Test soft_delete sets deleted_at and list_active excludes the deleted conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-03",
+                  "task_id": "T-104",
+                  "description": "Test select atomically deactivates all others and activates the target conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-04",
+                  "task_id": "T-104",
+                  "description": "Test clear_all soft-deletes all conversations and returns the count",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Agents",
+          "requirements": [
+            {
+              "id": "BE-R010",
+              "priority": "P0",
+              "area": "Data Model",
+              "text": "Each agent shall have a globally unique ID, display name, provider (claude, codex, ollama, gemini), model identifier, role (analyst, team_lead, developer), personality key, and status (idle, running, blocked, offline).",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-103",
+                "T-105",
+                "T-212"
+              ],
+              "tests": [
+                {
+                  "id": "TT-212-01",
+                  "task_id": "T-212",
+                  "description": "GET /api/agents/{id}/status returns current status",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-02",
+                  "task_id": "T-212",
+                  "description": "PATCH /api/agents/{id}/status accepts valid transition idle -> running",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-03",
+                  "task_id": "T-212",
+                  "description": "PATCH /api/agents/{id}/status rejects invalid transition idle -> blocked",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-04",
+                  "task_id": "T-212",
+                  "description": "Status change emits agent_status_change system event",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-103-01",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs cannot be instantiated directly (abstract methods enforced)",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-02",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs define the required CRUD method signatures with correct type hints",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-03",
+                  "task_id": "T-103",
+                  "description": "Test that a minimal concrete subclass can be created by implementing all abstract methods",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-105-01",
+                  "task_id": "T-105",
+                  "description": "Test create agent with valid provider/role returns Agent with generated UUID and idle status",
+                  "type": "unit",
+                  "file": "backend/tests/test_agent_repo.py"
+                },
+                {
+                  "id": "TT-105-02",
+                  "task_id": "T-105",
+                  "description": "Test create agent with invalid provider raises ValueError",
+                  "type": "unit",
+                  "file": "backend/tests/test_agent_repo.py"
+                },
+                {
+                  "id": "TT-105-03",
+                  "task_id": "T-105",
+                  "description": "Test delete agent cascades to remove conversation_agent join rows",
+                  "type": "integration",
+                  "file": "backend/tests/test_agent_repo.py"
+                },
+                {
+                  "id": "TT-105-04",
+                  "task_id": "T-105",
+                  "description": "Test list_all returns agents ordered by sort_order ascending, then display_name",
+                  "type": "unit",
+                  "file": "backend/tests/test_agent_repo.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R011",
+              "priority": "P0",
+              "area": "Data Model",
+              "text": "Agents shall be scoped to conversations via a join table (conversation_agent). Each join record shall include: turn_order (for round-robin sequencing), enabled flag, and permission_profile.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-106",
+                "T-213"
+              ],
+              "tests": [
+                {
+                  "id": "TT-213-01",
+                  "task_id": "T-213",
+                  "description": "POST /api/conversations/{id}/agents links agent with auto-assigned turn_order",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-02",
+                  "task_id": "T-213",
+                  "description": "Duplicate agent assignment returns 409 Conflict",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-03",
+                  "task_id": "T-213",
+                  "description": "is_merge_coordinator flag is stored and returned correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-106-01",
+                  "task_id": "T-106",
+                  "description": "Test add_agent auto-assigns turn_order as max(existing)+1, starting from 1",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                },
+                {
+                  "id": "TT-106-02",
+                  "task_id": "T-106",
+                  "description": "Test adding same agent to same conversation twice raises IntegrityError (UNIQUE constraint)",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                },
+                {
+                  "id": "TT-106-03",
+                  "task_id": "T-106",
+                  "description": "Test reorder updates turn_order for all agents atomically in the specified order",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                },
+                {
+                  "id": "TT-106-04",
+                  "task_id": "T-106",
+                  "description": "Test set_merge_coordinator clears existing coordinator and sets the new one",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R012",
+              "priority": "P0",
+              "area": "Data Model",
+              "text": "When an agent is added to a conversation, the system shall auto-assign the next turn_order value (max existing + 1, starting from 1).",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-106",
+                "T-213"
+              ],
+              "tests": [
+                {
+                  "id": "TT-213-01",
+                  "task_id": "T-213",
+                  "description": "POST /api/conversations/{id}/agents links agent with auto-assigned turn_order",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-02",
+                  "task_id": "T-213",
+                  "description": "Duplicate agent assignment returns 409 Conflict",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-03",
+                  "task_id": "T-213",
+                  "description": "is_merge_coordinator flag is stored and returned correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-106-01",
+                  "task_id": "T-106",
+                  "description": "Test add_agent auto-assigns turn_order as max(existing)+1, starting from 1",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                },
+                {
+                  "id": "TT-106-02",
+                  "task_id": "T-106",
+                  "description": "Test adding same agent to same conversation twice raises IntegrityError (UNIQUE constraint)",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                },
+                {
+                  "id": "TT-106-03",
+                  "task_id": "T-106",
+                  "description": "Test reorder updates turn_order for all agents atomically in the specified order",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                },
+                {
+                  "id": "TT-106-04",
+                  "task_id": "T-106",
+                  "description": "Test set_merge_coordinator clears existing coordinator and sets the new one",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R013",
+              "priority": "P1",
+              "area": "Data Model",
+              "text": "An agent marked as is_merge_coordinator in a conversation shall be designated to manage the merge queue. Typically this is the Ollama Team Lead.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-106",
+                "T-213"
+              ],
+              "tests": [
+                {
+                  "id": "TT-213-01",
+                  "task_id": "T-213",
+                  "description": "POST /api/conversations/{id}/agents links agent with auto-assigned turn_order",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-02",
+                  "task_id": "T-213",
+                  "description": "Duplicate agent assignment returns 409 Conflict",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-03",
+                  "task_id": "T-213",
+                  "description": "is_merge_coordinator flag is stored and returned correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-106-01",
+                  "task_id": "T-106",
+                  "description": "Test add_agent auto-assigns turn_order as max(existing)+1, starting from 1",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                },
+                {
+                  "id": "TT-106-02",
+                  "task_id": "T-106",
+                  "description": "Test adding same agent to same conversation twice raises IntegrityError (UNIQUE constraint)",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                },
+                {
+                  "id": "TT-106-03",
+                  "task_id": "T-106",
+                  "description": "Test reorder updates turn_order for all agents atomically in the specified order",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                },
+                {
+                  "id": "TT-106-04",
+                  "task_id": "T-106",
+                  "description": "Test set_merge_coordinator clears existing coordinator and sets the new one",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_agent_repo.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Tasks",
+          "requirements": [
+            {
+              "id": "BE-R020",
+              "priority": "P0",
+              "area": "Data Model",
+              "text": "A task shall belong to a conversation and track: title, specification (JSON), status, priority, owner agent, dependencies (as JSON array of task IDs), timestamps, result summary, and evidence artifacts.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-102",
+                "T-103",
+                "T-107",
+                "T-204"
+              ],
+              "tests": [
+                {
+                  "id": "TT-204-01",
+                  "task_id": "T-204",
+                  "description": "POST /api/conversations/{id}/tasks creates a task with spec_json and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-02",
+                  "task_id": "T-204",
+                  "description": "GET /api/conversations/{id}/tasks lists all tasks ordered by priority",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-03",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} updates status through valid transitions",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-04",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} rejects invalid status transitions with 400",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-102-01",
+                  "task_id": "T-102",
+                  "description": "Test that inserting a task with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-02",
+                  "task_id": "T-102",
+                  "description": "Test that inserting an artifact with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-03",
+                  "task_id": "T-102",
+                  "description": "Test that inserting a message_event with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-04",
+                  "task_id": "T-102",
+                  "description": "Test that migration from v4 to v5 preserves existing data while adding constraints",
+                  "type": "integration",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-103-01",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs cannot be instantiated directly (abstract methods enforced)",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-02",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs define the required CRUD method signatures with correct type hints",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-03",
+                  "task_id": "T-103",
+                  "description": "Test that a minimal concrete subclass can be created by implementing all abstract methods",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-107-01",
+                  "task_id": "T-107",
+                  "description": "Test create task returns Task with default status 'todo' and correct conversation_id",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-02",
+                  "task_id": "T-107",
+                  "description": "Test update_status to 'implementing' is blocked when dependency tasks are not 'done'",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-03",
+                  "task_id": "T-107",
+                  "description": "Test update_status to 'implementing' succeeds when all dependency tasks are 'done'",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-04",
+                  "task_id": "T-107",
+                  "description": "Test list_by_conversation with status_filter returns only matching tasks",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R021",
+              "priority": "P0",
+              "area": "Data Model",
+              "text": "Task statuses shall be: todo, design, tdd, implementing, testing, pr_raised, in_review, fixing_comments, merging, done, blocked.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-107",
+                "T-115",
+                "T-204"
+              ],
+              "tests": [
+                {
+                  "id": "TT-204-01",
+                  "task_id": "T-204",
+                  "description": "POST /api/conversations/{id}/tasks creates a task with spec_json and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-02",
+                  "task_id": "T-204",
+                  "description": "GET /api/conversations/{id}/tasks lists all tasks ordered by priority",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-03",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} updates status through valid transitions",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-04",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} rejects invalid status transitions with 400",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-107-01",
+                  "task_id": "T-107",
+                  "description": "Test create task returns Task with default status 'todo' and correct conversation_id",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-02",
+                  "task_id": "T-107",
+                  "description": "Test update_status to 'implementing' is blocked when dependency tasks are not 'done'",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-03",
+                  "task_id": "T-107",
+                  "description": "Test update_status to 'implementing' succeeds when all dependency tasks are 'done'",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-04",
+                  "task_id": "T-107",
+                  "description": "Test list_by_conversation with status_filter returns only matching tasks",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-115-01",
+                  "task_id": "T-115",
+                  "description": "Test TaskStatus enum contains all 11 statuses from BE-R021",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                },
+                {
+                  "id": "TT-115-02",
+                  "task_id": "T-115",
+                  "description": "Test VALID_TRANSITIONS allows todo -> design but blocks todo -> implementing",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                },
+                {
+                  "id": "TT-115-03",
+                  "task_id": "T-115",
+                  "description": "Test EventType enum contains all 7 event types from BE-R031",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                },
+                {
+                  "id": "TT-115-04",
+                  "task_id": "T-115",
+                  "description": "Test MergeQueueStatus enum contains all 7 statuses (queued through blocked)",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R022",
+              "priority": "P1",
+              "area": "Data Model",
+              "text": "Tasks shall support dependency tracking. A task shall not transition to implementing until all its dependencies are done.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-107",
+                "T-204",
+                "T-205"
+              ],
+              "tests": [
+                {
+                  "id": "TT-204-01",
+                  "task_id": "T-204",
+                  "description": "POST /api/conversations/{id}/tasks creates a task with spec_json and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-02",
+                  "task_id": "T-204",
+                  "description": "GET /api/conversations/{id}/tasks lists all tasks ordered by priority",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-03",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} updates status through valid transitions",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-04",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} rejects invalid status transitions with 400",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-205-01",
+                  "task_id": "T-205",
+                  "description": "Task with unmet dependencies cannot transition to implementing, returns 409",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-205-02",
+                  "task_id": "T-205",
+                  "description": "Task with all dependencies done can transition to implementing",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-205-03",
+                  "task_id": "T-205",
+                  "description": "Task with empty depends_on_json transitions freely",
+                  "type": "unit",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-107-01",
+                  "task_id": "T-107",
+                  "description": "Test create task returns Task with default status 'todo' and correct conversation_id",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-02",
+                  "task_id": "T-107",
+                  "description": "Test update_status to 'implementing' is blocked when dependency tasks are not 'done'",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-03",
+                  "task_id": "T-107",
+                  "description": "Test update_status to 'implementing' succeeds when all dependency tasks are 'done'",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-04",
+                  "task_id": "T-107",
+                  "description": "Test list_by_conversation with status_filter returns only matching tasks",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Messages & Events",
+          "requirements": [
+            {
+              "id": "BE-R030",
+              "priority": "P0",
+              "area": "Data Model",
+              "text": "All conversation events (chat messages, system events, phase transitions, steering inputs) shall be stored in a message_event table with: conversation_id, source type (customer, agent, system), source ID, text, event type, and metadata JSON.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-102",
+                "T-103",
+                "T-108",
+                "T-111",
+                "T-202",
+                "T-214"
+              ],
+              "tests": [
+                {
+                  "id": "TT-202-01",
+                  "task_id": "T-202",
+                  "description": "POST /api/conversations/{id}/messages creates a customer message event and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-02",
+                  "task_id": "T-202",
+                  "description": "POST with target_agent_id stores directed message metadata",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-03",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns paginated results with ?after cursor",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-04",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns 404 for non-existent conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-214-01",
+                  "task_id": "T-214",
+                  "description": "create_agent_failure_event inserts system_notice event with correct metadata",
+                  "type": "unit",
+                  "file": "backend/tests/test_error_events.py"
+                },
+                {
+                  "id": "TT-214-02",
+                  "task_id": "T-214",
+                  "description": "Crash error event includes agent_id and error classification in metadata",
+                  "type": "unit",
+                  "file": "backend/tests/test_error_events.py"
+                },
+                {
+                  "id": "TT-214-03",
+                  "task_id": "T-214",
+                  "description": "Failure events appear in GET /api/conversations/{id}/messages timeline",
+                  "type": "integration",
+                  "file": "backend/tests/test_error_events.py"
+                },
+                {
+                  "id": "TT-102-01",
+                  "task_id": "T-102",
+                  "description": "Test that inserting a task with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-02",
+                  "task_id": "T-102",
+                  "description": "Test that inserting an artifact with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-03",
+                  "task_id": "T-102",
+                  "description": "Test that inserting a message_event with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-04",
+                  "task_id": "T-102",
+                  "description": "Test that migration from v4 to v5 preserves existing data while adding constraints",
+                  "type": "integration",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-103-01",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs cannot be instantiated directly (abstract methods enforced)",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-02",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs define the required CRUD method signatures with correct type hints",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-03",
+                  "task_id": "T-103",
+                  "description": "Test that a minimal concrete subclass can be created by implementing all abstract methods",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-108-01",
+                  "task_id": "T-108",
+                  "description": "Test append creates a message_event with unique UUID event_id and auto-increment id",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-02",
+                  "task_id": "T-108",
+                  "description": "Test list_by_conversation with after_id returns only events after the specified cursor",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-03",
+                  "task_id": "T-108",
+                  "description": "Test list_by_type filters events to only the specified event_type",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-04",
+                  "task_id": "T-108",
+                  "description": "Test that repository exposes no update or delete methods (append-only enforcement)",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-111-01",
+                  "task_id": "T-111",
+                  "description": "Test DualWriteMessageEventRepository.append writes to both SQLite and JSONL file",
+                  "type": "integration",
+                  "file": "backend/tests/test_dual_write_events.py"
+                },
+                {
+                  "id": "TT-111-02",
+                  "task_id": "T-111",
+                  "description": "Test that JSONL entries contain event_id, conversation_id, source_type, event_type, text, and timestamp",
+                  "type": "unit",
+                  "file": "backend/tests/test_dual_write_events.py"
+                },
+                {
+                  "id": "TT-111-03",
+                  "task_id": "T-111",
+                  "description": "Test EventLogReader.read_since with a known event_id returns only subsequent events",
+                  "type": "unit",
+                  "file": "backend/tests/test_dual_write_events.py"
+                },
+                {
+                  "id": "TT-111-04",
+                  "task_id": "T-111",
+                  "description": "Test that JSONL write failure does not prevent SQLite write (graceful degradation)",
+                  "type": "unit",
+                  "file": "backend/tests/test_dual_write_events.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R031",
+              "priority": "P0",
+              "area": "Data Model",
+              "text": "Event types shall include: chat_message, debate_turn, phase_change, gate_approval, steer, task_update, system_notice.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-108",
+                "T-115",
+                "T-202",
+                "T-203",
+                "T-214"
+              ],
+              "tests": [
+                {
+                  "id": "TT-202-01",
+                  "task_id": "T-202",
+                  "description": "POST /api/conversations/{id}/messages creates a customer message event and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-02",
+                  "task_id": "T-202",
+                  "description": "POST with target_agent_id stores directed message metadata",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-03",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns paginated results with ?after cursor",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-04",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns 404 for non-existent conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-01",
+                  "task_id": "T-203",
+                  "description": "GET /api/conversations/{id}/events returns all events unfiltered",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-02",
+                  "task_id": "T-203",
+                  "description": "GET with ?event_type=chat_message filters correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-03",
+                  "task_id": "T-203",
+                  "description": "GET with multiple event_type values (comma-separated) returns matching events",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-214-01",
+                  "task_id": "T-214",
+                  "description": "create_agent_failure_event inserts system_notice event with correct metadata",
+                  "type": "unit",
+                  "file": "backend/tests/test_error_events.py"
+                },
+                {
+                  "id": "TT-214-02",
+                  "task_id": "T-214",
+                  "description": "Crash error event includes agent_id and error classification in metadata",
+                  "type": "unit",
+                  "file": "backend/tests/test_error_events.py"
+                },
+                {
+                  "id": "TT-214-03",
+                  "task_id": "T-214",
+                  "description": "Failure events appear in GET /api/conversations/{id}/messages timeline",
+                  "type": "integration",
+                  "file": "backend/tests/test_error_events.py"
+                },
+                {
+                  "id": "TT-108-01",
+                  "task_id": "T-108",
+                  "description": "Test append creates a message_event with unique UUID event_id and auto-increment id",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-02",
+                  "task_id": "T-108",
+                  "description": "Test list_by_conversation with after_id returns only events after the specified cursor",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-03",
+                  "task_id": "T-108",
+                  "description": "Test list_by_type filters events to only the specified event_type",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-04",
+                  "task_id": "T-108",
+                  "description": "Test that repository exposes no update or delete methods (append-only enforcement)",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-115-01",
+                  "task_id": "T-115",
+                  "description": "Test TaskStatus enum contains all 11 statuses from BE-R021",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                },
+                {
+                  "id": "TT-115-02",
+                  "task_id": "T-115",
+                  "description": "Test VALID_TRANSITIONS allows todo -> design but blocks todo -> implementing",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                },
+                {
+                  "id": "TT-115-03",
+                  "task_id": "T-115",
+                  "description": "Test EventType enum contains all 7 event types from BE-R031",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                },
+                {
+                  "id": "TT-115-04",
+                  "task_id": "T-115",
+                  "description": "Test MergeQueueStatus enum contains all 7 statuses (queued through blocked)",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R032",
+              "priority": "P1",
+              "area": "Data Model",
+              "text": "Each event shall have a unique event_id (UUID). Events shall be append-only \u2014 no updates or deletes.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-108",
+                "T-111",
+                "T-202"
+              ],
+              "tests": [
+                {
+                  "id": "TT-202-01",
+                  "task_id": "T-202",
+                  "description": "POST /api/conversations/{id}/messages creates a customer message event and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-02",
+                  "task_id": "T-202",
+                  "description": "POST with target_agent_id stores directed message metadata",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-03",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns paginated results with ?after cursor",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-04",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns 404 for non-existent conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-108-01",
+                  "task_id": "T-108",
+                  "description": "Test append creates a message_event with unique UUID event_id and auto-increment id",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-02",
+                  "task_id": "T-108",
+                  "description": "Test list_by_conversation with after_id returns only events after the specified cursor",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-03",
+                  "task_id": "T-108",
+                  "description": "Test list_by_type filters events to only the specified event_type",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-04",
+                  "task_id": "T-108",
+                  "description": "Test that repository exposes no update or delete methods (append-only enforcement)",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-111-01",
+                  "task_id": "T-111",
+                  "description": "Test DualWriteMessageEventRepository.append writes to both SQLite and JSONL file",
+                  "type": "integration",
+                  "file": "backend/tests/test_dual_write_events.py"
+                },
+                {
+                  "id": "TT-111-02",
+                  "task_id": "T-111",
+                  "description": "Test that JSONL entries contain event_id, conversation_id, source_type, event_type, text, and timestamp",
+                  "type": "unit",
+                  "file": "backend/tests/test_dual_write_events.py"
+                },
+                {
+                  "id": "TT-111-03",
+                  "task_id": "T-111",
+                  "description": "Test EventLogReader.read_since with a known event_id returns only subsequent events",
+                  "type": "unit",
+                  "file": "backend/tests/test_dual_write_events.py"
+                },
+                {
+                  "id": "TT-111-04",
+                  "task_id": "T-111",
+                  "description": "Test that JSONL write failure does not prevent SQLite write (graceful degradation)",
+                  "type": "unit",
+                  "file": "backend/tests/test_dual_write_events.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Artifacts",
+          "requirements": [
+            {
+              "id": "BE-R040",
+              "priority": "P1",
+              "area": "Data Model",
+              "text": "The system shall store artifacts (design docs, task plans, summaries) linked to conversations and optionally to batch runs. Artifact types shall include: design_doc, task_plan, summary, checkpoint.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-102",
+                "T-103",
+                "T-109",
+                "T-112"
+              ],
+              "tests": [
+                {
+                  "id": "TT-102-01",
+                  "task_id": "T-102",
+                  "description": "Test that inserting a task with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-02",
+                  "task_id": "T-102",
+                  "description": "Test that inserting an artifact with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-03",
+                  "task_id": "T-102",
+                  "description": "Test that inserting a message_event with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-04",
+                  "task_id": "T-102",
+                  "description": "Test that migration from v4 to v5 preserves existing data while adding constraints",
+                  "type": "integration",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-103-01",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs cannot be instantiated directly (abstract methods enforced)",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-02",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs define the required CRUD method signatures with correct type hints",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-03",
+                  "task_id": "T-103",
+                  "description": "Test that a minimal concrete subclass can be created by implementing all abstract methods",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-109-01",
+                  "task_id": "T-109",
+                  "description": "Test create artifact returns Artifact with generated UUID and correct type",
+                  "type": "unit",
+                  "file": "backend/tests/test_artifact_repo.py"
+                },
+                {
+                  "id": "TT-109-02",
+                  "task_id": "T-109",
+                  "description": "Test list_by_conversation with type_filter returns only matching artifact types",
+                  "type": "unit",
+                  "file": "backend/tests/test_artifact_repo.py"
+                },
+                {
+                  "id": "TT-109-03",
+                  "task_id": "T-109",
+                  "description": "Test get_latest returns the most recently created artifact for a conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_artifact_repo.py"
+                },
+                {
+                  "id": "TT-112-01",
+                  "task_id": "T-112",
+                  "description": "Test save() creates an artifact with type='checkpoint' containing serialized CheckpointPack",
+                  "type": "integration",
+                  "file": "backend/tests/test_checkpoint_storage.py"
+                },
+                {
+                  "id": "TT-112-02",
+                  "task_id": "T-112",
+                  "description": "Test load_latest returns the most recently saved CheckpointPack for a conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_checkpoint_storage.py"
+                },
+                {
+                  "id": "TT-112-03",
+                  "task_id": "T-112",
+                  "description": "Test save() updates conversation.summary_snapshot and latest_artifact_id",
+                  "type": "integration",
+                  "file": "backend/tests/test_checkpoint_storage.py"
+                },
+                {
+                  "id": "TT-112-04",
+                  "task_id": "T-112",
+                  "description": "Test round-trip: build -> compact -> save -> load_latest produces equivalent CheckpointPack",
+                  "type": "integration",
+                  "file": "backend/tests/test_checkpoint_storage.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Persistence",
+      "subsections": [
+        {
+          "title": "Storage",
+          "requirements": [
+            {
+              "id": "BE-R050",
+              "priority": "P0",
+              "area": "Persistence",
+              "text": "The system shall use SQLite with WAL mode for persistence. The database file shall reside in a configurable local path (default: ~/.agent-orchestrator/orchestrator.db).",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-103",
+                "T-104",
+                "T-105",
+                "T-107",
+                "T-108",
+                "T-109",
+                "T-110",
+                "T-113"
+              ],
+              "tests": [
+                {
+                  "id": "TT-103-01",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs cannot be instantiated directly (abstract methods enforced)",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-02",
+                  "task_id": "T-103",
+                  "description": "Test that all repository ABCs define the required CRUD method signatures with correct type hints",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-103-03",
+                  "task_id": "T-103",
+                  "description": "Test that a minimal concrete subclass can be created by implementing all abstract methods",
+                  "type": "unit",
+                  "file": "backend/tests/test_repository_interfaces.py"
+                },
+                {
+                  "id": "TT-104-01",
+                  "task_id": "T-104",
+                  "description": "Test create conversation returns a Conversation with generated UUID, correct defaults for phase/gate_status/active",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-02",
+                  "task_id": "T-104",
+                  "description": "Test soft_delete sets deleted_at and list_active excludes the deleted conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-03",
+                  "task_id": "T-104",
+                  "description": "Test select atomically deactivates all others and activates the target conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-104-04",
+                  "task_id": "T-104",
+                  "description": "Test clear_all soft-deletes all conversations and returns the count",
+                  "type": "unit",
+                  "file": "backend/tests/test_conversation_repo.py"
+                },
+                {
+                  "id": "TT-105-01",
+                  "task_id": "T-105",
+                  "description": "Test create agent with valid provider/role returns Agent with generated UUID and idle status",
+                  "type": "unit",
+                  "file": "backend/tests/test_agent_repo.py"
+                },
+                {
+                  "id": "TT-105-02",
+                  "task_id": "T-105",
+                  "description": "Test create agent with invalid provider raises ValueError",
+                  "type": "unit",
+                  "file": "backend/tests/test_agent_repo.py"
+                },
+                {
+                  "id": "TT-105-03",
+                  "task_id": "T-105",
+                  "description": "Test delete agent cascades to remove conversation_agent join rows",
+                  "type": "integration",
+                  "file": "backend/tests/test_agent_repo.py"
+                },
+                {
+                  "id": "TT-105-04",
+                  "task_id": "T-105",
+                  "description": "Test list_all returns agents ordered by sort_order ascending, then display_name",
+                  "type": "unit",
+                  "file": "backend/tests/test_agent_repo.py"
+                },
+                {
+                  "id": "TT-107-01",
+                  "task_id": "T-107",
+                  "description": "Test create task returns Task with default status 'todo' and correct conversation_id",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-02",
+                  "task_id": "T-107",
+                  "description": "Test update_status to 'implementing' is blocked when dependency tasks are not 'done'",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-03",
+                  "task_id": "T-107",
+                  "description": "Test update_status to 'implementing' succeeds when all dependency tasks are 'done'",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-107-04",
+                  "task_id": "T-107",
+                  "description": "Test list_by_conversation with status_filter returns only matching tasks",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_repo.py"
+                },
+                {
+                  "id": "TT-108-01",
+                  "task_id": "T-108",
+                  "description": "Test append creates a message_event with unique UUID event_id and auto-increment id",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-02",
+                  "task_id": "T-108",
+                  "description": "Test list_by_conversation with after_id returns only events after the specified cursor",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-03",
+                  "task_id": "T-108",
+                  "description": "Test list_by_type filters events to only the specified event_type",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-108-04",
+                  "task_id": "T-108",
+                  "description": "Test that repository exposes no update or delete methods (append-only enforcement)",
+                  "type": "unit",
+                  "file": "backend/tests/test_message_event_repo.py"
+                },
+                {
+                  "id": "TT-109-01",
+                  "task_id": "T-109",
+                  "description": "Test create artifact returns Artifact with generated UUID and correct type",
+                  "type": "unit",
+                  "file": "backend/tests/test_artifact_repo.py"
+                },
+                {
+                  "id": "TT-109-02",
+                  "task_id": "T-109",
+                  "description": "Test list_by_conversation with type_filter returns only matching artifact types",
+                  "type": "unit",
+                  "file": "backend/tests/test_artifact_repo.py"
+                },
+                {
+                  "id": "TT-109-03",
+                  "task_id": "T-109",
+                  "description": "Test get_latest returns the most recently created artifact for a conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_artifact_repo.py"
+                },
+                {
+                  "id": "TT-110-01",
+                  "task_id": "T-110",
+                  "description": "Test enqueue auto-assigns position as max(existing)+1 for the conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-110-02",
+                  "task_id": "T-110",
+                  "description": "Test update_status to 'merging' fails if another entry is already 'merging' in the same conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-110-03",
+                  "task_id": "T-110",
+                  "description": "Test list_by_conversation returns entries ordered by position ascending",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-110-04",
+                  "task_id": "T-110",
+                  "description": "Test assign_reviewer updates the reviewer_agent_id field",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-113-01",
+                  "task_id": "T-113",
+                  "description": "Test default config values are used when no environment variables are set",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-02",
+                  "task_id": "T-113",
+                  "description": "Test that environment variables override default config values",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-03",
+                  "task_id": "T-113",
+                  "description": "Test that DEV_MODE=true is parsed correctly from string env var",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-04",
+                  "task_id": "T-113",
+                  "description": "Test that DB_PATH expands ~ to user home directory",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R051",
+              "priority": "P0",
+              "area": "Persistence",
+              "text": "The database schema shall support forward migrations via a schema_version pragma. Each migration shall be idempotent.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-101",
+                "T-102"
+              ],
+              "tests": [
+                {
+                  "id": "TT-101-01",
+                  "task_id": "T-101",
+                  "description": "Test that initialize() on a fresh DB creates the merge_queue table with all expected columns",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_merge_queue.py"
+                },
+                {
+                  "id": "TT-101-02",
+                  "task_id": "T-101",
+                  "description": "Test that migration from v3 to v4 adds merge_queue without data loss in existing tables",
+                  "type": "integration",
+                  "file": "backend/tests/test_schema_merge_queue.py"
+                },
+                {
+                  "id": "TT-101-03",
+                  "task_id": "T-101",
+                  "description": "Test that merge_queue FK constraints enforce valid conversation_id, task_id, and author_agent_id references",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_merge_queue.py"
+                },
+                {
+                  "id": "TT-102-01",
+                  "task_id": "T-102",
+                  "description": "Test that inserting a task with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-02",
+                  "task_id": "T-102",
+                  "description": "Test that inserting an artifact with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-03",
+                  "task_id": "T-102",
+                  "description": "Test that inserting a message_event with invalid conversation_id raises IntegrityError",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_fk.py"
+                },
+                {
+                  "id": "TT-102-04",
+                  "task_id": "T-102",
+                  "description": "Test that migration from v4 to v5 preserves existing data while adding constraints",
+                  "type": "integration",
+                  "file": "backend/tests/test_schema_fk.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R052",
+              "priority": "P1",
+              "area": "Persistence",
+              "text": "The system shall maintain a JSONL event log as a secondary append-only store for debugging and replay. This is supplementary to the SQLite store.",
+              "status": "todo",
+              "design_ref": "DES-02",
+              "tasks": [
+                "T-111"
+              ],
+              "tests": [
+                {
+                  "id": "TT-111-01",
+                  "task_id": "T-111",
+                  "description": "Test DualWriteMessageEventRepository.append writes to both SQLite and JSONL file",
+                  "type": "integration",
+                  "file": "backend/tests/test_dual_write_events.py"
+                },
+                {
+                  "id": "TT-111-02",
+                  "task_id": "T-111",
+                  "description": "Test that JSONL entries contain event_id, conversation_id, source_type, event_type, text, and timestamp",
+                  "type": "unit",
+                  "file": "backend/tests/test_dual_write_events.py"
+                },
+                {
+                  "id": "TT-111-03",
+                  "task_id": "T-111",
+                  "description": "Test EventLogReader.read_since with a known event_id returns only subsequent events",
+                  "type": "unit",
+                  "file": "backend/tests/test_dual_write_events.py"
+                },
+                {
+                  "id": "TT-111-04",
+                  "task_id": "T-111",
+                  "description": "Test that JSONL write failure does not prevent SQLite write (graceful degradation)",
+                  "type": "unit",
+                  "file": "backend/tests/test_dual_write_events.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "API Design",
+      "subsections": [
+        {
+          "title": "General",
+          "requirements": [
+            {
+              "id": "BE-R060",
+              "priority": "P0",
+              "area": "API",
+              "text": "The backend shall expose a REST API via FastAPI, served by uvicorn. All endpoints shall return a standard envelope: { \"ok\": bool, \"data\": T, \"error\"?: string }.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-201",
+                "T-202",
+                "T-203",
+                "T-204",
+                "T-206",
+                "T-207",
+                "T-208",
+                "T-209",
+                "T-211",
+                "T-212",
+                "T-213"
+              ],
+              "tests": [
+                {
+                  "id": "TT-201-01",
+                  "task_id": "T-201",
+                  "description": "GET /api/conversations/{id} returns full details with agent_count and task_count",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-02",
+                  "task_id": "T-201",
+                  "description": "GET /api/conversations/{id} returns 404 for non-existent or soft-deleted conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-03",
+                  "task_id": "T-201",
+                  "description": "PATCH /api/conversations/{id} updates title and project_path, returns updated object",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-04",
+                  "task_id": "T-201",
+                  "description": "PATCH /api/conversations/{id} ignores null fields and returns 404 for missing conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-202-01",
+                  "task_id": "T-202",
+                  "description": "POST /api/conversations/{id}/messages creates a customer message event and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-02",
+                  "task_id": "T-202",
+                  "description": "POST with target_agent_id stores directed message metadata",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-03",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns paginated results with ?after cursor",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-04",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns 404 for non-existent conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-01",
+                  "task_id": "T-203",
+                  "description": "GET /api/conversations/{id}/events returns all events unfiltered",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-02",
+                  "task_id": "T-203",
+                  "description": "GET with ?event_type=chat_message filters correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-03",
+                  "task_id": "T-203",
+                  "description": "GET with multiple event_type values (comma-separated) returns matching events",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-204-01",
+                  "task_id": "T-204",
+                  "description": "POST /api/conversations/{id}/tasks creates a task with spec_json and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-02",
+                  "task_id": "T-204",
+                  "description": "GET /api/conversations/{id}/tasks lists all tasks ordered by priority",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-03",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} updates status through valid transitions",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-04",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} rejects invalid status transitions with 400",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-206-01",
+                  "task_id": "T-206",
+                  "description": "GET /api/conversations/{id}/phase returns current phase and gate_status",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-206-02",
+                  "task_id": "T-206",
+                  "description": "POST /gate with approve advances phase to next in sequence",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-206-03",
+                  "task_id": "T-206",
+                  "description": "POST /gate with reject sets gate_status to rejected, phase unchanged",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-206-04",
+                  "task_id": "T-206",
+                  "description": "POST /gate on a done conversation returns 409",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-207-01",
+                  "task_id": "T-207",
+                  "description": "POST /merge-queue enqueues item at next position with status queued",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_merge_queue.py"
+                },
+                {
+                  "id": "TT-207-02",
+                  "task_id": "T-207",
+                  "description": "GET /merge-queue returns items ordered by position",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_merge_queue.py"
+                },
+                {
+                  "id": "TT-207-03",
+                  "task_id": "T-207",
+                  "description": "PATCH /merge-queue/{id} rejects merging when another item is already merging",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_merge_queue.py"
+                },
+                {
+                  "id": "TT-207-04",
+                  "task_id": "T-207",
+                  "description": "DELETE /merge-queue/{id} removes item and recompacts positions",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_merge_queue.py"
+                },
+                {
+                  "id": "TT-208-01",
+                  "task_id": "T-208",
+                  "description": "SSE stream delivers events in correct SSE envelope format",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-02",
+                  "task_id": "T-208",
+                  "description": "Last-Event-ID header causes replay of missed events",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-03",
+                  "task_id": "T-208",
+                  "description": "Heartbeat comments are sent to keep connection alive",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-04",
+                  "task_id": "T-208",
+                  "description": "Stream returns 404 for non-existent conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-01",
+                  "task_id": "T-209",
+                  "description": "Agent activity stream delivers only events for the specified agent",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-02",
+                  "task_id": "T-209",
+                  "description": "Activity stream filters to activity-related event types",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-03",
+                  "task_id": "T-209",
+                  "description": "Agent activity stream supports Last-Event-ID reconnection",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-211-01",
+                  "task_id": "T-211",
+                  "description": "Unhandled exceptions return 500 with envelope format and no stack trace",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-211-02",
+                  "task_id": "T-211",
+                  "description": "Pydantic ValidationError returns 400 with field-level error details",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-211-03",
+                  "task_id": "T-211",
+                  "description": "Custom NotFoundError returns 404 with envelope",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-211-04",
+                  "task_id": "T-211",
+                  "description": "Custom ConflictError returns 409 with envelope",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-212-01",
+                  "task_id": "T-212",
+                  "description": "GET /api/agents/{id}/status returns current status",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-02",
+                  "task_id": "T-212",
+                  "description": "PATCH /api/agents/{id}/status accepts valid transition idle -> running",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-03",
+                  "task_id": "T-212",
+                  "description": "PATCH /api/agents/{id}/status rejects invalid transition idle -> blocked",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-04",
+                  "task_id": "T-212",
+                  "description": "Status change emits agent_status_change system event",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-213-01",
+                  "task_id": "T-213",
+                  "description": "POST /api/conversations/{id}/agents links agent with auto-assigned turn_order",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-02",
+                  "task_id": "T-213",
+                  "description": "Duplicate agent assignment returns 409 Conflict",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-03",
+                  "task_id": "T-213",
+                  "description": "is_merge_coordinator flag is stored and returned correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R061",
+              "priority": "P0",
+              "area": "API",
+              "text": "The API shall be prefixed under /api. The frontend dev server shall proxy /api/* to the backend.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-215"
+              ],
+              "tests": [
+                {
+                  "id": "TT-215-01",
+                  "task_id": "T-215",
+                  "description": "All new route modules are included in the FastAPI app",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_app.py"
+                },
+                {
+                  "id": "TT-215-02",
+                  "task_id": "T-215",
+                  "description": "OpenAPI schema includes all new endpoints under /api prefix",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_app.py"
+                },
+                {
+                  "id": "TT-215-03",
+                  "task_id": "T-215",
+                  "description": "No route path conflicts between existing and new routers",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_app.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R062",
+              "priority": "P0",
+              "area": "API",
+              "text": "CORS shall be configured for local development (localhost + LAN IPs). In production mode, the frontend is served as static files from the backend and CORS is not needed.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-113"
+              ],
+              "tests": [
+                {
+                  "id": "TT-113-01",
+                  "task_id": "T-113",
+                  "description": "Test default config values are used when no environment variables are set",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-02",
+                  "task_id": "T-113",
+                  "description": "Test that environment variables override default config values",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-03",
+                  "task_id": "T-113",
+                  "description": "Test that DEV_MODE=true is parsed correctly from string env var",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-04",
+                  "task_id": "T-113",
+                  "description": "Test that DB_PATH expands ~ to user home directory",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Conversation Endpoints",
+          "requirements": [
+            {
+              "id": "BE-R070",
+              "priority": "P0",
+              "area": "API",
+              "text": "GET /api/conversations \u2014 List all non-deleted conversations. POST /api/conversations/new \u2014 Create conversation. POST /api/conversations/select \u2014 Set active. POST /api/conversations/delete \u2014 Soft-delete. POST /api/conversations/clear-all \u2014 Soft-delete all.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-201"
+              ],
+              "tests": [
+                {
+                  "id": "TT-201-01",
+                  "task_id": "T-201",
+                  "description": "GET /api/conversations/{id} returns full details with agent_count and task_count",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-02",
+                  "task_id": "T-201",
+                  "description": "GET /api/conversations/{id} returns 404 for non-existent or soft-deleted conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-03",
+                  "task_id": "T-201",
+                  "description": "PATCH /api/conversations/{id} updates title and project_path, returns updated object",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-04",
+                  "task_id": "T-201",
+                  "description": "PATCH /api/conversations/{id} ignores null fields and returns 404 for missing conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R071",
+              "priority": "P1",
+              "area": "API",
+              "text": "GET /api/conversations/{id} \u2014 Full details with phase, gate status, agent count. PATCH /api/conversations/{id} \u2014 Update metadata.",
+              "status": "todo",
+              "design_ref": null,
+              "tasks": [
+                "T-201"
+              ],
+              "tests": [
+                {
+                  "id": "TT-201-01",
+                  "task_id": "T-201",
+                  "description": "GET /api/conversations/{id} returns full details with agent_count and task_count",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-02",
+                  "task_id": "T-201",
+                  "description": "GET /api/conversations/{id} returns 404 for non-existent or soft-deleted conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-03",
+                  "task_id": "T-201",
+                  "description": "PATCH /api/conversations/{id} updates title and project_path, returns updated object",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-04",
+                  "task_id": "T-201",
+                  "description": "PATCH /api/conversations/{id} ignores null fields and returns 404 for missing conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Agent Endpoints",
+          "requirements": [
+            {
+              "id": "BE-R080",
+              "priority": "P0",
+              "area": "API",
+              "text": "POST /api/agents \u2014 Create agent, optionally assign to conversation. POST /api/agents/update \u2014 Update properties. POST /api/agents/delete \u2014 Delete and cascade-remove from conversations.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-212",
+                "T-213"
+              ],
+              "tests": [
+                {
+                  "id": "TT-212-01",
+                  "task_id": "T-212",
+                  "description": "GET /api/agents/{id}/status returns current status",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-02",
+                  "task_id": "T-212",
+                  "description": "PATCH /api/agents/{id}/status accepts valid transition idle -> running",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-03",
+                  "task_id": "T-212",
+                  "description": "PATCH /api/agents/{id}/status rejects invalid transition idle -> blocked",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-04",
+                  "task_id": "T-212",
+                  "description": "Status change emits agent_status_change system event",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-213-01",
+                  "task_id": "T-213",
+                  "description": "POST /api/conversations/{id}/agents links agent with auto-assigned turn_order",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-02",
+                  "task_id": "T-213",
+                  "description": "Duplicate agent assignment returns 409 Conflict",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-03",
+                  "task_id": "T-213",
+                  "description": "is_merge_coordinator flag is stored and returned correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R081",
+              "priority": "P0",
+              "area": "API",
+              "text": "GET /api/conversations/{id}/agents \u2014 List by turn_order. DELETE /api/conversations/{id}/agents/{aid} \u2014 Remove from conversation. PATCH /api/conversations/{id}/agents/reorder \u2014 Bulk reorder.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-213"
+              ],
+              "tests": [
+                {
+                  "id": "TT-213-01",
+                  "task_id": "T-213",
+                  "description": "POST /api/conversations/{id}/agents links agent with auto-assigned turn_order",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-02",
+                  "task_id": "T-213",
+                  "description": "Duplicate agent assignment returns 409 Conflict",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-03",
+                  "task_id": "T-213",
+                  "description": "is_merge_coordinator flag is stored and returned correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Message / Event Endpoints",
+          "requirements": [
+            {
+              "id": "BE-R090",
+              "priority": "P0",
+              "area": "API",
+              "text": "GET /api/conversations/{id}/messages \u2014 Paginated, supports ?after=event_id. POST /api/conversations/{id}/messages \u2014 Send customer message with optional target_agent_id for directed messages.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-202"
+              ],
+              "tests": [
+                {
+                  "id": "TT-202-01",
+                  "task_id": "T-202",
+                  "description": "POST /api/conversations/{id}/messages creates a customer message event and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-02",
+                  "task_id": "T-202",
+                  "description": "POST with target_agent_id stores directed message metadata",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-03",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns paginated results with ?after cursor",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-04",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns 404 for non-existent conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R091",
+              "priority": "P1",
+              "area": "API",
+              "text": "GET /api/conversations/{id}/events \u2014 All events filterable by event_type.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-203"
+              ],
+              "tests": [
+                {
+                  "id": "TT-203-01",
+                  "task_id": "T-203",
+                  "description": "GET /api/conversations/{id}/events returns all events unfiltered",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-02",
+                  "task_id": "T-203",
+                  "description": "GET with ?event_type=chat_message filters correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-03",
+                  "task_id": "T-203",
+                  "description": "GET with multiple event_type values (comma-separated) returns matching events",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Task Endpoints",
+          "requirements": [
+            {
+              "id": "BE-R100",
+              "priority": "P0",
+              "area": "API",
+              "text": "GET /api/conversations/{id}/tasks \u2014 List tasks. POST /api/conversations/{id}/tasks \u2014 Create task. PATCH /api/tasks/{task_id} \u2014 Update status, owner, result.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-204"
+              ],
+              "tests": [
+                {
+                  "id": "TT-204-01",
+                  "task_id": "T-204",
+                  "description": "POST /api/conversations/{id}/tasks creates a task with spec_json and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-02",
+                  "task_id": "T-204",
+                  "description": "GET /api/conversations/{id}/tasks lists all tasks ordered by priority",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-03",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} updates status through valid transitions",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-04",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} rejects invalid status transitions with 400",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Orchestration Endpoints",
+          "requirements": [
+            {
+              "id": "BE-R110",
+              "priority": "P0",
+              "area": "API",
+              "text": "POST /api/orchestration/{id}/run \u2014 Start batch. POST /api/orchestration/{id}/continue \u2014 Continue batch. POST /api/orchestration/{id}/stop \u2014 Stop batch. POST /api/orchestration/{id}/steer \u2014 Inject steering note.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-505"
+              ],
+              "tests": [
+                {
+                  "id": "TT-505-01",
+                  "task_id": "T-505",
+                  "description": "Steering notes appear in agent prompt prefix when pending",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-02",
+                  "task_id": "T-505",
+                  "description": "Batch pauses after batch_size turns and records scheduler_run as completed",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-03",
+                  "task_id": "T-505",
+                  "description": "Continue from paused state resumes with a new batch",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-04",
+                  "task_id": "T-505",
+                  "description": "Directed steer message (@AgentName) targets specific agent",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Real-time Streaming",
+          "requirements": [
+            {
+              "id": "BE-R120",
+              "priority": "P0",
+              "area": "Streaming",
+              "text": "The system shall provide a real-time event stream via Server-Sent Events (SSE) at GET /api/conversations/{id}/stream. Events include: new messages, phase changes, task updates, agent status changes.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-208",
+                "T-210"
+              ],
+              "tests": [
+                {
+                  "id": "TT-208-01",
+                  "task_id": "T-208",
+                  "description": "SSE stream delivers events in correct SSE envelope format",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-02",
+                  "task_id": "T-208",
+                  "description": "Last-Event-ID header causes replay of missed events",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-03",
+                  "task_id": "T-208",
+                  "description": "Heartbeat comments are sent to keep connection alive",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-04",
+                  "task_id": "T-208",
+                  "description": "Stream returns 404 for non-existent conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-210-01",
+                  "task_id": "T-210",
+                  "description": "EventBus delivers published events to all matching subscribers",
+                  "type": "unit",
+                  "file": "backend/tests/test_event_bus.py"
+                },
+                {
+                  "id": "TT-210-02",
+                  "task_id": "T-210",
+                  "description": "Subscriber with conversation_id filter only receives events for that conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_event_bus.py"
+                },
+                {
+                  "id": "TT-210-03",
+                  "task_id": "T-210",
+                  "description": "Disconnected subscriber is cleaned up and does not block bus",
+                  "type": "unit",
+                  "file": "backend/tests/test_event_bus.py"
+                },
+                {
+                  "id": "TT-210-04",
+                  "task_id": "T-210",
+                  "description": "Multiple concurrent subscribers receive events independently",
+                  "type": "unit",
+                  "file": "backend/tests/test_event_bus.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R121",
+              "priority": "P0",
+              "area": "Streaming",
+              "text": "The system shall provide a per-agent activity stream via SSE at GET /api/agents/{id}/activity. Events include: thinking output, tool calls, file reads/writes, shell commands, and their results.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-209",
+                "T-210"
+              ],
+              "tests": [
+                {
+                  "id": "TT-209-01",
+                  "task_id": "T-209",
+                  "description": "Agent activity stream delivers only events for the specified agent",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-02",
+                  "task_id": "T-209",
+                  "description": "Activity stream filters to activity-related event types",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-03",
+                  "task_id": "T-209",
+                  "description": "Agent activity stream supports Last-Event-ID reconnection",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-210-01",
+                  "task_id": "T-210",
+                  "description": "EventBus delivers published events to all matching subscribers",
+                  "type": "unit",
+                  "file": "backend/tests/test_event_bus.py"
+                },
+                {
+                  "id": "TT-210-02",
+                  "task_id": "T-210",
+                  "description": "Subscriber with conversation_id filter only receives events for that conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_event_bus.py"
+                },
+                {
+                  "id": "TT-210-03",
+                  "task_id": "T-210",
+                  "description": "Disconnected subscriber is cleaned up and does not block bus",
+                  "type": "unit",
+                  "file": "backend/tests/test_event_bus.py"
+                },
+                {
+                  "id": "TT-210-04",
+                  "task_id": "T-210",
+                  "description": "Multiple concurrent subscribers receive events independently",
+                  "type": "unit",
+                  "file": "backend/tests/test_event_bus.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R122",
+              "priority": "P1",
+              "area": "Streaming",
+              "text": "SSE streams shall support Last-Event-ID for reconnection. Missed events shall be replayed from the event store.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-208",
+                "T-209"
+              ],
+              "tests": [
+                {
+                  "id": "TT-208-01",
+                  "task_id": "T-208",
+                  "description": "SSE stream delivers events in correct SSE envelope format",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-02",
+                  "task_id": "T-208",
+                  "description": "Last-Event-ID header causes replay of missed events",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-03",
+                  "task_id": "T-208",
+                  "description": "Heartbeat comments are sent to keep connection alive",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-04",
+                  "task_id": "T-208",
+                  "description": "Stream returns 404 for non-existent conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-01",
+                  "task_id": "T-209",
+                  "description": "Agent activity stream delivers only events for the specified agent",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-02",
+                  "task_id": "T-209",
+                  "description": "Activity stream filters to activity-related event types",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-03",
+                  "task_id": "T-209",
+                  "description": "Agent activity stream supports Last-Event-ID reconnection",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Agent Lifecycle",
+      "subsections": [
+        {
+          "title": "Lifecycle",
+          "requirements": [
+            {
+              "id": "BE-R130",
+              "priority": "P0",
+              "area": "Lifecycle",
+              "text": "Creating an agent record does NOT start a process. Agent processes are started by the orchestration engine when a batch run begins or a task is assigned.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-601",
+                "T-602",
+                "T-603",
+                "T-604"
+              ],
+              "tests": [
+                {
+                  "id": "TT-601-01",
+                  "task_id": "T-601",
+                  "description": "AdapterEvent has all required type variants (thinking, text, tool_call, etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                },
+                {
+                  "id": "TT-601-02",
+                  "task_id": "T-601",
+                  "description": "send_prompt returns AsyncIterator[AdapterEvent] that can be consumed",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                },
+                {
+                  "id": "TT-601-03",
+                  "task_id": "T-601",
+                  "description": "stop() cancels an in-progress operation and yields a done event",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                },
+                {
+                  "id": "TT-602-01",
+                  "task_id": "T-602",
+                  "description": "Claude CLI is invoked with --output-format stream-json flag",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-02",
+                  "task_id": "T-602",
+                  "description": "Streaming JSON lines are parsed into correct AdapterEvent types",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-03",
+                  "task_id": "T-602",
+                  "description": "Model, max_tokens, and permission_profile are configurable per instance",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-04",
+                  "task_id": "T-602",
+                  "description": "Session resume uses --session-id flag and returns streaming events",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-603-01",
+                  "task_id": "T-603",
+                  "description": "Codex CLI is invoked with --approval-mode full-auto flag",
+                  "type": "unit",
+                  "file": "backend/tests/test_codex_adapter.py"
+                },
+                {
+                  "id": "TT-603-02",
+                  "task_id": "T-603",
+                  "description": "Codex output is normalized into standard AdapterEvent stream",
+                  "type": "unit",
+                  "file": "backend/tests/test_codex_adapter.py"
+                },
+                {
+                  "id": "TT-603-03",
+                  "task_id": "T-603",
+                  "description": "Non-zero exit code yields error AdapterEvent",
+                  "type": "unit",
+                  "file": "backend/tests/test_codex_adapter.py"
+                },
+                {
+                  "id": "TT-604-01",
+                  "task_id": "T-604",
+                  "description": "Ollama adapter uses HTTP API (POST /api/generate) not CLI subprocess",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-02",
+                  "task_id": "T-604",
+                  "description": "Streaming HTTP response is parsed into AdapterEvent stream",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-03",
+                  "task_id": "T-604",
+                  "description": "is_available() checks /api/tags endpoint and returns bool",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-04",
+                  "task_id": "T-604",
+                  "description": "Model is configurable and passed correctly in API request",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R131",
+              "priority": "P0",
+              "area": "Lifecycle",
+              "text": "The system shall track agent status transitions: idle \u2192 running (task assigned / debate turn) \u2192 idle (turn complete) or blocked (waiting for input/merge).",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-212"
+              ],
+              "tests": [
+                {
+                  "id": "TT-212-01",
+                  "task_id": "T-212",
+                  "description": "GET /api/agents/{id}/status returns current status",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-02",
+                  "task_id": "T-212",
+                  "description": "PATCH /api/agents/{id}/status accepts valid transition idle -> running",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-03",
+                  "task_id": "T-212",
+                  "description": "PATCH /api/agents/{id}/status rejects invalid transition idle -> blocked",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-04",
+                  "task_id": "T-212",
+                  "description": "Status change emits agent_status_change system event",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R132",
+              "priority": "P1",
+              "area": "Lifecycle",
+              "text": "Agent processes shall run in isolated working directories (git worktrees). The backend shall manage worktree creation and cleanup.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-606"
+              ],
+              "tests": [
+                {
+                  "id": "TT-606-01",
+                  "task_id": "T-606",
+                  "description": "create_worktree produces correct path and branch name from task slug and provider",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                },
+                {
+                  "id": "TT-606-02",
+                  "task_id": "T-606",
+                  "description": "cleanup_worktree removes worktree directory and deletes branch",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                },
+                {
+                  "id": "TT-606-03",
+                  "task_id": "T-606",
+                  "description": "Worktree base directory is configurable and defaults to ../agent-orchestrator-worktrees/",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R133",
+              "priority": "P1",
+              "area": "Lifecycle",
+              "text": "Agent sessions shall support checkpoint-based resume. On resume, the system shall load a compact context pack rather than replaying the full transcript.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-112"
+              ],
+              "tests": [
+                {
+                  "id": "TT-112-01",
+                  "task_id": "T-112",
+                  "description": "Test save() creates an artifact with type='checkpoint' containing serialized CheckpointPack",
+                  "type": "integration",
+                  "file": "backend/tests/test_checkpoint_storage.py"
+                },
+                {
+                  "id": "TT-112-02",
+                  "task_id": "T-112",
+                  "description": "Test load_latest returns the most recently saved CheckpointPack for a conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_checkpoint_storage.py"
+                },
+                {
+                  "id": "TT-112-03",
+                  "task_id": "T-112",
+                  "description": "Test save() updates conversation.summary_snapshot and latest_artifact_id",
+                  "type": "integration",
+                  "file": "backend/tests/test_checkpoint_storage.py"
+                },
+                {
+                  "id": "TT-112-04",
+                  "task_id": "T-112",
+                  "description": "Test round-trip: build -> compact -> save -> load_latest produces equivalent CheckpointPack",
+                  "type": "integration",
+                  "file": "backend/tests/test_checkpoint_storage.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Configuration",
+      "subsections": [
+        {
+          "title": "Config",
+          "requirements": [
+            {
+              "id": "BE-R140",
+              "priority": "P0",
+              "area": "Config",
+              "text": "The system shall load configuration from environment variables with sensible defaults. Key config: DB_PATH, HOST, PORT, DEV_MODE, OLLAMA_URL.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-113"
+              ],
+              "tests": [
+                {
+                  "id": "TT-113-01",
+                  "task_id": "T-113",
+                  "description": "Test default config values are used when no environment variables are set",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-02",
+                  "task_id": "T-113",
+                  "description": "Test that environment variables override default config values",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-03",
+                  "task_id": "T-113",
+                  "description": "Test that DEV_MODE=true is parsed correctly from string env var",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-04",
+                  "task_id": "T-113",
+                  "description": "Test that DB_PATH expands ~ to user home directory",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R141",
+              "priority": "P1",
+              "area": "Config",
+              "text": "Agent personality profiles shall be loaded from config/personalities.json. Each profile defines system prompt fragments, temperature, and behavioral constraints.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-114"
+              ],
+              "tests": [
+                {
+                  "id": "TT-114-01",
+                  "task_id": "T-114",
+                  "description": "Test load_personalities parses a valid personalities.json into PersonalityProfile dataclasses",
+                  "type": "unit",
+                  "file": "backend/tests/test_personalities_loader.py"
+                },
+                {
+                  "id": "TT-114-02",
+                  "task_id": "T-114",
+                  "description": "Test load_personalities returns empty dict when file does not exist",
+                  "type": "unit",
+                  "file": "backend/tests/test_personalities_loader.py"
+                },
+                {
+                  "id": "TT-114-03",
+                  "task_id": "T-114",
+                  "description": "Test get_personality returns None for unknown key",
+                  "type": "unit",
+                  "file": "backend/tests/test_personalities_loader.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R142",
+              "priority": "P1",
+              "area": "Config",
+              "text": "Provider-specific configuration (API keys, base URLs, model lists) shall be stored in environment variables, never in the database.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-113"
+              ],
+              "tests": [
+                {
+                  "id": "TT-113-01",
+                  "task_id": "T-113",
+                  "description": "Test default config values are used when no environment variables are set",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-02",
+                  "task_id": "T-113",
+                  "description": "Test that environment variables override default config values",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-03",
+                  "task_id": "T-113",
+                  "description": "Test that DEV_MODE=true is parsed correctly from string env var",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                },
+                {
+                  "id": "TT-113-04",
+                  "task_id": "T-113",
+                  "description": "Test that DB_PATH expands ~ to user home directory",
+                  "type": "unit",
+                  "file": "backend/tests/test_config.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Error Handling",
+      "subsections": [
+        {
+          "title": "Errors",
+          "requirements": [
+            {
+              "id": "BE-R150",
+              "priority": "P0",
+              "area": "Errors",
+              "text": "All API errors shall return the standard envelope with ok: false and a human-readable error message. HTTP status codes shall be appropriate (400, 404, 409, 500).",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-205",
+                "T-211"
+              ],
+              "tests": [
+                {
+                  "id": "TT-205-01",
+                  "task_id": "T-205",
+                  "description": "Task with unmet dependencies cannot transition to implementing, returns 409",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-205-02",
+                  "task_id": "T-205",
+                  "description": "Task with all dependencies done can transition to implementing",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-205-03",
+                  "task_id": "T-205",
+                  "description": "Task with empty depends_on_json transitions freely",
+                  "type": "unit",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-211-01",
+                  "task_id": "T-211",
+                  "description": "Unhandled exceptions return 500 with envelope format and no stack trace",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-211-02",
+                  "task_id": "T-211",
+                  "description": "Pydantic ValidationError returns 400 with field-level error details",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-211-03",
+                  "task_id": "T-211",
+                  "description": "Custom NotFoundError returns 404 with envelope",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-211-04",
+                  "task_id": "T-211",
+                  "description": "Custom ConflictError returns 409 with envelope",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                }
+              ]
+            },
+            {
+              "id": "BE-R151",
+              "priority": "P1",
+              "area": "Errors",
+              "text": "Agent process failures (crash, timeout, rate limit) shall be captured and surfaced as system events in the conversation, not silently swallowed.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-214"
+              ],
+              "tests": [
+                {
+                  "id": "TT-214-01",
+                  "task_id": "T-214",
+                  "description": "create_agent_failure_event inserts system_notice event with correct metadata",
+                  "type": "unit",
+                  "file": "backend/tests/test_error_events.py"
+                },
+                {
+                  "id": "TT-214-02",
+                  "task_id": "T-214",
+                  "description": "Crash error event includes agent_id and error classification in metadata",
+                  "type": "unit",
+                  "file": "backend/tests/test_error_events.py"
+                },
+                {
+                  "id": "TT-214-03",
+                  "task_id": "T-214",
+                  "description": "Failure events appear in GET /api/conversations/{id}/messages timeline",
+                  "type": "integration",
+                  "file": "backend/tests/test_error_events.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,8 @@ AGENTS ?=
 
 .PHONY: help serve ui-shot test-ui verify parallel-init parallel-status handoff-packs task-worktree task-prompt task-ready task-shell \
 	dev-up dev-up-lan dev-down dev-status dev-logs \
-	test test-backend test-frontend test-api-conversations test-integration test-all lint lint-backend lint-frontend format-check run-backend run-frontend
+	test test-backend test-frontend test-api-conversations test-integration test-all lint lint-backend lint-frontend format-check run-backend run-frontend \
+	req-build req-view
 
 help:
 	@echo "Targets:"
@@ -150,3 +151,19 @@ task-shell:
 		exit 1; \
 	fi
 	./scripts/task_prepare.sh "$(TASK_ID)" "$(if $(PREFIX),$(PREFIX),claude)" "$(if $(WORKER),$(WORKER),worker)" --shell
+
+# ---------------------------------------------------------------------------
+# Requirements docs
+# ---------------------------------------------------------------------------
+
+req-build:
+	$(PYTHON) docs/link_design_refs.py
+	$(PYTHON) docs/link_task_refs.py
+	$(PYTHON) docs/link_prd_refs.py
+	$(PYTHON) docs/requirements/build.py
+	$(PYTHON) docs/design/build.py
+	$(PYTHON) docs/tasks/build.py
+
+req-view: req-build
+	@echo "Opening http://localhost:8079/traceability.html"
+	$(PYTHON) -m http.server 8079 --directory $(ROOT)/docs

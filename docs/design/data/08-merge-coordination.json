@@ -1,0 +1,75 @@
+{
+  "id": "DES-08",
+  "title": "Merge Coordination",
+  "date": "2026-03-08",
+  "requirements": ["PRD-011", "PRD-012", "PRD-013", "PRD-014", "MG-R001", "MG-R002", "MG-R003", "MG-R004", "MG-R010", "MG-R011", "MG-R012", "MG-R020", "MG-R021", "MG-R022", "MG-R030", "MG-R031", "MG-R032", "MG-R040", "MG-R041", "MG-R050", "MG-R051", "MG-R060", "MG-R061"],
+  "sections": [
+    {
+      "title": "Overview",
+      "content": "Merge coordination is the most operationally complex part of the system. Multiple agents working in parallel produce PRs that must be merged to main one at a time, with rebasing, testing, and conflict resolution. The Ollama Team Lead acts as the merge coordinator, managing the queue and notifying agents — all at zero cost to paid tokens.",
+      "decisions": []
+    },
+    {
+      "title": "Merge Queue Architecture",
+      "content": "The merge queue is a FIFO list of approved PRs waiting to merge (MG-R001, MG-R002, MG-R003):\n\n```\nMerge Queue State Machine:\n\n  PR Approved → [queued] → [rebasing] → [testing] → [merging] → [merged]\n                   ↓            ↓            ↓           ↓\n               (waiting)   (conflict!)  (CI fail!)  (merge fail!)\n                            [blocked]  [fixing_comments] [failed]\n```\n\n**Queue rules**:\n1. Only ONE PR can be in `rebasing`, `testing`, or `merging` at any time.\n2. All other PRs remain in `queued` status.\n3. Order is FIFO (first approved, first merged), but the customer can re-prioritize.\n4. When the active PR completes or fails, the next `queued` PR advances.\n\nThe queue is stored in the `merge_queue` table with a `position` column for ordering.",
+      "decisions": [
+        {
+          "id": "D-070",
+          "title": "Strict serialization over optimistic merging",
+          "decision": "Only one PR processes through the merge pipeline at a time. No parallel rebasing.",
+          "rationale": "PRD-013 requires serialized merges. Parallel rebasing leads to race conditions — if both PRs rebase successfully but one merges first, the other's rebase is immediately stale. Serial processing is simpler and reliable.",
+          "alternatives": ["Optimistic parallel rebase — rejected: race conditions, complexity for marginal speed gain"]
+        }
+      ]
+    },
+    {
+      "title": "Merge Process Flow",
+      "content": "When a PR reaches the front of the queue (MG-R010):\n\n```\n1. Rebase\n   ├── git fetch origin main\n   ├── git rebase origin/main\n   ├── If conflict → mark [blocked], notify author agent\n   └── If clean → push force, advance to Testing\n\n2. Test\n   ├── Wait for CI checks (if configured)\n   ├── If CI passes → advance to Merging\n   └── If CI fails → mark [fixing_comments], notify author\n\n3. Merge\n   ├── gh pr merge --squash (or --merge, configurable)\n   ├── If success → mark [merged], notify all agents\n   └── If fail → mark [failed], notify customer\n\n4. Post-Merge Cleanup\n   ├── Delete the worktree\n   ├── Delete the local and remote branch\n   ├── Set task status to 'done'\n   ├── Broadcast main_updated event (MG-R050)\n   └── Trigger next PR in queue (MG-R051)\n```\n\n**Blocking** (MG-R011): While one PR is actively merging, no other agent can push to main. The orchestration engine holds other agents' merge requests until the current merge completes.",
+      "decisions": [
+        {
+          "id": "D-071",
+          "title": "Squash merge as default",
+          "decision": "Default merge strategy is squash merge. Configurable per conversation.",
+          "rationale": "Squash merge keeps main history clean — one commit per task. Each task's development history (design, TDD, implement, fix) is preserved in the PR but main gets a clean log.",
+          "alternatives": ["Regular merge — acceptable for preserving commit history", "Rebase merge — similar to squash but preserves individual commits"]
+        }
+      ]
+    },
+    {
+      "title": "Team Lead Coordinator Loop",
+      "content": "The Ollama Team Lead runs a coordination loop (MG-R020, MG-R021):\n\n```python\nasync def coordinator_loop():\n    while True:\n        # Check merge queue\n        active = get_active_merge()  # status in (rebasing, testing, merging)\n        \n        if not active:\n            # Nothing merging — advance next in queue\n            next_pr = get_next_queued()\n            if next_pr:\n                start_rebase(next_pr)\n        \n        elif active.status == \"rebasing\":\n            check_rebase_result(active)\n        \n        elif active.status == \"testing\":\n            ci_status = check_ci(active.pr_number)\n            if ci_status == \"passed\":\n                start_merge(active)\n            elif ci_status == \"failed\":\n                mark_fixing(active)\n                notify_author(active)\n        \n        # Check for new approved PRs\n        newly_approved = get_newly_approved_prs()\n        for pr in newly_approved:\n            add_to_queue(pr)\n        \n        # Assign reviewers for unreviewed PRs\n        unreviewed = get_prs_needing_review()\n        for pr in unreviewed:\n            reviewer = pick_reviewer(pr)  # Non-author, least loaded\n            assign_reviewer(pr, reviewer)\n        \n        await asyncio.sleep(30)  # Polling interval\n```\n\nThe loop runs every 30 seconds (configurable). Additionally, it triggers immediately on events:\n- PR raised → assign reviewer\n- PR approved → add to merge queue\n- Merge completed → advance queue, notify agents\n\n**Error handling** (MG-R022):\n- Rebase conflict → mark `blocked`, notify author + customer\n- CI failure → mark `fixing_comments`, notify author\n- Merge timeout (>10 min) → alert customer",
+      "decisions": [
+        {
+          "id": "D-072",
+          "title": "Hybrid event + polling coordination",
+          "decision": "The coordinator responds to events immediately and polls every 30s as a fallback.",
+          "rationale": "Events provide responsiveness. Polling catches any missed events (e.g., if the system was briefly down). The 30s interval balances responsiveness with resource usage. All coordination runs on Ollama (free).",
+          "alternatives": ["Pure event-driven — risky without fallback", "Pure polling at 5s — wasteful for idle periods"]
+        }
+      ]
+    },
+    {
+      "title": "Review-to-Merge Flow",
+      "content": "The complete flow from PR creation to merge (MG-R030):\n\n```\n┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐\n│ Agent raises │     │ Team Lead assigns│     │ Reviewer reviews│\n│ PR           │────▶│ reviewer         │────▶│ PR              │\n│ (pr_raised)  │     │ (in_review)      │     │                 │\n└─────────────┘     └──────────────────┘     └────────┬────────┘\n                                                       │\n                                              ┌───────▼────────┐\n                                              │ Comments?       │\n                                              ├─── Yes ────┐    │\n                                              │            ▼    │\n                                              │  ┌─────────────┐│\n                                              │  │Author fixes ││\n                                              │  │(fixing_cmts)││\n                                              │  └──────┬──────┘│\n                                              │         │       │\n                                              │    re-review    │\n                                              │         │       │\n                                              ├─── No ──┘       │\n                                              │ (Approved!)     │\n                                              └───────┬────────┘\n                                                      │\n                                              ┌───────▼────────┐\n                                              │ Enter merge    │\n                                              │ queue (merging)│\n                                              └───────┬────────┘\n                                                      │\n                                              ┌───────▼────────┐\n                                              │ Rebase → Test  │\n                                              │ → Merge → Done │\n                                              └────────────────┘\n```\n\n**Reviewer selection** (MG-R031): The Team Lead picks a reviewer using:\n1. Must NOT be the author\n2. Prefer idle agents\n3. If multiple idle, prefer the one with the lightest review load\n4. If no reviewer available (single-developer conversation), flag for customer review (MG-R032)\n\n**Review comments** (IN-R071): Review comments from agents are posted as GitHub PR review comments via `gh pr review`.",
+      "decisions": [
+        {
+          "id": "D-073",
+          "title": "Non-author reviewer rule enforced by system",
+          "decision": "The system enforces that the reviewer is never the PR author.",
+          "rationale": "PRD-011 and MG-R031 require non-author reviewers. This is a hard rule, not a suggestion. The system rejects any attempt to assign an author as their own reviewer.",
+          "alternatives": ["Allow self-review with warning — rejected: defeats the purpose of code review"]
+        }
+      ]
+    },
+    {
+      "title": "Conflict Resolution",
+      "content": "When a rebase produces conflicts (MG-R040):\n\n1. **Detection**: The `git rebase` command exits with a non-zero status and lists conflicting files.\n2. **Notification**: The system creates a `system_notice` event with:\n   - List of conflicting files\n   - The relevant diff context for each conflict\n   - The branch that was being rebased\n3. **Agent resolution**: The author agent receives a prompt:\n   ```\n   Your PR branch has merge conflicts with main.\n   Conflicting files: [list]\n   Please resolve the conflicts in your worktree and force-push.\n   ```\n4. **Retry**: After the agent pushes, the merge process restarts from the rebase step.\n5. **Escalation** (MG-R041): If resolution fails after 3 attempts, escalate to the customer with full conflict context.\n\nThe agent resolves conflicts in its existing worktree — no new worktree is needed.",
+      "decisions": []
+    },
+    {
+      "title": "Post-Merge Broadcast",
+      "content": "After each successful merge (MG-R050, MG-R012):\n\n1. **main_updated event**: Broadcast to all agents in the conversation. Contains the merged PR number and a summary of what changed.\n2. **Rebase advisory**: Agents with open branches are notified that main has changed. They should rebase their branches when convenient (the next PR in the merge queue will be rebased automatically).\n3. **Next PR trigger** (MG-R051): The merge coordinator immediately starts processing the next PR in the queue — no waiting for the polling interval.\n4. **Task completion**: The merged task's status is set to `done`. The agent enters the priority loop for its next action.\n5. **Worktree cleanup**: The merged branch's worktree and branch are deleted.",
+      "decisions": []
+    }
+  ]
+}

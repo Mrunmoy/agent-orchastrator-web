@@ -1,0 +1,1518 @@
+{
+  "id": "REQ-02",
+  "title": "UI/UX Requirements",
+  "date": "2026-03-08",
+  "sections": [
+    {
+      "title": "Overall Layout",
+      "subsections": [
+        {
+          "title": "Layout",
+          "requirements": [
+            {
+              "id": "UI-R001",
+              "priority": "P0",
+              "area": "Layout",
+              "text": "The application shall have two primary views within a conversation: Chat View (Slack-like group conversation) and Dashboard View (project management board). The user shall be able to switch between them.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-315"
+              ],
+              "tests": [
+                {
+                  "id": "TT-315-01",
+                  "task_id": "T-315",
+                  "description": "Renders Chat and Dashboard toggle buttons in TopBar",
+                  "type": "unit",
+                  "file": "frontend/src/layout/__tests__/TopBar.test.tsx"
+                },
+                {
+                  "id": "TT-315-02",
+                  "task_id": "T-315",
+                  "description": "Clicking Dashboard shows KanbanBoard in center pane",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/AppShell.test.tsx"
+                },
+                {
+                  "id": "TT-315-03",
+                  "task_id": "T-315",
+                  "description": "Clicking Chat returns to ChatPane with messages preserved",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/AppShell.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R002",
+              "priority": "P1",
+              "area": "Layout",
+              "text": "The layout for switching between Chat and Dashboard is TBD (tabs, split pane, sidebar, etc.) and shall be determined during design phase.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-315"
+              ],
+              "tests": [
+                {
+                  "id": "TT-315-01",
+                  "task_id": "T-315",
+                  "description": "Renders Chat and Dashboard toggle buttons in TopBar",
+                  "type": "unit",
+                  "file": "frontend/src/layout/__tests__/TopBar.test.tsx"
+                },
+                {
+                  "id": "TT-315-02",
+                  "task_id": "T-315",
+                  "description": "Clicking Dashboard shows KanbanBoard in center pane",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/AppShell.test.tsx"
+                },
+                {
+                  "id": "TT-315-03",
+                  "task_id": "T-315",
+                  "description": "Clicking Chat returns to ChatPane with messages preserved",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/AppShell.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R003",
+              "priority": "P0",
+              "area": "Layout",
+              "text": "The application shall be responsive and usable on desktop browsers. LAN access from phone/tablet is a secondary use case.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-324"
+              ],
+              "tests": [
+                {
+                  "id": "TT-324-01",
+                  "task_id": "T-324",
+                  "description": "Four-zone layout renders correctly at 1280px viewport width",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/AppShell.responsive.test.tsx"
+                },
+                {
+                  "id": "TT-324-02",
+                  "task_id": "T-324",
+                  "description": "Sidebar collapses to icon-only at <1024px viewport",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/AppShell.responsive.test.tsx"
+                },
+                {
+                  "id": "TT-324-03",
+                  "task_id": "T-324",
+                  "description": "No horizontal overflow at 768px viewport width",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/AppShell.responsive.test.tsx"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Chat View",
+      "subsections": [
+        {
+          "title": "Conversation Channel",
+          "requirements": [
+            {
+              "id": "UI-R010",
+              "priority": "P0",
+              "area": "Chat",
+              "text": "The chat view shall resemble a Slack channel. Each message shows: agent name (or \"You\" for the customer), avatar/icon, timestamp, and message body.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-301",
+                "T-319"
+              ],
+              "tests": [
+                {
+                  "id": "TT-301-01",
+                  "task_id": "T-301",
+                  "description": "Renders agent message with avatar showing first letter and hash-based color",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-02",
+                  "task_id": "T-301",
+                  "description": "Renders markdown content (code block, bold, link) via react-markdown",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-03",
+                  "task_id": "T-301",
+                  "description": "Renders phase_change type as a styled divider with phase label",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-04",
+                  "task_id": "T-301",
+                  "description": "Renders steer message with highlight border and 'You' sender label",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-319-01",
+                  "task_id": "T-319",
+                  "description": "Fetches initial messages from API on mount",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+                },
+                {
+                  "id": "TT-319-02",
+                  "task_id": "T-319",
+                  "description": "Appends new messages from SSE stream in real-time",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+                },
+                {
+                  "id": "TT-319-03",
+                  "task_id": "T-319",
+                  "description": "Deduplicates messages by ID when SSE delivers already-fetched messages",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+                }
+              ]
+            },
+            {
+              "id": "UI-R011",
+              "priority": "P0",
+              "area": "Chat",
+              "text": "Messages from different agents shall be visually distinguishable (unique colors, icons, or badges per agent).",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-301"
+              ],
+              "tests": [
+                {
+                  "id": "TT-301-01",
+                  "task_id": "T-301",
+                  "description": "Renders agent message with avatar showing first letter and hash-based color",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-02",
+                  "task_id": "T-301",
+                  "description": "Renders markdown content (code block, bold, link) via react-markdown",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-03",
+                  "task_id": "T-301",
+                  "description": "Renders phase_change type as a styled divider with phase label",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-04",
+                  "task_id": "T-301",
+                  "description": "Renders steer message with highlight border and 'You' sender label",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R012",
+              "priority": "P0",
+              "area": "Chat",
+              "text": "The chat shall support markdown rendering in messages (code blocks, lists, bold, links, etc.).",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-301"
+              ],
+              "tests": [
+                {
+                  "id": "TT-301-01",
+                  "task_id": "T-301",
+                  "description": "Renders agent message with avatar showing first letter and hash-based color",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-02",
+                  "task_id": "T-301",
+                  "description": "Renders markdown content (code block, bold, link) via react-markdown",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-03",
+                  "task_id": "T-301",
+                  "description": "Renders phase_change type as a styled divider with phase label",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-04",
+                  "task_id": "T-301",
+                  "description": "Renders steer message with highlight border and 'You' sender label",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R013",
+              "priority": "P0",
+              "area": "Chat",
+              "text": "The chat shall auto-scroll to the latest message. The user shall be able to scroll back through history.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-302",
+                "T-319"
+              ],
+              "tests": [
+                {
+                  "id": "TT-302-01",
+                  "task_id": "T-302",
+                  "description": "Auto-scrolls to bottom when new message arrives and user is at bottom",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatTimeline.test.tsx"
+                },
+                {
+                  "id": "TT-302-02",
+                  "task_id": "T-302",
+                  "description": "Shows 'New messages' badge when user scrolls up and new message arrives",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatTimeline.test.tsx"
+                },
+                {
+                  "id": "TT-302-03",
+                  "task_id": "T-302",
+                  "description": "Clicking badge scrolls to latest message and hides badge",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatTimeline.test.tsx"
+                },
+                {
+                  "id": "TT-319-01",
+                  "task_id": "T-319",
+                  "description": "Fetches initial messages from API on mount",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+                },
+                {
+                  "id": "TT-319-02",
+                  "task_id": "T-319",
+                  "description": "Appends new messages from SSE stream in real-time",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+                },
+                {
+                  "id": "TT-319-03",
+                  "task_id": "T-319",
+                  "description": "Deduplicates messages by ID when SSE delivers already-fetched messages",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Composer",
+          "requirements": [
+            {
+              "id": "UI-R020",
+              "priority": "P0",
+              "area": "Composer",
+              "text": "The message composer shall support @ mentions. Typing @ shall show an autocomplete dropdown of agent names. Addressing a specific agent sends the message directly to that agent.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-303"
+              ],
+              "tests": [
+                {
+                  "id": "TT-303-01",
+                  "task_id": "T-303",
+                  "description": "Shows autocomplete dropdown when user types '@' with agent list",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                },
+                {
+                  "id": "TT-303-02",
+                  "task_id": "T-303",
+                  "description": "Filters dropdown as user types after '@' (e.g., '@ri' shows only 'Rick')",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                },
+                {
+                  "id": "TT-303-03",
+                  "task_id": "T-303",
+                  "description": "Selecting an agent inserts @AgentName and closes dropdown",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                },
+                {
+                  "id": "TT-303-04",
+                  "task_id": "T-303",
+                  "description": "Send with @mention calls onSend with target_agent_id; send without mention calls with broadcast",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R021",
+              "priority": "P0",
+              "area": "Composer",
+              "text": "A message without an @ mention shall be broadcast to the group (all agents see it).",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-303"
+              ],
+              "tests": [
+                {
+                  "id": "TT-303-01",
+                  "task_id": "T-303",
+                  "description": "Shows autocomplete dropdown when user types '@' with agent list",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                },
+                {
+                  "id": "TT-303-02",
+                  "task_id": "T-303",
+                  "description": "Filters dropdown as user types after '@' (e.g., '@ri' shows only 'Rick')",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                },
+                {
+                  "id": "TT-303-03",
+                  "task_id": "T-303",
+                  "description": "Selecting an agent inserts @AgentName and closes dropdown",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                },
+                {
+                  "id": "TT-303-04",
+                  "task_id": "T-303",
+                  "description": "Send with @mention calls onSend with target_agent_id; send without mention calls with broadcast",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R022",
+              "priority": "P1",
+              "area": "Composer",
+              "text": "The composer shall support multi-line input (Shift+Enter for newline, Enter to send).",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-303"
+              ],
+              "tests": [
+                {
+                  "id": "TT-303-01",
+                  "task_id": "T-303",
+                  "description": "Shows autocomplete dropdown when user types '@' with agent list",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                },
+                {
+                  "id": "TT-303-02",
+                  "task_id": "T-303",
+                  "description": "Filters dropdown as user types after '@' (e.g., '@ri' shows only 'Rick')",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                },
+                {
+                  "id": "TT-303-03",
+                  "task_id": "T-303",
+                  "description": "Selecting an agent inserts @AgentName and closes dropdown",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                },
+                {
+                  "id": "TT-303-04",
+                  "task_id": "T-303",
+                  "description": "Send with @mention calls onSend with target_agent_id; send without mention calls with broadcast",
+                  "type": "unit",
+                  "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Debate Phase Indicators",
+          "requirements": [
+            {
+              "id": "UI-R030",
+              "priority": "P0",
+              "area": "Debate UI",
+              "text": "During debate, the chat shall show: current round number (e.g., \"Round 5/20\"), which agent is currently \"speaking\" (thinking indicator), and the current phase label.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-304"
+              ],
+              "tests": [
+                {
+                  "id": "TT-304-01",
+                  "task_id": "T-304",
+                  "description": "Renders phase name and round counter (e.g., 'Debate -- Round 5/20')",
+                  "type": "unit",
+                  "file": "frontend/src/features/debate/__tests__/PhaseBanner.test.tsx"
+                },
+                {
+                  "id": "TT-304-02",
+                  "task_id": "T-304",
+                  "description": "Shows speaking indicator with agent name when an agent is generating",
+                  "type": "unit",
+                  "file": "frontend/src/features/debate/__tests__/PhaseBanner.test.tsx"
+                },
+                {
+                  "id": "TT-304-03",
+                  "task_id": "T-304",
+                  "description": "Hides speaking indicator when no agent is speaking",
+                  "type": "unit",
+                  "file": "frontend/src/features/debate/__tests__/PhaseBanner.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R031",
+              "priority": "P1",
+              "area": "Debate UI",
+              "text": "When an agent @ mentions the customer for clarification, the system shall show a prominent notification/banner: \"Agent X needs your input\" with the chat scrolled to the question.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-305",
+                "T-321"
+              ],
+              "tests": [
+                {
+                  "id": "TT-305-01",
+                  "task_id": "T-305",
+                  "description": "Renders amber banner with agent name when clarification is needed",
+                  "type": "unit",
+                  "file": "frontend/src/features/debate/__tests__/ClarificationBanner.test.tsx"
+                },
+                {
+                  "id": "TT-305-02",
+                  "task_id": "T-305",
+                  "description": "Clicking 'View Question' calls scrollToMessage callback with message ID",
+                  "type": "unit",
+                  "file": "frontend/src/features/debate/__tests__/ClarificationBanner.test.tsx"
+                },
+                {
+                  "id": "TT-305-03",
+                  "task_id": "T-305",
+                  "description": "Banner is dismissible and does not render when no clarification is pending",
+                  "type": "unit",
+                  "file": "frontend/src/features/debate/__tests__/ClarificationBanner.test.tsx"
+                },
+                {
+                  "id": "TT-321-01",
+                  "task_id": "T-321",
+                  "description": "Dispatches clarification notification when agent @mentions customer",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useNotifications.test.ts"
+                },
+                {
+                  "id": "TT-321-02",
+                  "task_id": "T-321",
+                  "description": "Dispatches warning notification when max_rounds is reached",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useNotifications.test.ts"
+                },
+                {
+                  "id": "TT-321-03",
+                  "task_id": "T-321",
+                  "description": "Dispatches info notification when PR is ready",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useNotifications.test.ts"
+                }
+              ]
+            },
+            {
+              "id": "UI-R032",
+              "priority": "P0",
+              "area": "Debate UI",
+              "text": "The customer shall have controls to: approve and advance to next phase, steer the debate (send a message), or end the debate and decide.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-306"
+              ],
+              "tests": [
+                {
+                  "id": "TT-306-01",
+                  "task_id": "T-306",
+                  "description": "Renders Approve, Steer, and Decide buttons",
+                  "type": "unit",
+                  "file": "frontend/src/features/debate/__tests__/GateControls.test.tsx"
+                },
+                {
+                  "id": "TT-306-02",
+                  "task_id": "T-306",
+                  "description": "Clicking Approve calls onApprove callback",
+                  "type": "unit",
+                  "file": "frontend/src/features/debate/__tests__/GateControls.test.tsx"
+                },
+                {
+                  "id": "TT-306-03",
+                  "task_id": "T-306",
+                  "description": "Clicking Steer calls onSteer callback to focus composer",
+                  "type": "unit",
+                  "file": "frontend/src/features/debate/__tests__/GateControls.test.tsx"
+                },
+                {
+                  "id": "TT-306-04",
+                  "task_id": "T-306",
+                  "description": "Clicking Decide calls onDecide callback",
+                  "type": "unit",
+                  "file": "frontend/src/features/debate/__tests__/GateControls.test.tsx"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Agent Activity Viewer",
+      "subsections": [
+        {
+          "title": "Activity Viewer",
+          "requirements": [
+            {
+              "id": "UI-R040",
+              "priority": "P0",
+              "area": "Activity",
+              "text": "The system shall provide a per-agent activity viewer that shows the agent's real-time stream: thinking, file reads/writes, shell commands, tool calls, and their outputs.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-314",
+                "T-318",
+                "T-320"
+              ],
+              "tests": [
+                {
+                  "id": "TT-314-01",
+                  "task_id": "T-314",
+                  "description": "Renders with terminal aesthetic: dark background, monospace font",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-02",
+                  "task_id": "T-314",
+                  "description": "Renders thinking event as dimmed italic text",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-03",
+                  "task_id": "T-314",
+                  "description": "Renders tool_call event with highlighted tool name badge and tool_result indented below",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-04",
+                  "task_id": "T-314",
+                  "description": "Shows Resume button when user scrolls up; clicking it re-enables auto-scroll",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-318-01",
+                  "task_id": "T-318",
+                  "description": "Connects to SSE endpoint and receives parsed events",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+                },
+                {
+                  "id": "TT-318-02",
+                  "task_id": "T-318",
+                  "description": "Reconnects with Last-Event-ID header after connection error",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+                },
+                {
+                  "id": "TT-318-03",
+                  "task_id": "T-318",
+                  "description": "Closes EventSource on component unmount (cleanup)",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+                },
+                {
+                  "id": "TT-318-04",
+                  "task_id": "T-318",
+                  "description": "Exposes connection status (connecting, open, closed, error)",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+                },
+                {
+                  "id": "TT-320-01",
+                  "task_id": "T-320",
+                  "description": "Connects to agent activity SSE endpoint when agent ID is provided",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+                },
+                {
+                  "id": "TT-320-02",
+                  "task_id": "T-320",
+                  "description": "Parses typed activity events (thinking, tool_call, error)",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+                },
+                {
+                  "id": "TT-320-03",
+                  "task_id": "T-320",
+                  "description": "Disconnects and clears events when agent ID changes",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+                }
+              ]
+            },
+            {
+              "id": "UI-R041",
+              "priority": "P0",
+              "area": "Activity",
+              "text": "The activity viewer shall be show/hide toggleable. Clicking an agent in the roster opens their activity stream. Closing it returns to the clean chat view.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-314",
+                "T-322"
+              ],
+              "tests": [
+                {
+                  "id": "TT-314-01",
+                  "task_id": "T-314",
+                  "description": "Renders with terminal aesthetic: dark background, monospace font",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-02",
+                  "task_id": "T-314",
+                  "description": "Renders thinking event as dimmed italic text",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-03",
+                  "task_id": "T-314",
+                  "description": "Renders tool_call event with highlighted tool name badge and tool_result indented below",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-04",
+                  "task_id": "T-314",
+                  "description": "Shows Resume button when user scrolls up; clicking it re-enables auto-scroll",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-322-01",
+                  "task_id": "T-322",
+                  "description": "Defaults to showing AgentRoster in right pane",
+                  "type": "unit",
+                  "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+                },
+                {
+                  "id": "TT-322-02",
+                  "task_id": "T-322",
+                  "description": "Switches to ActivityViewer when an agent is selected",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+                },
+                {
+                  "id": "TT-322-03",
+                  "task_id": "T-322",
+                  "description": "Back to Roster button returns to roster view",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R042",
+              "priority": "P1",
+              "area": "Activity",
+              "text": "The activity viewer shall resemble a terminal/log view \u2014 monospace font, streaming output, auto-scroll to bottom with ability to scroll back.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-314",
+                "T-320"
+              ],
+              "tests": [
+                {
+                  "id": "TT-314-01",
+                  "task_id": "T-314",
+                  "description": "Renders with terminal aesthetic: dark background, monospace font",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-02",
+                  "task_id": "T-314",
+                  "description": "Renders thinking event as dimmed italic text",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-03",
+                  "task_id": "T-314",
+                  "description": "Renders tool_call event with highlighted tool name badge and tool_result indented below",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-04",
+                  "task_id": "T-314",
+                  "description": "Shows Resume button when user scrolls up; clicking it re-enables auto-scroll",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-320-01",
+                  "task_id": "T-320",
+                  "description": "Connects to agent activity SSE endpoint when agent ID is provided",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+                },
+                {
+                  "id": "TT-320-02",
+                  "task_id": "T-320",
+                  "description": "Parses typed activity events (thinking, tool_call, error)",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+                },
+                {
+                  "id": "TT-320-03",
+                  "task_id": "T-320",
+                  "description": "Disconnects and clears events when agent ID changes",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+                }
+              ]
+            },
+            {
+              "id": "UI-R043",
+              "priority": "P1",
+              "area": "Activity",
+              "text": "Internal agent activity (tool calls, thinking) shall NEVER appear in the main chat. Only deliberate messages (debate turns, status updates, final outputs) appear in chat.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-314"
+              ],
+              "tests": [
+                {
+                  "id": "TT-314-01",
+                  "task_id": "T-314",
+                  "description": "Renders with terminal aesthetic: dark background, monospace font",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-02",
+                  "task_id": "T-314",
+                  "description": "Renders thinking event as dimmed italic text",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-03",
+                  "task_id": "T-314",
+                  "description": "Renders tool_call event with highlighted tool name badge and tool_result indented below",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-04",
+                  "task_id": "T-314",
+                  "description": "Shows Resume button when user scrolls up; clicking it re-enables auto-scroll",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Dashboard View",
+      "subsections": [
+        {
+          "title": "Dashboard",
+          "requirements": [
+            {
+              "id": "UI-R050",
+              "priority": "P0",
+              "area": "Dashboard",
+              "text": "The dashboard shall show a task board with columns representing task status: Todo, Design, TDD, Implementing, Testing, PR Raised, In Review, Fixing Comments, Merging, Done.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-307",
+                "T-323"
+              ],
+              "tests": [
+                {
+                  "id": "TT-307-01",
+                  "task_id": "T-307",
+                  "description": "Renders all 10 status columns with correct headers",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+                },
+                {
+                  "id": "TT-307-02",
+                  "task_id": "T-307",
+                  "description": "Shows task count in each column header",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+                },
+                {
+                  "id": "TT-307-03",
+                  "task_id": "T-307",
+                  "description": "Empty columns have dimmed styling",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+                },
+                {
+                  "id": "TT-307-04",
+                  "task_id": "T-307",
+                  "description": "Tasks render in the correct column based on status",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+                },
+                {
+                  "id": "TT-323-01",
+                  "task_id": "T-323",
+                  "description": "Renders KanbanBoard, AgentStatusBar, and MergeQueue sections",
+                  "type": "integration",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                },
+                {
+                  "id": "TT-323-02",
+                  "task_id": "T-323",
+                  "description": "Opens TaskDetailModal when a task card is clicked",
+                  "type": "integration",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                },
+                {
+                  "id": "TT-323-03",
+                  "task_id": "T-323",
+                  "description": "Renders empty state when no tasks exist",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R051",
+              "priority": "P0",
+              "area": "Dashboard",
+              "text": "Each task card on the board shall show: task title, assigned agent (with icon/color), PR link (if exists), and reviewer (if assigned).",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-308"
+              ],
+              "tests": [
+                {
+                  "id": "TT-308-01",
+                  "task_id": "T-308",
+                  "description": "Renders task title, agent badge, and status accent border",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+                },
+                {
+                  "id": "TT-308-02",
+                  "task_id": "T-308",
+                  "description": "Long title is truncated with tooltip showing full text",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+                },
+                {
+                  "id": "TT-308-03",
+                  "task_id": "T-308",
+                  "description": "PR link renders as clickable link opening in new tab when PR exists",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+                },
+                {
+                  "id": "TT-308-04",
+                  "task_id": "T-308",
+                  "description": "Clicking card calls onClick handler with task ID",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R052",
+              "priority": "P0",
+              "area": "Dashboard",
+              "text": "The dashboard shall show each agent's current status: what task they are working on, or if they are idle/waiting.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-310",
+                "T-323"
+              ],
+              "tests": [
+                {
+                  "id": "TT-310-01",
+                  "task_id": "T-310",
+                  "description": "Renders all agents with name, provider, and status dot",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/AgentStatusBar.test.tsx"
+                },
+                {
+                  "id": "TT-310-02",
+                  "task_id": "T-310",
+                  "description": "Status dot has correct color class for each status (idle=green, running=blue, blocked=amber, offline=gray)",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/AgentStatusBar.test.tsx"
+                },
+                {
+                  "id": "TT-310-03",
+                  "task_id": "T-310",
+                  "description": "Shows current task title when agent has an assigned task",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/AgentStatusBar.test.tsx"
+                },
+                {
+                  "id": "TT-310-04",
+                  "task_id": "T-310",
+                  "description": "Clicking an agent row calls onSelectAgent with agent ID",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/AgentStatusBar.test.tsx"
+                },
+                {
+                  "id": "TT-323-01",
+                  "task_id": "T-323",
+                  "description": "Renders KanbanBoard, AgentStatusBar, and MergeQueue sections",
+                  "type": "integration",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                },
+                {
+                  "id": "TT-323-02",
+                  "task_id": "T-323",
+                  "description": "Opens TaskDetailModal when a task card is clicked",
+                  "type": "integration",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                },
+                {
+                  "id": "TT-323-03",
+                  "task_id": "T-323",
+                  "description": "Renders empty state when no tasks exist",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R053",
+              "priority": "P1",
+              "area": "Dashboard",
+              "text": "The dashboard shall show the merge queue: ordered list of PRs waiting to merge, which one is currently merging.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-311",
+                "T-323"
+              ],
+              "tests": [
+                {
+                  "id": "TT-311-01",
+                  "task_id": "T-311",
+                  "description": "Renders merge queue entries in order with position, PR number, and task title",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/MergeQueue.test.tsx"
+                },
+                {
+                  "id": "TT-311-02",
+                  "task_id": "T-311",
+                  "description": "Currently-merging PR has highlighted styling",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/MergeQueue.test.tsx"
+                },
+                {
+                  "id": "TT-311-03",
+                  "task_id": "T-311",
+                  "description": "Shows 'No PRs in queue' when list is empty",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/MergeQueue.test.tsx"
+                },
+                {
+                  "id": "TT-323-01",
+                  "task_id": "T-323",
+                  "description": "Renders KanbanBoard, AgentStatusBar, and MergeQueue sections",
+                  "type": "integration",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                },
+                {
+                  "id": "TT-323-02",
+                  "task_id": "T-323",
+                  "description": "Opens TaskDetailModal when a task card is clicked",
+                  "type": "integration",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                },
+                {
+                  "id": "TT-323-03",
+                  "task_id": "T-323",
+                  "description": "Renders empty state when no tasks exist",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R054",
+              "priority": "P1",
+              "area": "Dashboard",
+              "text": "Clicking on a task card shall show task details: description, scope, dependencies, agent activity log, PR status.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-309"
+              ],
+              "tests": [
+                {
+                  "id": "TT-309-01",
+                  "task_id": "T-309",
+                  "description": "Renders task title, status badge, and priority in header",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskDetailModal.test.tsx"
+                },
+                {
+                  "id": "TT-309-02",
+                  "task_id": "T-309",
+                  "description": "Renders markdown description with code blocks and lists",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskDetailModal.test.tsx"
+                },
+                {
+                  "id": "TT-309-03",
+                  "task_id": "T-309",
+                  "description": "Shows dependencies with their current status indicators",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskDetailModal.test.tsx"
+                },
+                {
+                  "id": "TT-309-04",
+                  "task_id": "T-309",
+                  "description": "Closes modal when overlay is clicked or X button is pressed",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskDetailModal.test.tsx"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Agent Roster",
+      "subsections": [
+        {
+          "title": "Roster",
+          "requirements": [
+            {
+              "id": "UI-R060",
+              "priority": "P0",
+              "area": "Roster",
+              "text": "The agent roster shall show all agents in the current conversation with: name, role (Analyst/Team Lead/Developer), provider (Claude/Codex/Ollama), status indicator (idle/working/reviewing/waiting), and current task (if any).",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-312"
+              ],
+              "tests": [
+                {
+                  "id": "TT-312-01",
+                  "task_id": "T-312",
+                  "description": "Agent card shows role badge, provider icon, status dot, and current task",
+                  "type": "unit",
+                  "file": "frontend/src/features/agents/__tests__/AgentCard.test.tsx"
+                },
+                {
+                  "id": "TT-312-02",
+                  "task_id": "T-312",
+                  "description": "Clicking agent card calls onSelectAgent to open activity viewer",
+                  "type": "unit",
+                  "file": "frontend/src/features/agents/__tests__/AgentRoster.test.tsx"
+                },
+                {
+                  "id": "TT-312-03",
+                  "task_id": "T-312",
+                  "description": "Back to Roster button calls onBackToRoster callback",
+                  "type": "unit",
+                  "file": "frontend/src/features/agents/__tests__/AgentRoster.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R061",
+              "priority": "P0",
+              "area": "Roster",
+              "text": "Clicking an agent in the roster shall open their activity viewer.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-312",
+                "T-322"
+              ],
+              "tests": [
+                {
+                  "id": "TT-312-01",
+                  "task_id": "T-312",
+                  "description": "Agent card shows role badge, provider icon, status dot, and current task",
+                  "type": "unit",
+                  "file": "frontend/src/features/agents/__tests__/AgentCard.test.tsx"
+                },
+                {
+                  "id": "TT-312-02",
+                  "task_id": "T-312",
+                  "description": "Clicking agent card calls onSelectAgent to open activity viewer",
+                  "type": "unit",
+                  "file": "frontend/src/features/agents/__tests__/AgentRoster.test.tsx"
+                },
+                {
+                  "id": "TT-312-03",
+                  "task_id": "T-312",
+                  "description": "Back to Roster button calls onBackToRoster callback",
+                  "type": "unit",
+                  "file": "frontend/src/features/agents/__tests__/AgentRoster.test.tsx"
+                },
+                {
+                  "id": "TT-322-01",
+                  "task_id": "T-322",
+                  "description": "Defaults to showing AgentRoster in right pane",
+                  "type": "unit",
+                  "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+                },
+                {
+                  "id": "TT-322-02",
+                  "task_id": "T-322",
+                  "description": "Switches to ActivityViewer when an agent is selected",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+                },
+                {
+                  "id": "TT-322-03",
+                  "task_id": "T-322",
+                  "description": "Back to Roster button returns to roster view",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R062",
+              "priority": "P1",
+              "area": "Roster",
+              "text": "The roster shall support adding/removing agents from a conversation. Adding requires: name, role, provider, model selection.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-313"
+              ],
+              "tests": [
+                {
+                  "id": "TT-313-01",
+                  "task_id": "T-313",
+                  "description": "Add agent form renders name, role, provider, and model fields",
+                  "type": "unit",
+                  "file": "frontend/src/features/agents/__tests__/AgentForm.test.tsx"
+                },
+                {
+                  "id": "TT-313-02",
+                  "task_id": "T-313",
+                  "description": "Form validates that name and model are required before submit",
+                  "type": "unit",
+                  "file": "frontend/src/features/agents/__tests__/AgentForm.test.tsx"
+                },
+                {
+                  "id": "TT-313-03",
+                  "task_id": "T-313",
+                  "description": "Submitting calls onSave with form data; cancel calls onCancel",
+                  "type": "unit",
+                  "file": "frontend/src/features/agents/__tests__/AgentForm.test.tsx"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Conversation Management",
+      "subsections": [
+        {
+          "title": "Conversations",
+          "requirements": [
+            {
+              "id": "UI-R070",
+              "priority": "P0",
+              "area": "Conversations",
+              "text": "The user shall be able to create a new conversation by specifying: title and project directory path.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-316"
+              ],
+              "tests": [
+                {
+                  "id": "TT-316-01",
+                  "task_id": "T-316",
+                  "description": "Renders conversations sorted by updated_at descending",
+                  "type": "unit",
+                  "file": "frontend/src/features/history/__tests__/ConversationList.test.tsx"
+                },
+                {
+                  "id": "TT-316-02",
+                  "task_id": "T-316",
+                  "description": "Active conversation has highlighted styling",
+                  "type": "unit",
+                  "file": "frontend/src/features/history/__tests__/ConversationItem.test.tsx"
+                },
+                {
+                  "id": "TT-316-03",
+                  "task_id": "T-316",
+                  "description": "Clicking create opens dialog; submitting creates conversation",
+                  "type": "integration",
+                  "file": "frontend/src/features/history/__tests__/ConversationList.test.tsx"
+                },
+                {
+                  "id": "TT-316-04",
+                  "task_id": "T-316",
+                  "description": "Right-click shows context menu with delete option",
+                  "type": "unit",
+                  "file": "frontend/src/features/history/__tests__/ConversationItem.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R071",
+              "priority": "P0",
+              "area": "Conversations",
+              "text": "The user shall be able to switch between conversations. A conversation list (sidebar) shows all conversations with title, last activity time, and current phase.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-316"
+              ],
+              "tests": [
+                {
+                  "id": "TT-316-01",
+                  "task_id": "T-316",
+                  "description": "Renders conversations sorted by updated_at descending",
+                  "type": "unit",
+                  "file": "frontend/src/features/history/__tests__/ConversationList.test.tsx"
+                },
+                {
+                  "id": "TT-316-02",
+                  "task_id": "T-316",
+                  "description": "Active conversation has highlighted styling",
+                  "type": "unit",
+                  "file": "frontend/src/features/history/__tests__/ConversationItem.test.tsx"
+                },
+                {
+                  "id": "TT-316-03",
+                  "task_id": "T-316",
+                  "description": "Clicking create opens dialog; submitting creates conversation",
+                  "type": "integration",
+                  "file": "frontend/src/features/history/__tests__/ConversationList.test.tsx"
+                },
+                {
+                  "id": "TT-316-04",
+                  "task_id": "T-316",
+                  "description": "Right-click shows context menu with delete option",
+                  "type": "unit",
+                  "file": "frontend/src/features/history/__tests__/ConversationItem.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "UI-R072",
+              "priority": "P1",
+              "area": "Conversations",
+              "text": "Conversations shall be resumable \u2014 the user can close the browser and return later. State is persisted.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-316"
+              ],
+              "tests": [
+                {
+                  "id": "TT-316-01",
+                  "task_id": "T-316",
+                  "description": "Renders conversations sorted by updated_at descending",
+                  "type": "unit",
+                  "file": "frontend/src/features/history/__tests__/ConversationList.test.tsx"
+                },
+                {
+                  "id": "TT-316-02",
+                  "task_id": "T-316",
+                  "description": "Active conversation has highlighted styling",
+                  "type": "unit",
+                  "file": "frontend/src/features/history/__tests__/ConversationItem.test.tsx"
+                },
+                {
+                  "id": "TT-316-03",
+                  "task_id": "T-316",
+                  "description": "Clicking create opens dialog; submitting creates conversation",
+                  "type": "integration",
+                  "file": "frontend/src/features/history/__tests__/ConversationList.test.tsx"
+                },
+                {
+                  "id": "TT-316-04",
+                  "task_id": "T-316",
+                  "description": "Right-click shows context menu with delete option",
+                  "type": "unit",
+                  "file": "frontend/src/features/history/__tests__/ConversationItem.test.tsx"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Notifications",
+      "subsections": [
+        {
+          "title": "Notifications",
+          "requirements": [
+            {
+              "id": "UI-R080",
+              "priority": "P0",
+              "area": "Notifications",
+              "text": "The system shall notify the customer when: an agent @ mentions them, debate reaches max rounds without agreement, a PR is ready for the customer's attention, or an agent is blocked/needs input.",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-317",
+                "T-321"
+              ],
+              "tests": [
+                {
+                  "id": "TT-317-01",
+                  "task_id": "T-317",
+                  "description": "Renders toast with correct color styling based on notification type",
+                  "type": "unit",
+                  "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+                },
+                {
+                  "id": "TT-317-02",
+                  "task_id": "T-317",
+                  "description": "Toast auto-dismisses after 8 seconds",
+                  "type": "unit",
+                  "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+                },
+                {
+                  "id": "TT-317-03",
+                  "task_id": "T-317",
+                  "description": "Clicking toast calls onClick handler for navigation",
+                  "type": "unit",
+                  "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+                },
+                {
+                  "id": "TT-317-04",
+                  "task_id": "T-317",
+                  "description": "Multiple toasts stack vertically in top-right corner",
+                  "type": "unit",
+                  "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+                },
+                {
+                  "id": "TT-321-01",
+                  "task_id": "T-321",
+                  "description": "Dispatches clarification notification when agent @mentions customer",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useNotifications.test.ts"
+                },
+                {
+                  "id": "TT-321-02",
+                  "task_id": "T-321",
+                  "description": "Dispatches warning notification when max_rounds is reached",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useNotifications.test.ts"
+                },
+                {
+                  "id": "TT-321-03",
+                  "task_id": "T-321",
+                  "description": "Dispatches info notification when PR is ready",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useNotifications.test.ts"
+                }
+              ]
+            },
+            {
+              "id": "UI-R081",
+              "priority": "P2",
+              "area": "Notifications",
+              "text": "Notifications shall be visible in the UI (banner, badge, or toast). Browser notifications (optional, P2).",
+              "status": "todo",
+              "design_ref": "DES-03",
+              "tasks": [
+                "T-317"
+              ],
+              "tests": [
+                {
+                  "id": "TT-317-01",
+                  "task_id": "T-317",
+                  "description": "Renders toast with correct color styling based on notification type",
+                  "type": "unit",
+                  "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+                },
+                {
+                  "id": "TT-317-02",
+                  "task_id": "T-317",
+                  "description": "Toast auto-dismisses after 8 seconds",
+                  "type": "unit",
+                  "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+                },
+                {
+                  "id": "TT-317-03",
+                  "task_id": "T-317",
+                  "description": "Clicking toast calls onClick handler for navigation",
+                  "type": "unit",
+                  "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+                },
+                {
+                  "id": "TT-317-04",
+                  "task_id": "T-317",
+                  "description": "Multiple toasts stack vertically in top-right corner",
+                  "type": "unit",
+                  "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

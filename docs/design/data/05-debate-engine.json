@@ -1,0 +1,75 @@
+{
+  "id": "DES-05",
+  "title": "Debate Engine",
+  "date": "2026-03-08",
+  "requirements": ["PRD-001", "PRD-002", "PRD-003", "PRD-004", "PRD-005", "OR-R001", "OR-R002", "OR-R003", "OR-R010", "OR-R011", "OR-R020", "OR-R021", "OR-R030", "OR-R031"],
+  "sections": [
+    {
+      "title": "Overview",
+      "content": "The Debate Engine manages structured group discussions between agents and the customer. It implements round-robin turn management, directed messaging, customer participation, agreement detection, and context windowing. The engine operates within the 'debate' phase of the conversation lifecycle.",
+      "decisions": []
+    },
+    {
+      "title": "Turn Management",
+      "content": "The debate follows a round-robin pattern:\n\n```\nRound 1:  Agent1 → Agent2 → Agent3 → (customer can interject)\nRound 2:  Agent1 → Agent2 → Agent3 → ...\n...\nRound N:  Auto-summary → Customer decides\n```\n\n**State tracking**: The engine maintains:\n- `current_round`: Integer, starts at 1.\n- `current_turn_index`: Points to the next agent in turn_order sequence.\n- `max_rounds`: Configurable, default 20.\n- `paused`: Boolean, true when waiting for customer input.\n\n**Turn execution**:\n1. Determine next agent (by turn_order from conversation_agent table).\n2. Build context payload (conversation history + customer messages since last turn).\n3. Send prompt to agent via adapter.\n4. Stream response — capture as `debate_turn` event.\n5. Advance turn_index. If all agents have spoken, increment round.\n6. If round > max_rounds, trigger auto-summary (PRD-005).\n7. Check for agreement markers in the response (OR-R020).",
+      "decisions": [
+        {
+          "id": "D-040",
+          "title": "Round-robin with customer interjection support",
+          "decision": "The round-robin cycles through agents by turn_order. Customer messages are injected between turns — they don't take a 'slot' in the round-robin.",
+          "rationale": "PRD-001 specifies round-robin for agents. PRD-002 makes the customer a participant. Customer messages are event-driven (sent anytime) and visible to all agents on their next turn, not bound to a turn order.",
+          "alternatives": ["Customer gets a turn slot — rejected: customer input is asynchronous, shouldn't block the cycle"]
+        }
+      ]
+    },
+    {
+      "title": "Directed Messages",
+      "content": "When the customer addresses a specific agent (PRD-003, OR-R010):\n\n1. The composer detects an @ mention and sets `target_agent_id`.\n2. The backend receives the message and stores it as a `chat_message` event with `metadata.target_agent_id`.\n3. The debate engine sees the directed message and **interrupts** the round-robin: the targeted agent gets the next turn immediately.\n4. After the targeted agent responds, the round-robin **resumes from where it left off** — not from the beginning of the round.\n\n**Example**: Turn order is [A, B, C]. It's B's turn. Customer says \"@A what about option 2?\". A gets an immediate turn. Then B takes its scheduled turn, then C, completing the round.\n\nThis ensures directed messages don't cause agents to miss turns or get extra turns.",
+      "decisions": [
+        {
+          "id": "D-041",
+          "title": "Interrupt-and-resume for directed messages",
+          "decision": "Directed messages insert an out-of-order turn for the target agent, then the round-robin resumes from the interrupted position.",
+          "rationale": "OR-R010 requires the addressed agent to respond next regardless of order. Resuming from the interrupted position prevents agents from being skipped.",
+          "alternatives": ["Restart the round — rejected: agents who already spoke would go again", "Queue the directed response for the agent's next natural turn — rejected: too slow, customer expects immediate response"]
+        }
+      ]
+    },
+    {
+      "title": "Customer Clarification Pause",
+      "content": "When an agent @ mentions the customer (OR-R011):\n\n1. The agent's response contains `@Customer` or a structured marker.\n2. The debate engine detects this and sets `paused = true`.\n3. A `clarification_needed` event is emitted with the agent's question.\n4. The frontend shows the clarification banner (UI-R031).\n5. The debate engine **stops cycling** until the customer responds.\n6. When the customer responds, `paused` is set to false and the next agent in turn order takes their turn with the customer's response in context.\n\nThis prevents agents from continuing to debate while a critical question is unanswered.",
+      "decisions": []
+    },
+    {
+      "title": "Agreement Detection",
+      "content": "Agreement detection (OR-R020) works via two mechanisms:\n\n1. **Structured output**: Agents are prompted to include a structured block in their response:\n   ```json\n   {\"agreement\": {\"option\": \"B\", \"confidence\": \"high\"}}\n   ```\n   The engine parses this from the response.\n\n2. **Text analysis**: As a fallback, the engine looks for explicit agreement phrases (\"I agree with option B\", \"I support the proposal\"). This is done via the Ollama Team Lead analyzing the response — free of cost.\n\nWhen all agents express agreement on the same option:\n- A `system_notice` event is emitted: \"Agents have reached agreement on Option B.\"\n- The gate_status is set to `pending_approval`.\n- The customer sees the Approve button.\n- Agreement does NOT auto-advance (PRD-004) — the customer must explicitly approve.",
+      "decisions": [
+        {
+          "id": "D-042",
+          "title": "Dual agreement detection (structured + text)",
+          "decision": "Use structured JSON markers in agent output as primary detection, with Ollama-based text analysis as fallback.",
+          "rationale": "Structured output is reliable but requires agent cooperation. Text analysis handles cases where agents agree naturally without structured markers. Using Ollama for text analysis is free.",
+          "alternatives": ["Only structured output — simpler but misses natural agreement", "Only text analysis — unreliable without structured data"]
+        }
+      ]
+    },
+    {
+      "title": "Auto-Summary After Max Rounds",
+      "content": "When the debate reaches max_rounds without agreement (OR-R021, PRD-005):\n\n1. The engine sends each agent a final prompt: \"Summarize your position with pros and cons in structured format.\"\n2. Each agent responds with a structured summary.\n3. The engine collects all summaries and emits a `system_notice` with a formatted comparison.\n4. The gate_status is set to `pending_approval` — the customer must decide.\n\nThe structured summary format:\n```json\n{\n  \"position\": \"Option B: Microservices\",\n  \"pros\": [\"Independent scaling\", \"Team autonomy\"],\n  \"cons\": [\"Operational complexity\", \"Network overhead\"],\n  \"recommendation\": \"Proceed with Option B for long-term flexibility\"\n}\n```",
+      "decisions": []
+    },
+    {
+      "title": "Context Building",
+      "content": "Each agent's debate turn receives a context payload (OR-R030):\n\n```python\ncontext = {\n    \"conversation_id\": \"...\",\n    \"phase\": \"debate\",\n    \"round\": 5,\n    \"max_rounds\": 20,\n    \"your_role\": \"analyst\",\n    \"your_name\": \"Rick\",\n    \"history\": [\n        # Full or summarized conversation history\n        {\"agent\": \"Customer\", \"text\": \"Let's discuss the API design...\"},\n        {\"agent\": \"Rick\", \"text\": \"I propose option A because...\"},\n        {\"agent\": \"Morty\", \"text\": \"I disagree, option B is better...\"},\n    ],\n    \"customer_messages_since_your_last_turn\": [\n        # Any messages the customer sent since this agent's last turn\n    ],\n    \"system_prompt\": \"You are participating in a design debate...\"\n}\n```\n\n**Context windowing** (OR-R031): When history exceeds a token threshold (configurable, default ~100K tokens), the engine creates a rolling summary checkpoint. The agent receives: summary + last N messages. The summary is generated by Ollama (free) to avoid spending paid tokens on summarization.",
+      "decisions": [
+        {
+          "id": "D-043",
+          "title": "Ollama for context summarization",
+          "decision": "Use the Ollama Team Lead to generate conversation summaries when context exceeds the threshold.",
+          "rationale": "Summarization is a coordination cost, not productive work. PRD-022 prohibits spending paid tokens on overhead. Ollama can produce adequate summaries for context continuation.",
+          "alternatives": ["Truncate without summary — rejected: loses important context", "Use paid model for summarization — rejected: violates PRD-022"]
+        }
+      ]
+    }
+  ]
+}

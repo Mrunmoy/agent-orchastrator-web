@@ -1,0 +1,1047 @@
+{
+  "id": "REQ-05",
+  "title": "Integration Requirements",
+  "date": "2026-03-08",
+  "sections": [
+    {
+      "title": "Agent Adapters (CLI)",
+      "subsections": [
+        {
+          "title": "Adapter Interface",
+          "requirements": [
+            {
+              "id": "IN-R001",
+              "priority": "P0",
+              "area": "Adapters",
+              "text": "The system shall define a BaseAdapter interface for all agent types. The interface shall support: send_prompt(prompt, context) \u2192 stream, resume_session(session_id, context) \u2192 stream, and is_available() \u2192 bool.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-601"
+              ],
+              "tests": [
+                {
+                  "id": "TT-601-01",
+                  "task_id": "T-601",
+                  "description": "AdapterEvent has all required type variants (thinking, text, tool_call, etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                },
+                {
+                  "id": "TT-601-02",
+                  "task_id": "T-601",
+                  "description": "send_prompt returns AsyncIterator[AdapterEvent] that can be consumed",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                },
+                {
+                  "id": "TT-601-03",
+                  "task_id": "T-601",
+                  "description": "stop() cancels an in-progress operation and yields a done event",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R002",
+              "priority": "P0",
+              "area": "Adapters",
+              "text": "Adapter output shall be a stream of events, not a single response. Event types: thinking, text, tool_call, tool_result, file_edit, shell_command, error, done.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-601"
+              ],
+              "tests": [
+                {
+                  "id": "TT-601-01",
+                  "task_id": "T-601",
+                  "description": "AdapterEvent has all required type variants (thinking, text, tool_call, etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                },
+                {
+                  "id": "TT-601-02",
+                  "task_id": "T-601",
+                  "description": "send_prompt returns AsyncIterator[AdapterEvent] that can be consumed",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                },
+                {
+                  "id": "TT-601-03",
+                  "task_id": "T-601",
+                  "description": "stop() cancels an in-progress operation and yields a done event",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R003",
+              "priority": "P0",
+              "area": "Adapters",
+              "text": "Each adapter shall manage its own subprocess lifecycle: start, stream output, detect completion/error, and clean up resources.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-601"
+              ],
+              "tests": [
+                {
+                  "id": "TT-601-01",
+                  "task_id": "T-601",
+                  "description": "AdapterEvent has all required type variants (thinking, text, tool_call, etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                },
+                {
+                  "id": "TT-601-02",
+                  "task_id": "T-601",
+                  "description": "send_prompt returns AsyncIterator[AdapterEvent] that can be consumed",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                },
+                {
+                  "id": "TT-601-03",
+                  "task_id": "T-601",
+                  "description": "stop() cancels an in-progress operation and yields a done event",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_base.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Claude Adapter",
+          "requirements": [
+            {
+              "id": "IN-R010",
+              "priority": "P0",
+              "area": "Adapters",
+              "text": "The Claude adapter shall invoke claude CLI in a specified working directory. It shall support session resume via --session-id and prompt injection via --prompt or stdin.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-602"
+              ],
+              "tests": [
+                {
+                  "id": "TT-602-01",
+                  "task_id": "T-602",
+                  "description": "Claude CLI is invoked with --output-format stream-json flag",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-02",
+                  "task_id": "T-602",
+                  "description": "Streaming JSON lines are parsed into correct AdapterEvent types",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-03",
+                  "task_id": "T-602",
+                  "description": "Model, max_tokens, and permission_profile are configurable per instance",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-04",
+                  "task_id": "T-602",
+                  "description": "Session resume uses --session-id flag and returns streaming events",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R011",
+              "priority": "P1",
+              "area": "Adapters",
+              "text": "The Claude adapter shall parse streaming JSON output from the CLI to extract thinking, tool calls, and text responses as typed events.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-602"
+              ],
+              "tests": [
+                {
+                  "id": "TT-602-01",
+                  "task_id": "T-602",
+                  "description": "Claude CLI is invoked with --output-format stream-json flag",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-02",
+                  "task_id": "T-602",
+                  "description": "Streaming JSON lines are parsed into correct AdapterEvent types",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-03",
+                  "task_id": "T-602",
+                  "description": "Model, max_tokens, and permission_profile are configurable per instance",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-04",
+                  "task_id": "T-602",
+                  "description": "Session resume uses --session-id flag and returns streaming events",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R012",
+              "priority": "P1",
+              "area": "Adapters",
+              "text": "The Claude adapter shall support configurable model selection, max tokens, and permission profiles (e.g., --dangerously-skip-permissions for automated runs).",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-602"
+              ],
+              "tests": [
+                {
+                  "id": "TT-602-01",
+                  "task_id": "T-602",
+                  "description": "Claude CLI is invoked with --output-format stream-json flag",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-02",
+                  "task_id": "T-602",
+                  "description": "Streaming JSON lines are parsed into correct AdapterEvent types",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-03",
+                  "task_id": "T-602",
+                  "description": "Model, max_tokens, and permission_profile are configurable per instance",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                },
+                {
+                  "id": "TT-602-04",
+                  "task_id": "T-602",
+                  "description": "Session resume uses --session-id flag and returns streaming events",
+                  "type": "unit",
+                  "file": "backend/tests/test_claude_adapter.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Codex Adapter",
+          "requirements": [
+            {
+              "id": "IN-R020",
+              "priority": "P0",
+              "area": "Adapters",
+              "text": "The Codex adapter shall invoke codex CLI with --approval-mode full-auto for autonomous execution. It shall work in a specified directory.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-603"
+              ],
+              "tests": [
+                {
+                  "id": "TT-603-01",
+                  "task_id": "T-603",
+                  "description": "Codex CLI is invoked with --approval-mode full-auto flag",
+                  "type": "unit",
+                  "file": "backend/tests/test_codex_adapter.py"
+                },
+                {
+                  "id": "TT-603-02",
+                  "task_id": "T-603",
+                  "description": "Codex output is normalized into standard AdapterEvent stream",
+                  "type": "unit",
+                  "file": "backend/tests/test_codex_adapter.py"
+                },
+                {
+                  "id": "TT-603-03",
+                  "task_id": "T-603",
+                  "description": "Non-zero exit code yields error AdapterEvent",
+                  "type": "unit",
+                  "file": "backend/tests/test_codex_adapter.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R021",
+              "priority": "P1",
+              "area": "Adapters",
+              "text": "The Codex adapter shall parse Codex CLI output format and normalize it into the standard adapter event stream.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-603"
+              ],
+              "tests": [
+                {
+                  "id": "TT-603-01",
+                  "task_id": "T-603",
+                  "description": "Codex CLI is invoked with --approval-mode full-auto flag",
+                  "type": "unit",
+                  "file": "backend/tests/test_codex_adapter.py"
+                },
+                {
+                  "id": "TT-603-02",
+                  "task_id": "T-603",
+                  "description": "Codex output is normalized into standard AdapterEvent stream",
+                  "type": "unit",
+                  "file": "backend/tests/test_codex_adapter.py"
+                },
+                {
+                  "id": "TT-603-03",
+                  "task_id": "T-603",
+                  "description": "Non-zero exit code yields error AdapterEvent",
+                  "type": "unit",
+                  "file": "backend/tests/test_codex_adapter.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ollama Adapter",
+          "requirements": [
+            {
+              "id": "IN-R030",
+              "priority": "P0",
+              "area": "Adapters",
+              "text": "The Ollama adapter shall communicate with a locally running Ollama instance via its HTTP API (http://localhost:11434 by default). No CLI subprocess needed.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-604"
+              ],
+              "tests": [
+                {
+                  "id": "TT-604-01",
+                  "task_id": "T-604",
+                  "description": "Ollama adapter uses HTTP API (POST /api/generate) not CLI subprocess",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-02",
+                  "task_id": "T-604",
+                  "description": "Streaming HTTP response is parsed into AdapterEvent stream",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-03",
+                  "task_id": "T-604",
+                  "description": "is_available() checks /api/tags endpoint and returns bool",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-04",
+                  "task_id": "T-604",
+                  "description": "Model is configurable and passed correctly in API request",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R031",
+              "priority": "P0",
+              "area": "Adapters",
+              "text": "The Ollama adapter shall be used exclusively for the Team Lead role: lightweight coordination, task assignment, PR review assignment, merge queue management. It shall NOT be used for code generation.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-604"
+              ],
+              "tests": [
+                {
+                  "id": "TT-604-01",
+                  "task_id": "T-604",
+                  "description": "Ollama adapter uses HTTP API (POST /api/generate) not CLI subprocess",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-02",
+                  "task_id": "T-604",
+                  "description": "Streaming HTTP response is parsed into AdapterEvent stream",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-03",
+                  "task_id": "T-604",
+                  "description": "is_available() checks /api/tags endpoint and returns bool",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-04",
+                  "task_id": "T-604",
+                  "description": "Model is configurable and passed correctly in API request",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R032",
+              "priority": "P1",
+              "area": "Adapters",
+              "text": "The Ollama adapter shall support model selection (e.g., llama3, mistral, codellama). The model shall be configurable per agent.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-604"
+              ],
+              "tests": [
+                {
+                  "id": "TT-604-01",
+                  "task_id": "T-604",
+                  "description": "Ollama adapter uses HTTP API (POST /api/generate) not CLI subprocess",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-02",
+                  "task_id": "T-604",
+                  "description": "Streaming HTTP response is parsed into AdapterEvent stream",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-03",
+                  "task_id": "T-604",
+                  "description": "is_available() checks /api/tags endpoint and returns bool",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-04",
+                  "task_id": "T-604",
+                  "description": "Model is configurable and passed correctly in API request",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Future Adapters",
+          "requirements": [
+            {
+              "id": "IN-R040",
+              "priority": "P2",
+              "area": "Adapters",
+              "text": "The adapter architecture shall support adding new agent types (e.g., Gemini CLI, Copilot CLI, custom MCP servers) by implementing the BaseAdapter interface. No changes to the orchestration engine shall be required.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-605"
+              ],
+              "tests": [
+                {
+                  "id": "TT-605-01",
+                  "task_id": "T-605",
+                  "description": "Registry returns correct adapter for each known provider (claude, codex, ollama)",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_registry.py"
+                },
+                {
+                  "id": "TT-605-02",
+                  "task_id": "T-605",
+                  "description": "Factory creates configured adapter instance from agent configuration",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_registry.py"
+                },
+                {
+                  "id": "TT-605-03",
+                  "task_id": "T-605",
+                  "description": "Unknown provider raises ValueError with descriptive message",
+                  "type": "unit",
+                  "file": "backend/tests/test_adapter_registry.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "MCP (Model Context Protocol)",
+      "subsections": [
+        {
+          "title": "MCP Integration",
+          "requirements": [
+            {
+              "id": "IN-R050",
+              "priority": "P1",
+              "area": "MCP",
+              "text": "The system shall evaluate MCP as an alternative or complement to direct CLI adapters. If MCP provides a standardized way to communicate with agent CLIs, the adapter layer shall be refactored to use MCP transport where beneficial.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [],
+              "tests": []
+            },
+            {
+              "id": "IN-R051",
+              "priority": "P1",
+              "area": "MCP",
+              "text": "The backend shall be capable of acting as an MCP client \u2014 connecting to MCP-compatible agent servers to send prompts and receive structured responses.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [],
+              "tests": []
+            },
+            {
+              "id": "IN-R052",
+              "priority": "P2",
+              "area": "MCP",
+              "text": "The backend shall be capable of exposing an MCP server \u2014 allowing external MCP clients to interact with the orchestrator's tools (conversation management, task assignment, steering).",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [],
+              "tests": []
+            },
+            {
+              "id": "IN-R053",
+              "priority": "P1",
+              "area": "MCP",
+              "text": "MCP integration shall not be a hard dependency. The system shall work with pure CLI adapters. MCP shall be an opt-in enhancement for providers that support it.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [],
+              "tests": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "GitHub Integration",
+      "subsections": [
+        {
+          "title": "Pull Requests",
+          "requirements": [
+            {
+              "id": "IN-R060",
+              "priority": "P0",
+              "area": "GitHub",
+              "text": "The system shall detect when an agent raises a PR (via monitoring git state or parsing agent output). PR metadata (number, URL, branch, title) shall be stored with the task.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-607"
+              ],
+              "tests": [
+                {
+                  "id": "TT-607-01",
+                  "task_id": "T-607",
+                  "description": "PR creation detected from agent output containing 'gh pr create' results",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                },
+                {
+                  "id": "TT-607-02",
+                  "task_id": "T-607",
+                  "description": "PR metadata (number, URL, branch, title) correctly extracted",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                },
+                {
+                  "id": "TT-607-03",
+                  "task_id": "T-607",
+                  "description": "Task record updated with PR reference after detection",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R061",
+              "priority": "P1",
+              "area": "GitHub",
+              "text": "The system shall use the GitHub CLI (gh) or GitHub API to: list PRs, read review comments, check CI status, and post review comments. These operations shall be performed by the Team Lead (Ollama) or system process, not paid agents.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-608"
+              ],
+              "tests": [
+                {
+                  "id": "TT-608-01",
+                  "task_id": "T-608",
+                  "description": "list_prs() invokes gh pr list and returns structured PR metadata",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                },
+                {
+                  "id": "TT-608-02",
+                  "task_id": "T-608",
+                  "description": "get_review_comments() returns parsed review comments for a PR",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                },
+                {
+                  "id": "TT-608-03",
+                  "task_id": "T-608",
+                  "description": "check_ci_status() returns correct status (passed, failed, pending)",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                },
+                {
+                  "id": "TT-608-04",
+                  "task_id": "T-608",
+                  "description": "post_review() invokes gh pr review with correct arguments",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Reviews",
+          "requirements": [
+            {
+              "id": "IN-R070",
+              "priority": "P0",
+              "area": "GitHub",
+              "text": "When the Team Lead assigns a reviewer, the system shall: notify the reviewing agent, provide the PR diff and context, and start the agent's review turn.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-703",
+                "T-705"
+              ],
+              "tests": [
+                {
+                  "id": "TT-703-01",
+                  "task_id": "T-703",
+                  "description": "Coordinator loop advances next queued PR when no active merge exists",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-02",
+                  "task_id": "T-703",
+                  "description": "Event trigger (PR approved) causes immediate queue evaluation",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-03",
+                  "task_id": "T-703",
+                  "description": "Rebase conflict marks PR as blocked and notifies author + customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-04",
+                  "task_id": "T-703",
+                  "description": "Merge timeout (>10 min) alerts customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-705-01",
+                  "task_id": "T-705",
+                  "description": "Author agent is never assigned as reviewer of own PR",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                },
+                {
+                  "id": "TT-705-02",
+                  "task_id": "T-705",
+                  "description": "Idle agent with lightest review load is selected as reviewer",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                },
+                {
+                  "id": "TT-705-03",
+                  "task_id": "T-705",
+                  "description": "Single-developer conversation flags PR for customer review",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R071",
+              "priority": "P1",
+              "area": "GitHub",
+              "text": "Review comments from agents shall be posted as GitHub PR review comments, making them visible in the standard GitHub review workflow.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-608"
+              ],
+              "tests": [
+                {
+                  "id": "TT-608-01",
+                  "task_id": "T-608",
+                  "description": "list_prs() invokes gh pr list and returns structured PR metadata",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                },
+                {
+                  "id": "TT-608-02",
+                  "task_id": "T-608",
+                  "description": "get_review_comments() returns parsed review comments for a PR",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                },
+                {
+                  "id": "TT-608-03",
+                  "task_id": "T-608",
+                  "description": "check_ci_status() returns correct status (passed, failed, pending)",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                },
+                {
+                  "id": "TT-608-04",
+                  "task_id": "T-608",
+                  "description": "post_review() invokes gh pr review with correct arguments",
+                  "type": "unit",
+                  "file": "backend/tests/test_github_integration.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "CI Status",
+          "requirements": [
+            {
+              "id": "IN-R080",
+              "priority": "P1",
+              "area": "GitHub",
+              "text": "The system shall poll or receive webhooks for CI status on PRs. CI failures shall be surfaced as task events and the owning agent shall be notified to fix.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-609"
+              ],
+              "tests": [
+                {
+                  "id": "TT-609-01",
+                  "task_id": "T-609",
+                  "description": "CI status is polled at the configured interval for open PRs",
+                  "type": "unit",
+                  "file": "backend/tests/test_ci_monitor.py"
+                },
+                {
+                  "id": "TT-609-02",
+                  "task_id": "T-609",
+                  "description": "CI failure creates a task event and notifies the owning agent",
+                  "type": "unit",
+                  "file": "backend/tests/test_ci_monitor.py"
+                },
+                {
+                  "id": "TT-609-03",
+                  "task_id": "T-609",
+                  "description": "CI pass advances merge queue status from testing to merging",
+                  "type": "unit",
+                  "file": "backend/tests/test_ci_monitor.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Git Operations",
+      "subsections": [
+        {
+          "title": "Worktrees",
+          "requirements": [
+            {
+              "id": "IN-R090",
+              "priority": "P0",
+              "area": "Git",
+              "text": "Each agent working on a task shall operate in an isolated git worktree. The system shall create worktrees at task start and clean them up after merge.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-606"
+              ],
+              "tests": [
+                {
+                  "id": "TT-606-01",
+                  "task_id": "T-606",
+                  "description": "create_worktree produces correct path and branch name from task slug and provider",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                },
+                {
+                  "id": "TT-606-02",
+                  "task_id": "T-606",
+                  "description": "cleanup_worktree removes worktree directory and deletes branch",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                },
+                {
+                  "id": "TT-606-03",
+                  "task_id": "T-606",
+                  "description": "Worktree base directory is configurable and defaults to ../agent-orchestrator-worktrees/",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R091",
+              "priority": "P0",
+              "area": "Git",
+              "text": "Worktree paths shall follow a convention: {worktree_base}/{task-slug}/. The worktree base directory shall be configurable (default: ../agent-orchestrator-worktrees/).",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-606"
+              ],
+              "tests": [
+                {
+                  "id": "TT-606-01",
+                  "task_id": "T-606",
+                  "description": "create_worktree produces correct path and branch name from task slug and provider",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                },
+                {
+                  "id": "TT-606-02",
+                  "task_id": "T-606",
+                  "description": "cleanup_worktree removes worktree directory and deletes branch",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                },
+                {
+                  "id": "TT-606-03",
+                  "task_id": "T-606",
+                  "description": "Worktree base directory is configurable and defaults to ../agent-orchestrator-worktrees/",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R092",
+              "priority": "P0",
+              "area": "Git",
+              "text": "Each worktree shall be on its own branch, following the naming convention: {agent-provider}/{task-slug} (e.g., claude/ui-add-roster).",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-606"
+              ],
+              "tests": [
+                {
+                  "id": "TT-606-01",
+                  "task_id": "T-606",
+                  "description": "create_worktree produces correct path and branch name from task slug and provider",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                },
+                {
+                  "id": "TT-606-02",
+                  "task_id": "T-606",
+                  "description": "cleanup_worktree removes worktree directory and deletes branch",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                },
+                {
+                  "id": "TT-606-03",
+                  "task_id": "T-606",
+                  "description": "Worktree base directory is configurable and defaults to ../agent-orchestrator-worktrees/",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Merge Operations",
+          "requirements": [
+            {
+              "id": "IN-R100",
+              "priority": "P0",
+              "area": "Git",
+              "text": "The system shall perform git merge operations: rebase branch onto main, resolve simple conflicts (or flag for human), push, and trigger merge via GitHub.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-702"
+              ],
+              "tests": [
+                {
+                  "id": "TT-702-01",
+                  "task_id": "T-702",
+                  "description": "Clean rebase advances PR status from rebasing to testing",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-02",
+                  "task_id": "T-702",
+                  "description": "Rebase conflict marks PR as blocked and emits notification",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-03",
+                  "task_id": "T-702",
+                  "description": "CI pass triggers merge with configured strategy (squash default)",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-04",
+                  "task_id": "T-702",
+                  "description": "While one PR is merging, no other PR can enter rebasing/testing/merging",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R101",
+              "priority": "P1",
+              "area": "Git",
+              "text": "Merge conflicts that cannot be auto-resolved shall be flagged as a blocked event on the task. The customer shall be notified.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-706"
+              ],
+              "tests": [
+                {
+                  "id": "TT-706-01",
+                  "task_id": "T-706",
+                  "description": "Conflicting files are correctly identified from git rebase output",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                },
+                {
+                  "id": "TT-706-02",
+                  "task_id": "T-706",
+                  "description": "Author agent receives prompt with conflict details and resolution instructions",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                },
+                {
+                  "id": "TT-706-03",
+                  "task_id": "T-706",
+                  "description": "After agent push, merge process restarts from rebase step",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                },
+                {
+                  "id": "TT-706-04",
+                  "task_id": "T-706",
+                  "description": "Escalation to customer after 3 failed resolution attempts",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "File System",
+      "subsections": [
+        {
+          "title": "Filesystem",
+          "requirements": [
+            {
+              "id": "IN-R110",
+              "priority": "P0",
+              "area": "Filesystem",
+              "text": "The system shall only access files within the conversation's project_path and the designated worktree directories. No access to files outside these boundaries.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-610"
+              ],
+              "tests": [
+                {
+                  "id": "TT-610-01",
+                  "task_id": "T-610",
+                  "description": "Adapter working_dir is set to the agent's worktree path",
+                  "type": "unit",
+                  "file": "backend/tests/test_sandbox.py"
+                },
+                {
+                  "id": "TT-610-02",
+                  "task_id": "T-610",
+                  "description": "File operations outside worktree boundary are detected and logged",
+                  "type": "unit",
+                  "file": "backend/tests/test_sandbox.py"
+                },
+                {
+                  "id": "TT-610-03",
+                  "task_id": "T-610",
+                  "description": "Agent file activity (reads/writes) is captured in activity log",
+                  "type": "unit",
+                  "file": "backend/tests/test_sandbox.py"
+                }
+              ]
+            },
+            {
+              "id": "IN-R111",
+              "priority": "P1",
+              "area": "Filesystem",
+              "text": "Agent activity logs shall capture all file reads/writes performed by agents, enabling the activity viewer to show what files an agent touched.",
+              "status": "todo",
+              "design_ref": "DES-07",
+              "tasks": [
+                "T-610"
+              ],
+              "tests": [
+                {
+                  "id": "TT-610-01",
+                  "task_id": "T-610",
+                  "description": "Adapter working_dir is set to the agent's worktree path",
+                  "type": "unit",
+                  "file": "backend/tests/test_sandbox.py"
+                },
+                {
+                  "id": "TT-610-02",
+                  "task_id": "T-610",
+                  "description": "File operations outside worktree boundary are detected and logged",
+                  "type": "unit",
+                  "file": "backend/tests/test_sandbox.py"
+                },
+                {
+                  "id": "TT-610-03",
+                  "task_id": "T-610",
+                  "description": "Agent file activity (reads/writes) is captured in activity log",
+                  "type": "unit",
+                  "file": "backend/tests/test_sandbox.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

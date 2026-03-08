@@ -1,0 +1,1561 @@
+{
+  "id": "REQ-01",
+  "title": "Product Requirements",
+  "date": "2026-03-08",
+  "sections": [
+    {
+      "title": "Vision",
+      "intro": "A web-based engineering cockpit that lets a single human operator run a team of AI agents collaborating on software projects. The agents debate designs, divide work, execute tasks in parallel, review each other's PRs, and merge \u2014 all coordinated through the application. The human is the customer: they set direction, make final decisions, and steer when needed.",
+      "subsections": []
+    },
+    {
+      "title": "Team Model",
+      "intro": "The application models a software development team with four distinct roles: Customer (human operator), Analyst (Claude \u2014 paid), Team Lead (Ollama \u2014 free), Developer (Claude/Codex/Copilot \u2014 paid).",
+      "subsections": []
+    },
+    {
+      "title": "Conversation Lifecycle",
+      "subsections": [
+        {
+          "title": "Phase 1: Debate",
+          "requirements": [
+            {
+              "id": "PRD-001",
+              "priority": "P0",
+              "area": "Debate",
+              "text": "The system shall support a group debate where the customer poses a requirement and agents discuss it in round-robin turns. Each agent gets one turn per round. The debate runs for up to N rounds (default 20) or until agreement is reached.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-401",
+                "T-402",
+                "T-406"
+              ],
+              "tests": [
+                {
+                  "id": "TT-401-01",
+                  "task_id": "T-401",
+                  "description": "Round-robin cycles through all agents in turn_order, then increments round",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-401-02",
+                  "task_id": "T-401",
+                  "description": "Skips disabled agents (enabled=0) in the rotation",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-401-03",
+                  "task_id": "T-401",
+                  "description": "is_complete() returns true after max_rounds rounds",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-401-04",
+                  "task_id": "T-401",
+                  "description": "State correctly resets when starting a new debate session",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-406-01",
+                  "task_id": "T-406",
+                  "description": "Reaching max_rounds sends summary prompt to all agents",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-406-02",
+                  "task_id": "T-406",
+                  "description": "Structured summary responses are collected and formatted into comparison",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-406-03",
+                  "task_id": "T-406",
+                  "description": "System notice with comparison is emitted and gate set to pending_approval",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-402-01",
+                  "task_id": "T-402",
+                  "description": "Customer message appears in all agents' context on their next turn",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-402-02",
+                  "task_id": "T-402",
+                  "description": "Customer message does not advance the turn counter or round",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-402-03",
+                  "task_id": "T-402",
+                  "description": "Multiple customer messages between turns are all preserved in order",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-002",
+              "priority": "P0",
+              "area": "Debate",
+              "text": "The customer is a participant in the debate. Agents shall be able to @ the customer for clarifications. The system shall notify the customer and pause the debate until they respond.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-402",
+                "T-404"
+              ],
+              "tests": [
+                {
+                  "id": "TT-402-01",
+                  "task_id": "T-402",
+                  "description": "Customer message appears in all agents' context on their next turn",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-402-02",
+                  "task_id": "T-402",
+                  "description": "Customer message does not advance the turn counter or round",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-402-03",
+                  "task_id": "T-402",
+                  "description": "Multiple customer messages between turns are all preserved in order",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-404-01",
+                  "task_id": "T-404",
+                  "description": "Agent response with @Customer triggers paused state and clarification_needed event",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-404-02",
+                  "task_id": "T-404",
+                  "description": "No turns are dispatched while debate is paused",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-404-03",
+                  "task_id": "T-404",
+                  "description": "Customer response unpauses debate and next agent in order proceeds",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-003",
+              "priority": "P0",
+              "area": "Debate",
+              "text": "The customer shall be able to direct a message to a specific agent by name (e.g., \"rick, what do you think about option 2?\"). The addressed agent responds next, regardless of round-robin order.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-403"
+              ],
+              "tests": [
+                {
+                  "id": "TT-403-01",
+                  "task_id": "T-403",
+                  "description": "Directed message gives targeted agent immediate next turn",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-403-02",
+                  "task_id": "T-403",
+                  "description": "Round-robin resumes from interrupted position after directed turn",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-403-03",
+                  "task_id": "T-403",
+                  "description": "Directed message mid-round does not cause any agent to be skipped",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-004",
+              "priority": "P0",
+              "area": "Debate",
+              "text": "If agents agree on an option, they shall present it to the customer for final approval. The customer's decision is always final \u2014 agreement alone does not advance the phase.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-405"
+              ],
+              "tests": [
+                {
+                  "id": "TT-405-01",
+                  "task_id": "T-405",
+                  "description": "Structured JSON agreement marker is parsed correctly from agent response",
+                  "type": "unit",
+                  "file": "backend/tests/test_agreement.py"
+                },
+                {
+                  "id": "TT-405-02",
+                  "task_id": "T-405",
+                  "description": "Text-based agreement phrases are detected as fallback",
+                  "type": "unit",
+                  "file": "backend/tests/test_agreement.py"
+                },
+                {
+                  "id": "TT-405-03",
+                  "task_id": "T-405",
+                  "description": "Unanimous agreement emits system_notice and sets gate to pending_approval",
+                  "type": "unit",
+                  "file": "backend/tests/test_agreement.py"
+                },
+                {
+                  "id": "TT-405-04",
+                  "task_id": "T-405",
+                  "description": "Partial agreement (2/3 agents) does not trigger gate change",
+                  "type": "unit",
+                  "file": "backend/tests/test_agreement.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-005",
+              "priority": "P1",
+              "area": "Debate",
+              "text": "If agents do not agree after N rounds, they shall summarize each position with pros/cons and ask the customer to decide or steer the discussion.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-406"
+              ],
+              "tests": [
+                {
+                  "id": "TT-406-01",
+                  "task_id": "T-406",
+                  "description": "Reaching max_rounds sends summary prompt to all agents",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-406-02",
+                  "task_id": "T-406",
+                  "description": "Structured summary responses are collected and formatted into comparison",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-406-03",
+                  "task_id": "T-406",
+                  "description": "System notice with comparison is emitted and gate set to pending_approval",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Phase 2: Task Planning",
+          "requirements": [
+            {
+              "id": "PRD-006",
+              "priority": "P0",
+              "area": "Planning",
+              "text": "Once the customer approves a direction, they shall @ a specific agent (typically the Analyst or Team Lead) to break the agreed design into a task list, identifying which tasks can run in parallel.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-503",
+                "T-504"
+              ],
+              "tests": [
+                {
+                  "id": "TT-503-01",
+                  "task_id": "T-503",
+                  "description": "Valid structured task list JSON is parsed into Task records",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_planner.py"
+                },
+                {
+                  "id": "TT-503-02",
+                  "task_id": "T-503",
+                  "description": "Tasks with no dependencies are identified as parallelizable",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_planner.py"
+                },
+                {
+                  "id": "TT-503-03",
+                  "task_id": "T-503",
+                  "description": "Invalid task JSON format returns descriptive error",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_planner.py"
+                },
+                {
+                  "id": "TT-504-01",
+                  "task_id": "T-504",
+                  "description": "Only tasks with all dependencies done are returned as assignable",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-02",
+                  "task_id": "T-504",
+                  "description": "Idle agent gets highest-priority available task assigned",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-03",
+                  "task_id": "T-504",
+                  "description": "Agent already working on a task does not get a second assignment",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-04",
+                  "task_id": "T-504",
+                  "description": "Assignment updates task owner_agent_id, task status, and agent status",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-007",
+              "priority": "P1",
+              "area": "Planning",
+              "text": "The task list shall include for each task: title, description, scope (files/modules), dependencies on other tasks, and estimated complexity.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-506"
+              ],
+              "tests": [
+                {
+                  "id": "TT-506-01",
+                  "task_id": "T-506",
+                  "description": "Valid work order transitions succeed (design -> tdd -> implementing -> etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-02",
+                  "task_id": "T-506",
+                  "description": "Invalid transition (e.g., design -> implementing skipping tdd) raises error",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-03",
+                  "task_id": "T-506",
+                  "description": "testing -> implementing is allowed (test failure rollback)",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-04",
+                  "task_id": "T-506",
+                  "description": "Configurable work order can skip TDD step for docs tasks",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Phase 3: Execution",
+          "requirements": [
+            {
+              "id": "PRD-008",
+              "priority": "P0",
+              "area": "Execution",
+              "text": "Each Developer agent shall work on its assigned task independently, following the work order: design doc \u2192 TDD \u2192 implement \u2192 test \u2192 debug/fix \u2192 update docs \u2192 raise PR.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-506"
+              ],
+              "tests": [
+                {
+                  "id": "TT-506-01",
+                  "task_id": "T-506",
+                  "description": "Valid work order transitions succeed (design -> tdd -> implementing -> etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-02",
+                  "task_id": "T-506",
+                  "description": "Invalid transition (e.g., design -> implementing skipping tdd) raises error",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-03",
+                  "task_id": "T-506",
+                  "description": "testing -> implementing is allowed (test failure rollback)",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-04",
+                  "task_id": "T-506",
+                  "description": "Configurable work order can skip TDD step for docs tasks",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-009",
+              "priority": "P0",
+              "area": "Execution",
+              "text": "Each agent shall work in its own isolated git worktree to prevent file conflicts with other agents.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-606"
+              ],
+              "tests": [
+                {
+                  "id": "TT-606-01",
+                  "task_id": "T-606",
+                  "description": "create_worktree produces correct path and branch name from task slug and provider",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                },
+                {
+                  "id": "TT-606-02",
+                  "task_id": "T-606",
+                  "description": "cleanup_worktree removes worktree directory and deletes branch",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                },
+                {
+                  "id": "TT-606-03",
+                  "task_id": "T-606",
+                  "description": "Worktree base directory is configurable and defaults to ../agent-orchestrator-worktrees/",
+                  "type": "unit",
+                  "file": "backend/tests/test_worktree.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-010",
+              "priority": "P1",
+              "area": "Execution",
+              "text": "The customer shall be able to steer a specific agent mid-task if they observe it going off-track.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-505"
+              ],
+              "tests": [
+                {
+                  "id": "TT-505-01",
+                  "task_id": "T-505",
+                  "description": "Steering notes appear in agent prompt prefix when pending",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-02",
+                  "task_id": "T-505",
+                  "description": "Batch pauses after batch_size turns and records scheduler_run as completed",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-03",
+                  "task_id": "T-505",
+                  "description": "Continue from paused state resumes with a new batch",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-04",
+                  "task_id": "T-505",
+                  "description": "Directed steer message (@AgentName) targets specific agent",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Phase 4: Review",
+          "requirements": [
+            {
+              "id": "PRD-011",
+              "priority": "P0",
+              "area": "Review",
+              "text": "When a PR is raised, the system shall assign a reviewer \u2014 any Developer agent that did not author the PR.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-705"
+              ],
+              "tests": [
+                {
+                  "id": "TT-705-01",
+                  "task_id": "T-705",
+                  "description": "Author agent is never assigned as reviewer of own PR",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                },
+                {
+                  "id": "TT-705-02",
+                  "task_id": "T-705",
+                  "description": "Idle agent with lightest review load is selected as reviewer",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                },
+                {
+                  "id": "TT-705-03",
+                  "task_id": "T-705",
+                  "description": "Single-developer conversation flags PR for customer review",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-012",
+              "priority": "P0",
+              "area": "Review",
+              "text": "The PR author shall automatically fix review comments and push updates. The reviewer shall re-review until satisfied, then approve.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-507",
+                "T-704"
+              ],
+              "tests": [
+                {
+                  "id": "TT-704-01",
+                  "task_id": "T-704",
+                  "description": "PR raised triggers automatic reviewer assignment by Team Lead",
+                  "type": "unit",
+                  "file": "backend/tests/test_review_flow.py"
+                },
+                {
+                  "id": "TT-704-02",
+                  "task_id": "T-704",
+                  "description": "Review comments transition task to fixing_comments status",
+                  "type": "unit",
+                  "file": "backend/tests/test_review_flow.py"
+                },
+                {
+                  "id": "TT-704-03",
+                  "task_id": "T-704",
+                  "description": "Approval enters PR into merge queue with correct position",
+                  "type": "unit",
+                  "file": "backend/tests/test_review_flow.py"
+                },
+                {
+                  "id": "TT-704-04",
+                  "task_id": "T-704",
+                  "description": "Re-review after fixes cycles back through review correctly",
+                  "type": "unit",
+                  "file": "backend/tests/test_review_flow.py"
+                },
+                {
+                  "id": "TT-507-01",
+                  "task_id": "T-507",
+                  "description": "Agent with comments on own PR gets fix_comments as highest priority action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-02",
+                  "task_id": "T-507",
+                  "description": "Agent with approved PR and no comments gets merge action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-03",
+                  "task_id": "T-507",
+                  "description": "Agent assigned as reviewer gets review action when no own PR work needed",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-04",
+                  "task_id": "T-507",
+                  "description": "Agent with no work returns idle action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Phase 5: Merge",
+          "requirements": [
+            {
+              "id": "PRD-013",
+              "priority": "P0",
+              "area": "Merge",
+              "text": "Merges to main shall be serialized \u2014 one PR at a time. The system shall maintain a merge queue and handle rebases automatically.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-701"
+              ],
+              "tests": [
+                {
+                  "id": "TT-701-01",
+                  "task_id": "T-701",
+                  "description": "Queue enforces FIFO: first-approved PR is first to process",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-02",
+                  "task_id": "T-701",
+                  "description": "Only one PR can be in rebasing/testing/merging at any time",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-03",
+                  "task_id": "T-701",
+                  "description": "Customer re-prioritization changes queue order",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-04",
+                  "task_id": "T-701",
+                  "description": "Full status lifecycle: queued -> rebasing -> testing -> merging -> merged",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-014",
+              "priority": "P1",
+              "area": "Merge",
+              "text": "Other agents shall wait while one agent is merging. The merge coordinator (Team Lead / Ollama) shall manage this queue at zero token cost to paid agents.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-702",
+                "T-703"
+              ],
+              "tests": [
+                {
+                  "id": "TT-702-01",
+                  "task_id": "T-702",
+                  "description": "Clean rebase advances PR status from rebasing to testing",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-02",
+                  "task_id": "T-702",
+                  "description": "Rebase conflict marks PR as blocked and emits notification",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-03",
+                  "task_id": "T-702",
+                  "description": "CI pass triggers merge with configured strategy (squash default)",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-04",
+                  "task_id": "T-702",
+                  "description": "While one PR is merging, no other PR can enter rebasing/testing/merging",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-703-01",
+                  "task_id": "T-703",
+                  "description": "Coordinator loop advances next queued PR when no active merge exists",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-02",
+                  "task_id": "T-703",
+                  "description": "Event trigger (PR approved) causes immediate queue evaluation",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-03",
+                  "task_id": "T-703",
+                  "description": "Rebase conflict marks PR as blocked and notifies author + customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-04",
+                  "task_id": "T-703",
+                  "description": "Merge timeout (>10 min) alerts customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Agent Priority Loop (Post-Task)",
+          "requirements": [
+            {
+              "id": "PRD-015",
+              "priority": "P0",
+              "area": "Post-Task",
+              "text": "After raising a PR, an agent shall follow this priority loop: 1) Check if any of its own PRs have review comments \u2192 fix them. 2) Check if its PR got approved \u2192 merge it (if merge queue allows). 3) Check if it has been tagged to review another agent's PR \u2192 review it. 4) Otherwise \u2192 wait for next assignment or pick up next task from queue.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-507"
+              ],
+              "tests": [
+                {
+                  "id": "TT-507-01",
+                  "task_id": "T-507",
+                  "description": "Agent with comments on own PR gets fix_comments as highest priority action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-02",
+                  "task_id": "T-507",
+                  "description": "Agent with approved PR and no comments gets merge action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-03",
+                  "task_id": "T-507",
+                  "description": "Agent assigned as reviewer gets review action when no own PR work needed",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-04",
+                  "task_id": "T-507",
+                  "description": "Agent with no work returns idle action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Agent Activity Viewer",
+      "subsections": [
+        {
+          "title": "Activity Viewer",
+          "requirements": [
+            {
+              "id": "PRD-016",
+              "priority": "P0",
+              "area": "UI",
+              "text": "The system shall provide a real-time activity viewer for each agent \u2014 showing its thinking, file edits, commands, and tool use. This viewer shall be show/hide toggleable and separate from the main chat.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-314",
+                "T-318",
+                "T-320",
+                "T-322"
+              ],
+              "tests": [
+                {
+                  "id": "TT-314-01",
+                  "task_id": "T-314",
+                  "description": "Renders with terminal aesthetic: dark background, monospace font",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-02",
+                  "task_id": "T-314",
+                  "description": "Renders thinking event as dimmed italic text",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-03",
+                  "task_id": "T-314",
+                  "description": "Renders tool_call event with highlighted tool name badge and tool_result indented below",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-314-04",
+                  "task_id": "T-314",
+                  "description": "Shows Resume button when user scrolls up; clicking it re-enables auto-scroll",
+                  "type": "unit",
+                  "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+                },
+                {
+                  "id": "TT-318-01",
+                  "task_id": "T-318",
+                  "description": "Connects to SSE endpoint and receives parsed events",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+                },
+                {
+                  "id": "TT-318-02",
+                  "task_id": "T-318",
+                  "description": "Reconnects with Last-Event-ID header after connection error",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+                },
+                {
+                  "id": "TT-318-03",
+                  "task_id": "T-318",
+                  "description": "Closes EventSource on component unmount (cleanup)",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+                },
+                {
+                  "id": "TT-318-04",
+                  "task_id": "T-318",
+                  "description": "Exposes connection status (connecting, open, closed, error)",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+                },
+                {
+                  "id": "TT-320-01",
+                  "task_id": "T-320",
+                  "description": "Connects to agent activity SSE endpoint when agent ID is provided",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+                },
+                {
+                  "id": "TT-320-02",
+                  "task_id": "T-320",
+                  "description": "Parses typed activity events (thinking, tool_call, error)",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+                },
+                {
+                  "id": "TT-320-03",
+                  "task_id": "T-320",
+                  "description": "Disconnects and clears events when agent ID changes",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+                },
+                {
+                  "id": "TT-322-01",
+                  "task_id": "T-322",
+                  "description": "Defaults to showing AgentRoster in right pane",
+                  "type": "unit",
+                  "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+                },
+                {
+                  "id": "TT-322-02",
+                  "task_id": "T-322",
+                  "description": "Switches to ActivityViewer when an agent is selected",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+                },
+                {
+                  "id": "TT-322-03",
+                  "task_id": "T-322",
+                  "description": "Back to Roster button returns to roster view",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "PRD-017",
+              "priority": "P1",
+              "area": "UI",
+              "text": "The main chat window shall remain clean \u2014 only deliberate messages, turn outputs, and status updates appear there. Internal agent activity (thinking, tool calls) shall only appear in the activity viewer.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-301",
+                "T-319"
+              ],
+              "tests": [
+                {
+                  "id": "TT-301-01",
+                  "task_id": "T-301",
+                  "description": "Renders agent message with avatar showing first letter and hash-based color",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-02",
+                  "task_id": "T-301",
+                  "description": "Renders markdown content (code block, bold, link) via react-markdown",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-03",
+                  "task_id": "T-301",
+                  "description": "Renders phase_change type as a styled divider with phase label",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-301-04",
+                  "task_id": "T-301",
+                  "description": "Renders steer message with highlight border and 'You' sender label",
+                  "type": "unit",
+                  "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+                },
+                {
+                  "id": "TT-319-01",
+                  "task_id": "T-319",
+                  "description": "Fetches initial messages from API on mount",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+                },
+                {
+                  "id": "TT-319-02",
+                  "task_id": "T-319",
+                  "description": "Appends new messages from SSE stream in real-time",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+                },
+                {
+                  "id": "TT-319-03",
+                  "task_id": "T-319",
+                  "description": "Deduplicates messages by ID when SSE delivers already-fetched messages",
+                  "type": "unit",
+                  "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Dashboard",
+      "subsections": [
+        {
+          "title": "Dashboard",
+          "requirements": [
+            {
+              "id": "PRD-018",
+              "priority": "P0",
+              "area": "UI",
+              "text": "The system shall provide a dashboard view showing: which agent is working on which task, task status (design, TDD, implementing, testing, PR raised, in review, fixing comments, merging, done), PR links, and merge queue order.",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-307",
+                "T-308",
+                "T-323"
+              ],
+              "tests": [
+                {
+                  "id": "TT-307-01",
+                  "task_id": "T-307",
+                  "description": "Renders all 10 status columns with correct headers",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+                },
+                {
+                  "id": "TT-307-02",
+                  "task_id": "T-307",
+                  "description": "Shows task count in each column header",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+                },
+                {
+                  "id": "TT-307-03",
+                  "task_id": "T-307",
+                  "description": "Empty columns have dimmed styling",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+                },
+                {
+                  "id": "TT-307-04",
+                  "task_id": "T-307",
+                  "description": "Tasks render in the correct column based on status",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+                },
+                {
+                  "id": "TT-323-01",
+                  "task_id": "T-323",
+                  "description": "Renders KanbanBoard, AgentStatusBar, and MergeQueue sections",
+                  "type": "integration",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                },
+                {
+                  "id": "TT-323-02",
+                  "task_id": "T-323",
+                  "description": "Opens TaskDetailModal when a task card is clicked",
+                  "type": "integration",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                },
+                {
+                  "id": "TT-323-03",
+                  "task_id": "T-323",
+                  "description": "Renders empty state when no tasks exist",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+                },
+                {
+                  "id": "TT-308-01",
+                  "task_id": "T-308",
+                  "description": "Renders task title, agent badge, and status accent border",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+                },
+                {
+                  "id": "TT-308-02",
+                  "task_id": "T-308",
+                  "description": "Long title is truncated with tooltip showing full text",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+                },
+                {
+                  "id": "TT-308-03",
+                  "task_id": "T-308",
+                  "description": "PR link renders as clickable link opening in new tab when PR exists",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+                },
+                {
+                  "id": "TT-308-04",
+                  "task_id": "T-308",
+                  "description": "Clicking card calls onClick handler with task ID",
+                  "type": "unit",
+                  "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+                }
+              ]
+            },
+            {
+              "id": "PRD-019",
+              "priority": "P1",
+              "area": "UI",
+              "text": "The dashboard shall be accessible from within a conversation \u2014 the user shall be able to switch between chat view and dashboard view (layout TBD).",
+              "status": "todo",
+              "design_ref": "DES-04",
+              "tasks": [
+                "T-315"
+              ],
+              "tests": [
+                {
+                  "id": "TT-315-01",
+                  "task_id": "T-315",
+                  "description": "Renders Chat and Dashboard toggle buttons in TopBar",
+                  "type": "unit",
+                  "file": "frontend/src/layout/__tests__/TopBar.test.tsx"
+                },
+                {
+                  "id": "TT-315-02",
+                  "task_id": "T-315",
+                  "description": "Clicking Dashboard shows KanbanBoard in center pane",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/AppShell.test.tsx"
+                },
+                {
+                  "id": "TT-315-03",
+                  "task_id": "T-315",
+                  "description": "Clicking Chat returns to ChatPane with messages preserved",
+                  "type": "integration",
+                  "file": "frontend/src/layout/__tests__/AppShell.test.tsx"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Constraints",
+      "subsections": [
+        {
+          "title": "Constraints",
+          "requirements": [
+            {
+              "id": "PRD-020",
+              "priority": "P0",
+              "area": "Infra",
+              "text": "The system shall run locally on the user's machine. No cloud hosting required. LAN-accessible for multi-device use (phone, tablet, laptop).",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-201",
+                "T-202",
+                "T-203",
+                "T-204",
+                "T-206",
+                "T-207",
+                "T-208",
+                "T-209",
+                "T-211",
+                "T-212",
+                "T-213"
+              ],
+              "tests": [
+                {
+                  "id": "TT-201-01",
+                  "task_id": "T-201",
+                  "description": "GET /api/conversations/{id} returns full details with agent_count and task_count",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-02",
+                  "task_id": "T-201",
+                  "description": "GET /api/conversations/{id} returns 404 for non-existent or soft-deleted conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-03",
+                  "task_id": "T-201",
+                  "description": "PATCH /api/conversations/{id} updates title and project_path, returns updated object",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-201-04",
+                  "task_id": "T-201",
+                  "description": "PATCH /api/conversations/{id} ignores null fields and returns 404 for missing conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversations.py"
+                },
+                {
+                  "id": "TT-202-01",
+                  "task_id": "T-202",
+                  "description": "POST /api/conversations/{id}/messages creates a customer message event and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-02",
+                  "task_id": "T-202",
+                  "description": "POST with target_agent_id stores directed message metadata",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-03",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns paginated results with ?after cursor",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-202-04",
+                  "task_id": "T-202",
+                  "description": "GET /api/conversations/{id}/messages returns 404 for non-existent conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-01",
+                  "task_id": "T-203",
+                  "description": "GET /api/conversations/{id}/events returns all events unfiltered",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-02",
+                  "task_id": "T-203",
+                  "description": "GET with ?event_type=chat_message filters correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-203-03",
+                  "task_id": "T-203",
+                  "description": "GET with multiple event_type values (comma-separated) returns matching events",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_messages.py"
+                },
+                {
+                  "id": "TT-204-01",
+                  "task_id": "T-204",
+                  "description": "POST /api/conversations/{id}/tasks creates a task with spec_json and returns it",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-02",
+                  "task_id": "T-204",
+                  "description": "GET /api/conversations/{id}/tasks lists all tasks ordered by priority",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-03",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} updates status through valid transitions",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-204-04",
+                  "task_id": "T-204",
+                  "description": "PATCH /api/tasks/{id} rejects invalid status transitions with 400",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_tasks.py"
+                },
+                {
+                  "id": "TT-206-01",
+                  "task_id": "T-206",
+                  "description": "GET /api/conversations/{id}/phase returns current phase and gate_status",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-206-02",
+                  "task_id": "T-206",
+                  "description": "POST /gate with approve advances phase to next in sequence",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-206-03",
+                  "task_id": "T-206",
+                  "description": "POST /gate with reject sets gate_status to rejected, phase unchanged",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-206-04",
+                  "task_id": "T-206",
+                  "description": "POST /gate on a done conversation returns 409",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_phases.py"
+                },
+                {
+                  "id": "TT-207-01",
+                  "task_id": "T-207",
+                  "description": "POST /merge-queue enqueues item at next position with status queued",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_merge_queue.py"
+                },
+                {
+                  "id": "TT-207-02",
+                  "task_id": "T-207",
+                  "description": "GET /merge-queue returns items ordered by position",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_merge_queue.py"
+                },
+                {
+                  "id": "TT-207-03",
+                  "task_id": "T-207",
+                  "description": "PATCH /merge-queue/{id} rejects merging when another item is already merging",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_merge_queue.py"
+                },
+                {
+                  "id": "TT-207-04",
+                  "task_id": "T-207",
+                  "description": "DELETE /merge-queue/{id} removes item and recompacts positions",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_merge_queue.py"
+                },
+                {
+                  "id": "TT-208-01",
+                  "task_id": "T-208",
+                  "description": "SSE stream delivers events in correct SSE envelope format",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-02",
+                  "task_id": "T-208",
+                  "description": "Last-Event-ID header causes replay of missed events",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-03",
+                  "task_id": "T-208",
+                  "description": "Heartbeat comments are sent to keep connection alive",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-208-04",
+                  "task_id": "T-208",
+                  "description": "Stream returns 404 for non-existent conversation",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-01",
+                  "task_id": "T-209",
+                  "description": "Agent activity stream delivers only events for the specified agent",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-02",
+                  "task_id": "T-209",
+                  "description": "Activity stream filters to activity-related event types",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-209-03",
+                  "task_id": "T-209",
+                  "description": "Agent activity stream supports Last-Event-ID reconnection",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_streams.py"
+                },
+                {
+                  "id": "TT-211-01",
+                  "task_id": "T-211",
+                  "description": "Unhandled exceptions return 500 with envelope format and no stack trace",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-211-02",
+                  "task_id": "T-211",
+                  "description": "Pydantic ValidationError returns 400 with field-level error details",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-211-03",
+                  "task_id": "T-211",
+                  "description": "Custom NotFoundError returns 404 with envelope",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-211-04",
+                  "task_id": "T-211",
+                  "description": "Custom ConflictError returns 409 with envelope",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_middleware.py"
+                },
+                {
+                  "id": "TT-212-01",
+                  "task_id": "T-212",
+                  "description": "GET /api/agents/{id}/status returns current status",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-02",
+                  "task_id": "T-212",
+                  "description": "PATCH /api/agents/{id}/status accepts valid transition idle -> running",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-03",
+                  "task_id": "T-212",
+                  "description": "PATCH /api/agents/{id}/status rejects invalid transition idle -> blocked",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-212-04",
+                  "task_id": "T-212",
+                  "description": "Status change emits agent_status_change system event",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_agents.py"
+                },
+                {
+                  "id": "TT-213-01",
+                  "task_id": "T-213",
+                  "description": "POST /api/conversations/{id}/agents links agent with auto-assigned turn_order",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-02",
+                  "task_id": "T-213",
+                  "description": "Duplicate agent assignment returns 409 Conflict",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                },
+                {
+                  "id": "TT-213-03",
+                  "task_id": "T-213",
+                  "description": "is_merge_coordinator flag is stored and returned correctly",
+                  "type": "integration",
+                  "file": "backend/tests/test_api_conversation_agents.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-021",
+              "priority": "P0",
+              "area": "Infra",
+              "text": "The Team Lead role (Ollama) shall be free \u2014 no paid API calls for coordination, queue management, or status polling.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-604",
+                "T-703"
+              ],
+              "tests": [
+                {
+                  "id": "TT-604-01",
+                  "task_id": "T-604",
+                  "description": "Ollama adapter uses HTTP API (POST /api/generate) not CLI subprocess",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-02",
+                  "task_id": "T-604",
+                  "description": "Streaming HTTP response is parsed into AdapterEvent stream",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-03",
+                  "task_id": "T-604",
+                  "description": "is_available() checks /api/tags endpoint and returns bool",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-04",
+                  "task_id": "T-604",
+                  "description": "Model is configurable and passed correctly in API request",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-703-01",
+                  "task_id": "T-703",
+                  "description": "Coordinator loop advances next queued PR when no active merge exists",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-02",
+                  "task_id": "T-703",
+                  "description": "Event trigger (PR approved) causes immediate queue evaluation",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-03",
+                  "task_id": "T-703",
+                  "description": "Rebase conflict marks PR as blocked and notifies author + customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-04",
+                  "task_id": "T-703",
+                  "description": "Merge timeout (>10 min) alerts customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                }
+              ]
+            },
+            {
+              "id": "PRD-022",
+              "priority": "P1",
+              "area": "Infra",
+              "text": "Paid agent tokens shall only be spent on productive work: reasoning, code generation, code review, debate. Never on polling, queue checking, or coordination overhead.",
+              "status": "todo",
+              "design_ref": "DES-01",
+              "tasks": [
+                "T-504",
+                "T-604"
+              ],
+              "tests": [
+                {
+                  "id": "TT-604-01",
+                  "task_id": "T-604",
+                  "description": "Ollama adapter uses HTTP API (POST /api/generate) not CLI subprocess",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-02",
+                  "task_id": "T-604",
+                  "description": "Streaming HTTP response is parsed into AdapterEvent stream",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-03",
+                  "task_id": "T-604",
+                  "description": "is_available() checks /api/tags endpoint and returns bool",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-604-04",
+                  "task_id": "T-604",
+                  "description": "Model is configurable and passed correctly in API request",
+                  "type": "unit",
+                  "file": "backend/tests/test_ollama_adapter.py"
+                },
+                {
+                  "id": "TT-504-01",
+                  "task_id": "T-504",
+                  "description": "Only tasks with all dependencies done are returned as assignable",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-02",
+                  "task_id": "T-504",
+                  "description": "Idle agent gets highest-priority available task assigned",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-03",
+                  "task_id": "T-504",
+                  "description": "Agent already working on a task does not get a second assignment",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-04",
+                  "task_id": "T-504",
+                  "description": "Assignment updates task owner_agent_id, task status, and agent status",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

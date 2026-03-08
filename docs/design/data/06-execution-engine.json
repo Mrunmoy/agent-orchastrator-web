@@ -1,0 +1,96 @@
+{
+  "id": "DES-06",
+  "title": "Execution Engine",
+  "date": "2026-03-08",
+  "requirements": ["PRD-006", "PRD-007", "PRD-008", "PRD-009", "PRD-010", "PRD-015", "OR-R040", "OR-R041", "OR-R042", "OR-R043", "OR-R050", "OR-R051", "OR-R052", "OR-R060", "OR-R061", "OR-R062", "OR-R070", "OR-R071", "OR-R080", "OR-R081", "OR-R090", "OR-R091"],
+  "sections": [
+    {
+      "title": "Overview",
+      "content": "The Execution Engine manages everything after debate: phase gates, task planning, parallel task execution, the batch model, work order enforcement, and the agent priority loop. It is the core runtime that keeps agents productive and coordinated.",
+      "decisions": []
+    },
+    {
+      "title": "Phase & Gate State Machine",
+      "content": "The conversation progresses through phases (OR-R040):\n\n```\n  debate → task_planning → execution → review → merge → done\n    ↑          ↓                                    ↓\n    └──── (rollback) ────────────────────────────────┘\n```\n\nEach transition requires a gate approval from the customer (OR-R041):\n\n```python\nclass GateStatus(Enum):\n    OPEN = \"open\"                    # Phase in progress\n    PENDING_APPROVAL = \"pending\"     # Awaiting customer decision\n    APPROVED = \"approved\"            # Customer approved, transitioning\n    REJECTED = \"rejected\"            # Customer rejected, stay in phase\n```\n\n**Transition flow**:\n1. Engine or agents signal phase completion → gate_status = `pending_approval`\n2. Customer clicks Approve → gate_status = `approved`, phase advances\n3. Customer clicks Reject → gate_status = `rejected`, phase stays (or rolls back per OR-R043)\n4. New phase starts → gate_status = `open`\n\nThe system NEVER auto-advances phases. Customer approval is always required.",
+      "decisions": [
+        {
+          "id": "D-050",
+          "title": "Customer-gated phase transitions only",
+          "decision": "No automatic phase transitions. Every phase change requires explicit customer approval.",
+          "rationale": "OR-R041 is explicit: 'The system shall never auto-advance phases.' This gives the customer full control. Even if agents agree, the customer decides when to move on.",
+          "alternatives": ["Auto-advance on agreement — rejected: violates OR-R041 and PRD-004"]
+        }
+      ]
+    },
+    {
+      "title": "Task Planning Phase",
+      "content": "After the customer approves the debate outcome (PRD-006):\n\n1. The customer @ mentions a specific agent (typically the Analyst) to break the design into tasks.\n2. The addressed agent produces a structured task list:\n   ```json\n   {\n     \"tasks\": [\n       {\n         \"title\": \"Implement chat message component\",\n         \"description\": \"Create the ChatMessage React component...\",\n         \"scope\": [\"frontend/src/features/chat/\"],\n         \"dependencies\": [],\n         \"complexity\": \"medium\"\n       },\n       {\n         \"title\": \"Add SSE event streaming endpoint\",\n         \"description\": \"Create GET /api/conversations/{id}/stream...\",\n         \"scope\": [\"backend/src/agent_orchestrator/api/routes/\"],\n         \"dependencies\": [],\n         \"complexity\": \"high\"\n       }\n     ]\n   }\n   ```\n3. The backend parses this and creates task records.\n4. Tasks with no dependencies can be marked as parallelizable.\n5. The customer reviews the task list and approves to enter the execution phase.",
+      "decisions": [
+        {
+          "id": "D-051",
+          "title": "Agent-generated task plans, customer-approved",
+          "decision": "An agent generates the structured task list, but the customer must approve it before execution begins.",
+          "rationale": "PRD-006 says the customer directs task breakdown to a specific agent. PRD-004 requires customer approval. The agent's domain knowledge produces better task decomposition than manual entry.",
+          "alternatives": ["Customer creates tasks manually — rejected: tedious and misses parallelization opportunities", "Fully automated — rejected: customer loses control"]
+        }
+      ]
+    },
+    {
+      "title": "Task Assignment",
+      "content": "During the execution phase, the Team Lead (Ollama) assigns tasks to Developer agents (OR-R050, OR-R052):\n\n**Assignment algorithm**:\n1. Query unassigned tasks where all dependencies are `done`, ordered by priority.\n2. Query idle Developer agents.\n3. For each idle agent, pick the highest-priority available task.\n4. Assign: set task.owner_agent_id, task.status = 'design', agent.status = 'running'.\n5. Create the agent's worktree for the task.\n6. Send the task prompt to the agent via its adapter.\n\n**One task per agent** (OR-R051): An agent works on exactly one task at a time. It doesn't receive a new task until its current one reaches `pr_raised` and enters the priority loop.\n\nThe assignment decision is made by prompting Ollama with the available tasks and agents:\n```\nAvailable tasks: [{title, priority, complexity, scope}]\nIdle agents: [{name, provider, capabilities}]\nAssign each idle agent to the best-fit task.\n```\nThis runs at zero cost since Ollama is local.",
+      "decisions": [
+        {
+          "id": "D-052",
+          "title": "Ollama-driven task assignment",
+          "decision": "The Ollama Team Lead makes assignment decisions via structured prompts.",
+          "rationale": "OR-R052 requires free coordination. Simple priority-based assignment could be done in code, but Ollama can consider additional factors (agent capabilities, task complexity, scope overlap) without hard-coding rules.",
+          "alternatives": ["Hard-coded FIFO assignment — simpler but less intelligent", "Paid model for assignment — rejected: violates cost constraint"]
+        }
+      ]
+    },
+    {
+      "title": "Batch Execution Model",
+      "content": "Agent work runs in bounded batches (OR-R060):\n\n- **Batch size**: Default 20 turns. Configurable per conversation.\n- **Batch scope**: A batch may include turns from multiple agents working in parallel.\n- **Batch lifecycle**:\n  1. Customer clicks 'Run' → `scheduler_run` created with status `running`.\n  2. Engine dispatches prompts to assigned agents.\n  3. Agent responses stream back, stored as events.\n  4. After N total turns across all agents, batch completes.\n  5. `scheduler_run` status = `completed`. Engine pauses.\n  6. Customer reviews progress and chooses: Continue / Stop / Steer.\n\n**Steering** (OR-R061, PRD-010): The customer can inject a steering note at any time. The note is stored as a `steer` event and included in the next prompt sent to agents. Steering a specific agent is done via directed message (`@AgentName: stop, you're going off track`).",
+      "decisions": [
+        {
+          "id": "D-053",
+          "title": "Turn-counted batches over time-based",
+          "decision": "Batches are counted by total turns (prompts sent to agents), not wall-clock time.",
+          "rationale": "Turn-based batches are predictable and debuggable. Time-based batches would be inconsistent because agent response times vary widely (Claude vs Codex vs complex vs simple tasks).",
+          "alternatives": ["Time-based batches — rejected: unpredictable", "Unbounded execution — rejected: no control point for customer"]
+        }
+      ]
+    },
+    {
+      "title": "Work Order Enforcement",
+      "content": "Each task follows a fixed work order (OR-R070, PRD-008):\n\n```\ntodo → design → tdd → implementing → testing → pr_raised\n```\n\nThe engine enforces valid status transitions:\n\n| From | Allowed Next |\n|------|-------------|\n| todo | design |\n| design | tdd |\n| tdd | implementing |\n| implementing | testing |\n| testing | pr_raised (if tests pass) or implementing (if tests fail) |\n| pr_raised | in_review (when reviewer assigned) |\n| in_review | fixing_comments or merging |\n| fixing_comments | in_review (re-review) |\n| merging | done or blocked |\n\nInvalid transitions are rejected by the API. The work order is configurable per conversation (OR-R071) — e.g., documentation tasks can skip TDD.\n\nThe agent is prompted with the current work order step:\n```\nYou are working on task: 'Add SSE streaming'\nCurrent phase: TDD\nYour job: Write failing tests that define the expected behavior.\nDo not implement yet — only write tests.\n```",
+      "decisions": [
+        {
+          "id": "D-054",
+          "title": "Server-enforced work order transitions",
+          "decision": "The backend enforces valid status transitions. Invalid transitions return 409 Conflict.",
+          "rationale": "Agents might try to skip steps (e.g., jump from design to implementing). Server enforcement ensures the work order is followed regardless of agent behavior.",
+          "alternatives": ["Trust agents to follow the order — rejected: unreliable", "Client-side validation only — rejected: can be bypassed"]
+        }
+      ]
+    },
+    {
+      "title": "Agent Priority Loop",
+      "content": "After an agent raises a PR (PRD-015, OR-R080), it enters the priority loop:\n\n```python\ndef priority_loop(agent):\n    # 1. Fix own PR comments\n    own_prs = get_prs_with_comments(agent)\n    if own_prs:\n        return Action(\"fix_comments\", own_prs[0])\n    \n    # 2. Merge own approved PR\n    approved_prs = get_approved_prs(agent)\n    if approved_prs and merge_queue_allows(approved_prs[0]):\n        return Action(\"merge\", approved_prs[0])\n    \n    # 3. Review others' PRs\n    review_assignments = get_review_assignments(agent)\n    if review_assignments:\n        return Action(\"review\", review_assignments[0])\n    \n    # 4. Pick next task or wait\n    next_task = get_next_available_task()\n    if next_task:\n        return Action(\"start_task\", next_task)\n    \n    return Action(\"idle\")\n```\n\nThe priority loop is evaluated by the Ollama Team Lead (OR-R081) to avoid spending paid tokens on status checking. The Team Lead runs this evaluation every 30 seconds (or on event triggers like PR approval, review comment, merge completion).",
+      "decisions": [
+        {
+          "id": "D-055",
+          "title": "Event-triggered priority evaluation",
+          "decision": "The priority loop runs on relevant events (PR approved, review comment posted, merge complete) plus a 30-second polling fallback.",
+          "rationale": "Event-driven evaluation is more responsive than pure polling. The 30-second fallback catches any missed events. All evaluation is done by Ollama (free).",
+          "alternatives": ["Pure polling — rejected: 30s latency on every state change", "Pure event-driven — risky: might miss events without fallback"]
+        }
+      ]
+    },
+    {
+      "title": "Resource Management",
+      "content": "The system tracks local resources (OR-R090, OR-R091):\n\n- **Resource snapshots**: CPU load, RAM usage, GPU status captured every 60 seconds and stored in `resource_snapshot` table.\n- **Concurrency limit**: Maximum simultaneous agent processes (default: number of CPU cores or a configured value). When the limit is reached, new task assignments queue until a slot frees up.\n- **Dashboard display**: Resource data is available for the dashboard to show system health.\n\nThe concurrency limit prevents overloading the machine when running multiple Claude/Codex processes simultaneously.",
+      "decisions": []
+    }
+  ]
+}

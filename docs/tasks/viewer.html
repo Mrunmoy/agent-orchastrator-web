@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Registry — Agent Orchestrator</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --surface: #111827;
+  --surface2: #1e293b;
+  --border: #1e293b;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent: #818cf8;
+  --accent2: #a78bfa;
+  --green: #34d399;
+  --yellow: #fbbf24;
+  --red: #f87171;
+  --blue: #60a5fa;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.header {
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--border);
+}
+.header h1 { font-size: 1.5rem; font-weight: 700; }
+.header .subtitle { color: var(--text-muted); font-size: 0.875rem; margin-top: 4px; }
+
+.stats-bar {
+  display: flex; gap: 24px; padding: 16px 32px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.stat { text-align: center; }
+.stat .value { font-size: 1.75rem; font-weight: 700; color: var(--accent); }
+.stat .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.controls {
+  display: flex; gap: 12px; padding: 16px 32px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; align-items: center;
+}
+.controls input, .controls select {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+  padding: 6px 12px; border-radius: 6px; font-size: 0.875rem;
+}
+.controls input { width: 240px; }
+.controls select { min-width: 120px; }
+
+.nav-tabs {
+  display: flex; gap: 0; padding: 0 32px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.nav-tab {
+  padding: 10px 20px; cursor: pointer; font-size: 0.875rem; font-weight: 500;
+  color: var(--text-muted); border-bottom: 2px solid transparent;
+  white-space: nowrap; transition: all 0.2s;
+}
+.nav-tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.content { padding: 24px 32px; }
+
+.task-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 20px; margin-bottom: 12px; transition: border-color 0.2s;
+}
+.task-card:hover { border-color: var(--accent); }
+.task-card .task-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.task-card .task-id { font-family: monospace; font-weight: 700; color: var(--cyan); font-size: 0.875rem; }
+.task-card .task-title { font-weight: 600; flex: 1; }
+.task-card .task-desc { color: var(--text-muted); font-size: 0.875rem; margin-top: 8px; }
+
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.badge-s { background: #065f46; color: #6ee7b7; }
+.badge-m { background: #854d0e; color: #fde68a; }
+.badge-l { background: #9a3412; color: #fed7aa; }
+.badge-xl { background: #7f1d1d; color: #fecaca; }
+
+.tag {
+  display: inline-block; padding: 1px 6px; border-radius: 3px;
+  font-size: 0.7rem; font-family: monospace; margin: 1px;
+}
+.tag-design { background: #1e1b4b; color: var(--accent2); }
+.tag-req { background: #164e63; color: var(--cyan); }
+.tag-dep { background: #3f3f46; color: #d4d4d8; }
+.tag-group { background: #1e3a5f; color: var(--blue); }
+
+.tests-section { margin-top: 12px; }
+.tests-toggle { cursor: pointer; font-size: 0.8rem; color: var(--accent); user-select: none; }
+.tests-list { margin-top: 8px; display: none; }
+.tests-list.open { display: block; }
+.test-item {
+  display: flex; gap: 8px; align-items: flex-start; padding: 4px 0;
+  font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border);
+}
+.test-item .test-id { font-family: monospace; color: var(--green); white-space: nowrap; }
+.test-item .test-type { font-family: monospace; font-size: 0.7rem; color: var(--yellow); }
+
+.dep-graph { margin-top: 24px; }
+.dep-graph h3 { font-size: 1rem; margin-bottom: 12px; color: var(--text-muted); }
+table.dep-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+table.dep-table th, table.dep-table td { padding: 6px 10px; text-align: left; border: 1px solid var(--border); }
+table.dep-table th { background: var(--surface2); color: var(--text-muted); font-weight: 600; }
+table.dep-table tr:hover { background: rgba(129,140,248,0.05); }
+
+@media (max-width: 768px) {
+  .controls, .stats-bar { padding: 12px 16px; }
+  .content { padding: 16px; }
+  .header { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Task Registry</h1>
+  <div class="subtitle">Implementation tasks linked to design docs & requirements — Agent Orchestrator</div>
+</div>
+<div id="stats-bar" class="stats-bar"></div>
+<div class="nav-tabs" id="nav-tabs"></div>
+<div class="controls">
+  <input type="text" id="search" placeholder="Search tasks...">
+  <select id="filter-complexity">
+    <option value="">All sizes</option>
+    <option value="S">S — Small</option>
+    <option value="M">M — Medium</option>
+    <option value="L">L — Large</option>
+    <option value="XL">XL — Extra Large</option>
+  </select>
+  <select id="filter-group">
+    <option value="">All groups</option>
+  </select>
+</div>
+<div class="content" id="content"></div>
+
+<script src="_bundle.js"></script>
+<script>
+function main() {
+  const data = window.__TASK_DATA__;
+  if (!data) { document.getElementById('content').textContent = 'No task data. Run: python docs/tasks/build.py'; return; }
+
+  const allTasks = [];
+  const fileNames = Object.keys(data);
+  fileNames.forEach(fn => { data[fn].forEach(t => { t._file = fn; allTasks.push(t); }); });
+
+  // Stats
+  const totalTests = allTasks.reduce((s, t) => s + (t.tests || []).length, 0);
+  const allReqs = new Set(allTasks.flatMap(t => t.requirements || []));
+  const allDesigns = new Set(allTasks.flatMap(t => t.design_refs || []));
+  const groups = [...new Set(allTasks.map(t => t.parallel_group).filter(Boolean))].sort();
+  const complexities = { S: 0, M: 0, L: 0, XL: 0 };
+  allTasks.forEach(t => { if (t.complexity && complexities[t.complexity] !== undefined) complexities[t.complexity]++; });
+
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat"><div class="value">${allTasks.length}</div><div class="label">Tasks</div></div>
+    <div class="stat"><div class="value">${totalTests}</div><div class="label">Test Cases</div></div>
+    <div class="stat"><div class="value">${allReqs.size}</div><div class="label">Linked Reqs</div></div>
+    <div class="stat"><div class="value">${allDesigns.size}</div><div class="label">Design Refs</div></div>
+    <div class="stat"><div class="value">${groups.length}</div><div class="label">Parallel Groups</div></div>
+    <div class="stat"><div class="value">${complexities.S}/${complexities.M}/${complexities.L}/${complexities.XL}</div><div class="label">S / M / L / XL</div></div>
+  `;
+
+  // Nav tabs
+  const tabs = [{ key: 'all', label: `All (${allTasks.length})` }];
+  fileNames.forEach(fn => {
+    const label = fn.replace(/-tasks$/, '').replace(/-/g, ' ');
+    tabs.push({ key: fn, label: `${label} (${data[fn].length})` });
+  });
+  tabs.push({ key: 'deps', label: 'Dependency Graph' });
+
+  const navEl = document.getElementById('nav-tabs');
+  tabs.forEach(tab => {
+    const el = document.createElement('div');
+    el.className = 'nav-tab' + (tab.key === 'all' ? ' active' : '');
+    el.textContent = tab.label;
+    el.dataset.key = tab.key;
+    el.onclick = () => {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      render(tab.key);
+    };
+    navEl.appendChild(el);
+  });
+
+  // Groups filter
+  const groupSelect = document.getElementById('filter-group');
+  groups.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g; opt.textContent = g;
+    groupSelect.appendChild(opt);
+  });
+
+  function getFiltered(key) {
+    let tasks = key === 'all' || key === 'deps' ? allTasks : data[key] || [];
+    const search = document.getElementById('search').value.toLowerCase();
+    const complexity = document.getElementById('filter-complexity').value;
+    const group = document.getElementById('filter-group').value;
+    if (search) tasks = tasks.filter(t =>
+      t.id.toLowerCase().includes(search) ||
+      t.title.toLowerCase().includes(search) ||
+      (t.description || '').toLowerCase().includes(search) ||
+      (t.requirements || []).some(r => r.toLowerCase().includes(search))
+    );
+    if (complexity) tasks = tasks.filter(t => t.complexity === complexity);
+    if (group) tasks = tasks.filter(t => t.parallel_group === group);
+    return tasks;
+  }
+
+  function renderCard(t) {
+    const deps = (t.dependencies || []).map(d => `<span class="tag tag-dep">${d}</span>`).join('');
+    const reqs = (t.requirements || []).map(r => `<span class="tag tag-req">${r}</span>`).join('');
+    const designs = (t.design_refs || []).map(d => `<span class="tag tag-design">${d}</span>`).join('');
+    const tests = t.tests || [];
+    const testItems = tests.map(tt =>
+      `<div class="test-item"><span class="test-id">${tt.id}</span><span class="test-type">${tt.type}</span><span>${tt.description}</span></div>`
+    ).join('');
+
+    return `<div class="task-card">
+      <div class="task-header">
+        <span class="task-id">${t.id}</span>
+        <span class="task-title">${t.title}</span>
+        <span class="badge badge-${(t.complexity||'m').toLowerCase()}">${t.complexity || '?'}</span>
+        ${t.parallel_group ? `<span class="tag tag-group">${t.parallel_group}</span>` : ''}
+      </div>
+      <div class="task-desc">${t.description || ''}</div>
+      <div style="margin-top:8px">
+        ${designs ? '<span style="font-size:0.7rem;color:var(--text-muted)">Design:</span> ' + designs : ''}
+        ${reqs ? ' <span style="font-size:0.7rem;color:var(--text-muted)">Reqs:</span> ' + reqs : ''}
+        ${deps ? ' <span style="font-size:0.7rem;color:var(--text-muted)">Deps:</span> ' + deps : ''}
+      </div>
+      ${tests.length ? `<div class="tests-section">
+        <span class="tests-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
+          ${tests.length} test case${tests.length>1?'s':''} ▸
+        </span>
+        <div class="tests-list">${testItems}</div>
+      </div>` : ''}
+    </div>`;
+  }
+
+  function renderDepGraph(tasks) {
+    const taskMap = {};
+    tasks.forEach(t => taskMap[t.id] = t);
+    const rows = tasks.map(t => {
+      const deps = (t.dependencies || []).map(d => `<span class="tag tag-dep">${d}</span>`).join(' ') || '—';
+      const blockedBy = tasks.filter(o => (o.dependencies || []).includes(t.id)).map(o => `<span class="tag tag-group">${o.id}</span>`).join(' ') || '—';
+      return `<tr>
+        <td><span class="task-id">${t.id}</span></td>
+        <td>${t.title}</td>
+        <td><span class="badge badge-${(t.complexity||'m').toLowerCase()}">${t.complexity}</span></td>
+        <td>${t.parallel_group || ''}</td>
+        <td>${deps}</td>
+        <td>${blockedBy}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="dep-graph">
+      <h3>Dependency Graph — ${tasks.length} tasks</h3>
+      <table class="dep-table">
+        <tr><th>ID</th><th>Title</th><th>Size</th><th>Group</th><th>Depends On</th><th>Blocks</th></tr>
+        ${rows}
+      </table>
+    </div>`;
+  }
+
+  function render(key) {
+    const tasks = getFiltered(key);
+    const el = document.getElementById('content');
+    if (key === 'deps') {
+      el.innerHTML = renderDepGraph(tasks);
+    } else {
+      el.innerHTML = tasks.map(renderCard).join('') || '<p style="color:var(--text-muted)">No tasks match filters.</p>';
+    }
+  }
+
+  document.getElementById('search').addEventListener('input', () => {
+    const active = document.querySelector('.nav-tab.active');
+    render(active ? active.dataset.key : 'all');
+  });
+  document.getElementById('filter-complexity').addEventListener('change', () => {
+    const active = document.querySelector('.nav-tab.active');
+    render(active ? active.dataset.key : 'all');
+  });
+  document.getElementById('filter-group').addEventListener('change', () => {
+    const active = document.querySelector('.nav-tab.active');
+    render(active ? active.dataset.key : 'all');
+  });
+
+  render('all');
+}
+main();
+</script>
+</body>
+</html>

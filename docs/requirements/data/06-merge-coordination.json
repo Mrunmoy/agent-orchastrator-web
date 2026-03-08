@@ -1,0 +1,966 @@
+{
+  "id": "REQ-06",
+  "title": "Merge Coordination Requirements",
+  "date": "2026-03-08",
+  "sections": [
+    {
+      "title": "Merge Queue",
+      "subsections": [
+        {
+          "title": "Queue",
+          "requirements": [
+            {
+              "id": "MG-R001",
+              "priority": "P0",
+              "area": "Queue",
+              "text": "The system shall maintain a merge queue per conversation \u2014 an ordered list of PRs approved and waiting to merge into main.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-701"
+              ],
+              "tests": [
+                {
+                  "id": "TT-701-01",
+                  "task_id": "T-701",
+                  "description": "Queue enforces FIFO: first-approved PR is first to process",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-02",
+                  "task_id": "T-701",
+                  "description": "Only one PR can be in rebasing/testing/merging at any time",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-03",
+                  "task_id": "T-701",
+                  "description": "Customer re-prioritization changes queue order",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-04",
+                  "task_id": "T-701",
+                  "description": "Full status lifecycle: queued -> rebasing -> testing -> merging -> merged",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R002",
+              "priority": "P0",
+              "area": "Queue",
+              "text": "Merges shall be serialized \u2014 only one PR shall be actively merging at any time. All other approved PRs shall wait in the queue.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-701"
+              ],
+              "tests": [
+                {
+                  "id": "TT-701-01",
+                  "task_id": "T-701",
+                  "description": "Queue enforces FIFO: first-approved PR is first to process",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-02",
+                  "task_id": "T-701",
+                  "description": "Only one PR can be in rebasing/testing/merging at any time",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-03",
+                  "task_id": "T-701",
+                  "description": "Customer re-prioritization changes queue order",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-04",
+                  "task_id": "T-701",
+                  "description": "Full status lifecycle: queued -> rebasing -> testing -> merging -> merged",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R003",
+              "priority": "P0",
+              "area": "Queue",
+              "text": "Queue ordering shall be: first-approved-first-merged (FIFO), with an option for the customer to re-prioritize.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-701"
+              ],
+              "tests": [
+                {
+                  "id": "TT-701-01",
+                  "task_id": "T-701",
+                  "description": "Queue enforces FIFO: first-approved PR is first to process",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-02",
+                  "task_id": "T-701",
+                  "description": "Only one PR can be in rebasing/testing/merging at any time",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-03",
+                  "task_id": "T-701",
+                  "description": "Customer re-prioritization changes queue order",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-04",
+                  "task_id": "T-701",
+                  "description": "Full status lifecycle: queued -> rebasing -> testing -> merging -> merged",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R004",
+              "priority": "P1",
+              "area": "Queue",
+              "text": "The merge queue shall be visible on the dashboard with: PR title, author agent, position in queue, current status (waiting / rebasing / merging / merged / failed).",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-708"
+              ],
+              "tests": [
+                {
+                  "id": "TT-708-01",
+                  "task_id": "T-708",
+                  "description": "API returns all merge queue entries with PR title, author, position, status",
+                  "type": "integration",
+                  "file": "backend/tests/test_merge_api.py"
+                },
+                {
+                  "id": "TT-708-02",
+                  "task_id": "T-708",
+                  "description": "Queue position accurately reflects FIFO order",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_api.py"
+                },
+                {
+                  "id": "TT-708-03",
+                  "task_id": "T-708",
+                  "description": "Response includes timing data (queued_at, merged_at)",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_api.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Merge Process",
+      "subsections": [
+        {
+          "title": "Process",
+          "requirements": [
+            {
+              "id": "MG-R010",
+              "priority": "P0",
+              "area": "Process",
+              "text": "When a PR reaches the front of the queue, the merge process shall: 1) Rebase the PR branch onto latest main. 2) Run tests (if CI is configured). 3) If tests pass, merge (squash or regular, configurable). 4) If tests fail, move PR to fixing_comments and notify the author agent.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-702"
+              ],
+              "tests": [
+                {
+                  "id": "TT-702-01",
+                  "task_id": "T-702",
+                  "description": "Clean rebase advances PR status from rebasing to testing",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-02",
+                  "task_id": "T-702",
+                  "description": "Rebase conflict marks PR as blocked and emits notification",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-03",
+                  "task_id": "T-702",
+                  "description": "CI pass triggers merge with configured strategy (squash default)",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-04",
+                  "task_id": "T-702",
+                  "description": "While one PR is merging, no other PR can enter rebasing/testing/merging",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R011",
+              "priority": "P0",
+              "area": "Process",
+              "text": "While one PR is merging, all other agents shall be blocked from pushing to main. They may continue working on their branches but shall not attempt to merge.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-702"
+              ],
+              "tests": [
+                {
+                  "id": "TT-702-01",
+                  "task_id": "T-702",
+                  "description": "Clean rebase advances PR status from rebasing to testing",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-02",
+                  "task_id": "T-702",
+                  "description": "Rebase conflict marks PR as blocked and emits notification",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-03",
+                  "task_id": "T-702",
+                  "description": "CI pass triggers merge with configured strategy (squash default)",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-702-04",
+                  "task_id": "T-702",
+                  "description": "While one PR is merging, no other PR can enter rebasing/testing/merging",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R012",
+              "priority": "P0",
+              "area": "Process",
+              "text": "After a successful merge, the system shall: 1) Notify the next PR in queue to begin its rebase. 2) Notify all other agents with open PRs that main has changed. 3) Update the task status to done. 4) Clean up the merged worktree and branch.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-707"
+              ],
+              "tests": [
+                {
+                  "id": "TT-707-01",
+                  "task_id": "T-707",
+                  "description": "main_updated event is broadcast to all conversation agents after merge",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-02",
+                  "task_id": "T-707",
+                  "description": "Next PR in queue is triggered immediately (no 30s polling delay)",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-03",
+                  "task_id": "T-707",
+                  "description": "Merged task status set to done and worktree cleaned up",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-04",
+                  "task_id": "T-707",
+                  "description": "Merge events are logged as message_event entries for audit trail",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Team Lead as Merge Coordinator",
+      "subsections": [
+        {
+          "title": "Coordinator",
+          "requirements": [
+            {
+              "id": "MG-R020",
+              "priority": "P0",
+              "area": "Coordinator",
+              "text": "The Ollama Team Lead shall serve as the merge coordinator. It shall manage the queue, decide when to trigger rebase/merge, and notify agents. This happens at zero paid-token cost.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-703"
+              ],
+              "tests": [
+                {
+                  "id": "TT-703-01",
+                  "task_id": "T-703",
+                  "description": "Coordinator loop advances next queued PR when no active merge exists",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-02",
+                  "task_id": "T-703",
+                  "description": "Event trigger (PR approved) causes immediate queue evaluation",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-03",
+                  "task_id": "T-703",
+                  "description": "Rebase conflict marks PR as blocked and notifies author + customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-04",
+                  "task_id": "T-703",
+                  "description": "Merge timeout (>10 min) alerts customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R021",
+              "priority": "P0",
+              "area": "Coordinator",
+              "text": "The merge coordinator shall poll for merge readiness at a configurable interval (default: 30 seconds). Polling shall check: is anything currently merging? Is the next PR in queue ready? Are CI checks passing?",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-703"
+              ],
+              "tests": [
+                {
+                  "id": "TT-703-01",
+                  "task_id": "T-703",
+                  "description": "Coordinator loop advances next queued PR when no active merge exists",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-02",
+                  "task_id": "T-703",
+                  "description": "Event trigger (PR approved) causes immediate queue evaluation",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-03",
+                  "task_id": "T-703",
+                  "description": "Rebase conflict marks PR as blocked and notifies author + customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-04",
+                  "task_id": "T-703",
+                  "description": "Merge timeout (>10 min) alerts customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R022",
+              "priority": "P1",
+              "area": "Coordinator",
+              "text": "The merge coordinator shall handle: Rebase conflict (mark PR as blocked, notify author + customer), CI failure after rebase (mark as fixing_comments, notify author), Merge timeout (if > configurable timeout, alert customer).",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-703"
+              ],
+              "tests": [
+                {
+                  "id": "TT-703-01",
+                  "task_id": "T-703",
+                  "description": "Coordinator loop advances next queued PR when no active merge exists",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-02",
+                  "task_id": "T-703",
+                  "description": "Event trigger (PR approved) causes immediate queue evaluation",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-03",
+                  "task_id": "T-703",
+                  "description": "Rebase conflict marks PR as blocked and notifies author + customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                },
+                {
+                  "id": "TT-703-04",
+                  "task_id": "T-703",
+                  "description": "Merge timeout (>10 min) alerts customer",
+                  "type": "unit",
+                  "file": "backend/tests/test_coordinator.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Review-to-Merge Flow",
+      "subsections": [
+        {
+          "title": "Review Flow",
+          "requirements": [
+            {
+              "id": "MG-R030",
+              "priority": "P0",
+              "area": "Review Flow",
+              "text": "The full review-to-merge flow: 1) Agent raises PR (pr_raised). 2) Team Lead assigns reviewer (in_review). 3) Reviewer posts comments or approves. 4) If comments: author fixes (fixing_comments), re-review loop. 5) If approved: PR enters merge queue (merging). 6) Merge coordinator processes queue. 7) On success: done.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-704"
+              ],
+              "tests": [
+                {
+                  "id": "TT-704-01",
+                  "task_id": "T-704",
+                  "description": "PR raised triggers automatic reviewer assignment by Team Lead",
+                  "type": "unit",
+                  "file": "backend/tests/test_review_flow.py"
+                },
+                {
+                  "id": "TT-704-02",
+                  "task_id": "T-704",
+                  "description": "Review comments transition task to fixing_comments status",
+                  "type": "unit",
+                  "file": "backend/tests/test_review_flow.py"
+                },
+                {
+                  "id": "TT-704-03",
+                  "task_id": "T-704",
+                  "description": "Approval enters PR into merge queue with correct position",
+                  "type": "unit",
+                  "file": "backend/tests/test_review_flow.py"
+                },
+                {
+                  "id": "TT-704-04",
+                  "task_id": "T-704",
+                  "description": "Re-review after fixes cycles back through review correctly",
+                  "type": "unit",
+                  "file": "backend/tests/test_review_flow.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R031",
+              "priority": "P0",
+              "area": "Review Flow",
+              "text": "The Team Lead shall assign PR reviewers using the rule: pick a Developer agent that did NOT author the PR and is currently idle or has the lightest workload.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-705"
+              ],
+              "tests": [
+                {
+                  "id": "TT-705-01",
+                  "task_id": "T-705",
+                  "description": "Author agent is never assigned as reviewer of own PR",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                },
+                {
+                  "id": "TT-705-02",
+                  "task_id": "T-705",
+                  "description": "Idle agent with lightest review load is selected as reviewer",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                },
+                {
+                  "id": "TT-705-03",
+                  "task_id": "T-705",
+                  "description": "Single-developer conversation flags PR for customer review",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R032",
+              "priority": "P1",
+              "area": "Review Flow",
+              "text": "If no reviewer is available (e.g., single-developer conversation), the PR shall be flagged for customer review. The customer shall be able to approve or request changes.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-705"
+              ],
+              "tests": [
+                {
+                  "id": "TT-705-01",
+                  "task_id": "T-705",
+                  "description": "Author agent is never assigned as reviewer of own PR",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                },
+                {
+                  "id": "TT-705-02",
+                  "task_id": "T-705",
+                  "description": "Idle agent with lightest review load is selected as reviewer",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                },
+                {
+                  "id": "TT-705-03",
+                  "task_id": "T-705",
+                  "description": "Single-developer conversation flags PR for customer review",
+                  "type": "unit",
+                  "file": "backend/tests/test_reviewer.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Conflict Resolution",
+      "subsections": [
+        {
+          "title": "Conflicts",
+          "requirements": [
+            {
+              "id": "MG-R040",
+              "priority": "P0",
+              "area": "Conflicts",
+              "text": "When a rebase results in merge conflicts, the system shall: 1) Identify the conflicting files. 2) Notify the author agent with conflict details. 3) Author resolves in worktree and force-pushes. 4) Merge process restarts from rebase step.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-706"
+              ],
+              "tests": [
+                {
+                  "id": "TT-706-01",
+                  "task_id": "T-706",
+                  "description": "Conflicting files are correctly identified from git rebase output",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                },
+                {
+                  "id": "TT-706-02",
+                  "task_id": "T-706",
+                  "description": "Author agent receives prompt with conflict details and resolution instructions",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                },
+                {
+                  "id": "TT-706-03",
+                  "task_id": "T-706",
+                  "description": "After agent push, merge process restarts from rebase step",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                },
+                {
+                  "id": "TT-706-04",
+                  "task_id": "T-706",
+                  "description": "Escalation to customer after 3 failed resolution attempts",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R041",
+              "priority": "P1",
+              "area": "Conflicts",
+              "text": "If conflict resolution fails after a configurable number of attempts (default: 3), the system shall escalate to the customer with full conflict context.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-706"
+              ],
+              "tests": [
+                {
+                  "id": "TT-706-01",
+                  "task_id": "T-706",
+                  "description": "Conflicting files are correctly identified from git rebase output",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                },
+                {
+                  "id": "TT-706-02",
+                  "task_id": "T-706",
+                  "description": "Author agent receives prompt with conflict details and resolution instructions",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                },
+                {
+                  "id": "TT-706-03",
+                  "task_id": "T-706",
+                  "description": "After agent push, merge process restarts from rebase step",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                },
+                {
+                  "id": "TT-706-04",
+                  "task_id": "T-706",
+                  "description": "Escalation to customer after 3 failed resolution attempts",
+                  "type": "unit",
+                  "file": "backend/tests/test_conflict_resolver.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Post-Merge Notifications",
+      "subsections": [
+        {
+          "title": "Notifications",
+          "requirements": [
+            {
+              "id": "MG-R050",
+              "priority": "P0",
+              "area": "Notifications",
+              "text": "After each merge to main, the system shall broadcast a main_updated event to all agents in the conversation. Agents with open branches shall be advised to rebase.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-707"
+              ],
+              "tests": [
+                {
+                  "id": "TT-707-01",
+                  "task_id": "T-707",
+                  "description": "main_updated event is broadcast to all conversation agents after merge",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-02",
+                  "task_id": "T-707",
+                  "description": "Next PR in queue is triggered immediately (no 30s polling delay)",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-03",
+                  "task_id": "T-707",
+                  "description": "Merged task status set to done and worktree cleaned up",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-04",
+                  "task_id": "T-707",
+                  "description": "Merge events are logged as message_event entries for audit trail",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R051",
+              "priority": "P1",
+              "area": "Notifications",
+              "text": "The merge coordinator shall trigger automatic rebase of the next PR in queue immediately after a successful merge, without waiting for the polling interval.",
+              "status": "todo",
+              "design_ref": "DES-08",
+              "tasks": [
+                "T-707"
+              ],
+              "tests": [
+                {
+                  "id": "TT-707-01",
+                  "task_id": "T-707",
+                  "description": "main_updated event is broadcast to all conversation agents after merge",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-02",
+                  "task_id": "T-707",
+                  "description": "Next PR in queue is triggered immediately (no 30s polling delay)",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-03",
+                  "task_id": "T-707",
+                  "description": "Merged task status set to done and worktree cleaned up",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-04",
+                  "task_id": "T-707",
+                  "description": "Merge events are logged as message_event entries for audit trail",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Data Model",
+      "subsections": [
+        {
+          "title": "Data",
+          "requirements": [
+            {
+              "id": "MG-R060",
+              "priority": "P0",
+              "area": "Data",
+              "text": "The merge queue shall be stored in a merge_queue table (or equivalent) with: conversation_id, task_id, pr_number, pr_url, author_agent_id, reviewer_agent_id, position, status (queued, rebasing, testing, merging, merged, failed, blocked), queued_at, merged_at.",
+              "status": "todo",
+              "design_ref": "DES-02, DES-08",
+              "tasks": [
+                "T-101",
+                "T-110",
+                "T-115",
+                "T-701"
+              ],
+              "tests": [
+                {
+                  "id": "TT-101-01",
+                  "task_id": "T-101",
+                  "description": "Test that initialize() on a fresh DB creates the merge_queue table with all expected columns",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_merge_queue.py"
+                },
+                {
+                  "id": "TT-101-02",
+                  "task_id": "T-101",
+                  "description": "Test that migration from v3 to v4 adds merge_queue without data loss in existing tables",
+                  "type": "integration",
+                  "file": "backend/tests/test_schema_merge_queue.py"
+                },
+                {
+                  "id": "TT-101-03",
+                  "task_id": "T-101",
+                  "description": "Test that merge_queue FK constraints enforce valid conversation_id, task_id, and author_agent_id references",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_merge_queue.py"
+                },
+                {
+                  "id": "TT-110-01",
+                  "task_id": "T-110",
+                  "description": "Test enqueue auto-assigns position as max(existing)+1 for the conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-110-02",
+                  "task_id": "T-110",
+                  "description": "Test update_status to 'merging' fails if another entry is already 'merging' in the same conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-110-03",
+                  "task_id": "T-110",
+                  "description": "Test list_by_conversation returns entries ordered by position ascending",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-110-04",
+                  "task_id": "T-110",
+                  "description": "Test assign_reviewer updates the reviewer_agent_id field",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-115-01",
+                  "task_id": "T-115",
+                  "description": "Test TaskStatus enum contains all 11 statuses from BE-R021",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                },
+                {
+                  "id": "TT-115-02",
+                  "task_id": "T-115",
+                  "description": "Test VALID_TRANSITIONS allows todo -> design but blocks todo -> implementing",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                },
+                {
+                  "id": "TT-115-03",
+                  "task_id": "T-115",
+                  "description": "Test EventType enum contains all 7 event types from BE-R031",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                },
+                {
+                  "id": "TT-115-04",
+                  "task_id": "T-115",
+                  "description": "Test MergeQueueStatus enum contains all 7 statuses (queued through blocked)",
+                  "type": "unit",
+                  "file": "backend/tests/test_models_enums.py"
+                },
+                {
+                  "id": "TT-701-01",
+                  "task_id": "T-701",
+                  "description": "Queue enforces FIFO: first-approved PR is first to process",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-02",
+                  "task_id": "T-701",
+                  "description": "Only one PR can be in rebasing/testing/merging at any time",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-03",
+                  "task_id": "T-701",
+                  "description": "Customer re-prioritization changes queue order",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                },
+                {
+                  "id": "TT-701-04",
+                  "task_id": "T-701",
+                  "description": "Full status lifecycle: queued -> rebasing -> testing -> merging -> merged",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue.py"
+                }
+              ]
+            },
+            {
+              "id": "MG-R061",
+              "priority": "P1",
+              "area": "Data",
+              "text": "Merge events (queued, rebase started, tests passed/failed, merged, conflict) shall be logged as message_event entries for audit trail and activity viewer display.",
+              "status": "todo",
+              "design_ref": "DES-02, DES-08",
+              "tasks": [
+                "T-101",
+                "T-110",
+                "T-707"
+              ],
+              "tests": [
+                {
+                  "id": "TT-101-01",
+                  "task_id": "T-101",
+                  "description": "Test that initialize() on a fresh DB creates the merge_queue table with all expected columns",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_merge_queue.py"
+                },
+                {
+                  "id": "TT-101-02",
+                  "task_id": "T-101",
+                  "description": "Test that migration from v3 to v4 adds merge_queue without data loss in existing tables",
+                  "type": "integration",
+                  "file": "backend/tests/test_schema_merge_queue.py"
+                },
+                {
+                  "id": "TT-101-03",
+                  "task_id": "T-101",
+                  "description": "Test that merge_queue FK constraints enforce valid conversation_id, task_id, and author_agent_id references",
+                  "type": "unit",
+                  "file": "backend/tests/test_schema_merge_queue.py"
+                },
+                {
+                  "id": "TT-110-01",
+                  "task_id": "T-110",
+                  "description": "Test enqueue auto-assigns position as max(existing)+1 for the conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-110-02",
+                  "task_id": "T-110",
+                  "description": "Test update_status to 'merging' fails if another entry is already 'merging' in the same conversation",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-110-03",
+                  "task_id": "T-110",
+                  "description": "Test list_by_conversation returns entries ordered by position ascending",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-110-04",
+                  "task_id": "T-110",
+                  "description": "Test assign_reviewer updates the reviewer_agent_id field",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_queue_repo.py"
+                },
+                {
+                  "id": "TT-707-01",
+                  "task_id": "T-707",
+                  "description": "main_updated event is broadcast to all conversation agents after merge",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-02",
+                  "task_id": "T-707",
+                  "description": "Next PR in queue is triggered immediately (no 30s polling delay)",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-03",
+                  "task_id": "T-707",
+                  "description": "Merged task status set to done and worktree cleaned up",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                },
+                {
+                  "id": "TT-707-04",
+                  "task_id": "T-707",
+                  "description": "Merge events are logged as message_event entries for audit trail",
+                  "type": "unit",
+                  "file": "backend/tests/test_merge_process.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

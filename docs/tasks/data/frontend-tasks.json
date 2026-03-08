@@ -1,0 +1,969 @@
+[
+  {
+    "id": "T-301",
+    "title": "ChatMessage: message type variants and agent colors",
+    "description": "Extend the existing ChatMessage component to support all message types: chat_message, debate_turn, phase_change, system_notice, steer. Add hash-based agent accent colors (HSL from agent ID). Add role badge next to agent name. Add markdown rendering via react-markdown with remark-gfm. Acceptance: each message type renders with distinct styling; agent colors are deterministic; markdown code blocks, lists, bold, and links render correctly.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R010", "UI-R011", "UI-R012"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/features/chat/ChatMessage.tsx",
+        "frontend/src/features/chat/ChatMessage.css",
+        "frontend/src/features/chat/types.ts"
+      ],
+      "directories": ["frontend/src/features/chat/"]
+    },
+    "complexity": "L",
+    "parallel_group": "ui-chat",
+    "tests": [
+      {
+        "id": "TT-301-01",
+        "description": "Renders agent message with avatar showing first letter and hash-based color",
+        "type": "unit",
+        "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+      },
+      {
+        "id": "TT-301-02",
+        "description": "Renders markdown content (code block, bold, link) via react-markdown",
+        "type": "unit",
+        "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+      },
+      {
+        "id": "TT-301-03",
+        "description": "Renders phase_change type as a styled divider with phase label",
+        "type": "unit",
+        "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+      },
+      {
+        "id": "TT-301-04",
+        "description": "Renders steer message with highlight border and 'You' sender label",
+        "type": "unit",
+        "file": "frontend/src/features/chat/__tests__/ChatMessage.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-302",
+    "title": "ChatTimeline: auto-scroll, pagination, new-message badge",
+    "description": "Enhance ChatTimeline with smart auto-scroll: auto-scroll when user is at bottom, disable when scrolled up, show floating 'New messages' badge. Add cursor-based pagination (scroll-up loads older messages via ?after= cursor). Acceptance: auto-scroll toggles based on scroll position; badge appears when new messages arrive while scrolled up; clicking badge scrolls to bottom; pagination loads older messages on scroll-up.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R013"],
+    "dependencies": ["T-301"],
+    "scope": {
+      "files": [
+        "frontend/src/features/chat/ChatTimeline.tsx",
+        "frontend/src/features/chat/ChatTimeline.css"
+      ],
+      "directories": ["frontend/src/features/chat/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-chat",
+    "tests": [
+      {
+        "id": "TT-302-01",
+        "description": "Auto-scrolls to bottom when new message arrives and user is at bottom",
+        "type": "unit",
+        "file": "frontend/src/features/chat/__tests__/ChatTimeline.test.tsx"
+      },
+      {
+        "id": "TT-302-02",
+        "description": "Shows 'New messages' badge when user scrolls up and new message arrives",
+        "type": "unit",
+        "file": "frontend/src/features/chat/__tests__/ChatTimeline.test.tsx"
+      },
+      {
+        "id": "TT-302-03",
+        "description": "Clicking badge scrolls to latest message and hides badge",
+        "type": "unit",
+        "file": "frontend/src/features/chat/__tests__/ChatTimeline.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-303",
+    "title": "Composer: @mention autocomplete and message routing",
+    "description": "Extend the existing Composer to support @mention autocomplete. Typing '@' triggers a dropdown of agents filtered by name. Selecting an agent inserts @AgentName into the text. On send, parse @mentions to set target_agent_id (directed message) or broadcast if no mention. Shift+Enter inserts newline, Enter sends. Acceptance: dropdown appears on '@' keystroke; filtering works; selecting inserts mention; send payload includes target_agent_id when mentioned; broadcast when no mention.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R020", "UI-R021", "UI-R022"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/features/composer/Composer.tsx",
+        "frontend/src/features/composer/Composer.css",
+        "frontend/src/features/composer/types.ts"
+      ],
+      "directories": ["frontend/src/features/composer/"]
+    },
+    "complexity": "L",
+    "parallel_group": "ui-composer",
+    "tests": [
+      {
+        "id": "TT-303-01",
+        "description": "Shows autocomplete dropdown when user types '@' with agent list",
+        "type": "unit",
+        "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+      },
+      {
+        "id": "TT-303-02",
+        "description": "Filters dropdown as user types after '@' (e.g., '@ri' shows only 'Rick')",
+        "type": "unit",
+        "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+      },
+      {
+        "id": "TT-303-03",
+        "description": "Selecting an agent inserts @AgentName and closes dropdown",
+        "type": "unit",
+        "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+      },
+      {
+        "id": "TT-303-04",
+        "description": "Send with @mention calls onSend with target_agent_id; send without mention calls with broadcast",
+        "type": "unit",
+        "file": "frontend/src/features/composer/__tests__/Composer.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-304",
+    "title": "PhaseBanner: sticky debate phase indicator",
+    "description": "Create a PhaseBanner component that shows the current phase name, round counter (e.g., 'Debate -- Round 5/20'), and a speaking indicator when an agent is generating a response. Sticky-positioned at top of ChatPane. Acceptance: banner shows phase name and round; speaking indicator shows agent name and animated dots; banner is sticky and visible while scrolling chat.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R030"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/features/debate/PhaseBanner.tsx",
+        "frontend/src/features/debate/PhaseBanner.css",
+        "frontend/src/features/debate/types.ts"
+      ],
+      "directories": ["frontend/src/features/debate/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-debate",
+    "tests": [
+      {
+        "id": "TT-304-01",
+        "description": "Renders phase name and round counter (e.g., 'Debate -- Round 5/20')",
+        "type": "unit",
+        "file": "frontend/src/features/debate/__tests__/PhaseBanner.test.tsx"
+      },
+      {
+        "id": "TT-304-02",
+        "description": "Shows speaking indicator with agent name when an agent is generating",
+        "type": "unit",
+        "file": "frontend/src/features/debate/__tests__/PhaseBanner.test.tsx"
+      },
+      {
+        "id": "TT-304-03",
+        "description": "Hides speaking indicator when no agent is speaking",
+        "type": "unit",
+        "file": "frontend/src/features/debate/__tests__/PhaseBanner.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-305",
+    "title": "ClarificationBanner: agent needs-input notification",
+    "description": "Create a ClarificationBanner component that appears when an agent @mentions the customer for clarification. Amber banner with 'Agent X needs your input' text and a 'View Question' button that scrolls to the relevant message. Acceptance: banner appears with correct agent name; clicking 'View Question' scrolls chat to the message; banner is dismissible.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R031"],
+    "dependencies": ["T-304"],
+    "scope": {
+      "files": [
+        "frontend/src/features/debate/ClarificationBanner.tsx",
+        "frontend/src/features/debate/ClarificationBanner.css"
+      ],
+      "directories": ["frontend/src/features/debate/"]
+    },
+    "complexity": "S",
+    "parallel_group": "ui-debate",
+    "tests": [
+      {
+        "id": "TT-305-01",
+        "description": "Renders amber banner with agent name when clarification is needed",
+        "type": "unit",
+        "file": "frontend/src/features/debate/__tests__/ClarificationBanner.test.tsx"
+      },
+      {
+        "id": "TT-305-02",
+        "description": "Clicking 'View Question' calls scrollToMessage callback with message ID",
+        "type": "unit",
+        "file": "frontend/src/features/debate/__tests__/ClarificationBanner.test.tsx"
+      },
+      {
+        "id": "TT-305-03",
+        "description": "Banner is dismissible and does not render when no clarification is pending",
+        "type": "unit",
+        "file": "frontend/src/features/debate/__tests__/ClarificationBanner.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-306",
+    "title": "GateControls: approve, steer, decide buttons",
+    "description": "Create a GateControls component with three customer action buttons: 'Approve & Advance' (approves current agreement, triggers phase transition), 'Steer' (focuses the composer for steering input), 'Decide' (ends debate, lets customer pick direction). Buttons call respective API actions (gate_approval event). Acceptance: three buttons render during debate phase; Approve calls gate approval API; Steer focuses composer; Decide opens decision modal/prompt.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R032"],
+    "dependencies": ["T-304"],
+    "scope": {
+      "files": [
+        "frontend/src/features/debate/GateControls.tsx",
+        "frontend/src/features/debate/GateControls.css"
+      ],
+      "directories": ["frontend/src/features/debate/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-debate",
+    "tests": [
+      {
+        "id": "TT-306-01",
+        "description": "Renders Approve, Steer, and Decide buttons",
+        "type": "unit",
+        "file": "frontend/src/features/debate/__tests__/GateControls.test.tsx"
+      },
+      {
+        "id": "TT-306-02",
+        "description": "Clicking Approve calls onApprove callback",
+        "type": "unit",
+        "file": "frontend/src/features/debate/__tests__/GateControls.test.tsx"
+      },
+      {
+        "id": "TT-306-03",
+        "description": "Clicking Steer calls onSteer callback to focus composer",
+        "type": "unit",
+        "file": "frontend/src/features/debate/__tests__/GateControls.test.tsx"
+      },
+      {
+        "id": "TT-306-04",
+        "description": "Clicking Decide calls onDecide callback",
+        "type": "unit",
+        "file": "frontend/src/features/debate/__tests__/GateControls.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-307",
+    "title": "KanbanBoard: dashboard columns and horizontal scroll",
+    "description": "Create a KanbanBoard component with columns for each task status: Todo, Design, TDD, Implementing, Testing, PR Raised, In Review, Fixing Comments, Merging, Done. Columns scroll horizontally. Each column header shows task count. Empty columns are shown but dimmed. Acceptance: all 10 columns render; task count in headers; horizontal scroll works; empty columns are visually dimmed.",
+    "design_refs": ["DES-04"],
+    "requirements": ["UI-R050"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/features/dashboard/KanbanBoard.tsx",
+        "frontend/src/features/dashboard/KanbanBoard.css",
+        "frontend/src/features/dashboard/types.ts"
+      ],
+      "directories": ["frontend/src/features/dashboard/"]
+    },
+    "complexity": "L",
+    "parallel_group": "ui-dashboard",
+    "tests": [
+      {
+        "id": "TT-307-01",
+        "description": "Renders all 10 status columns with correct headers",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+      },
+      {
+        "id": "TT-307-02",
+        "description": "Shows task count in each column header",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+      },
+      {
+        "id": "TT-307-03",
+        "description": "Empty columns have dimmed styling",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+      },
+      {
+        "id": "TT-307-04",
+        "description": "Tasks render in the correct column based on status",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/KanbanBoard.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-308",
+    "title": "TaskCard: dashboard task card component",
+    "description": "Create a TaskCard component displaying: task title (truncated with tooltip), agent badge (avatar + name, color-coded), PR link (clickable PR number), reviewer badge, and left-border accent color matching column status. Clicking opens TaskDetailModal. Acceptance: title truncates with tooltip; agent badge shows with color; PR link opens in new tab; status accent border is correct.",
+    "design_refs": ["DES-04"],
+    "requirements": ["UI-R051"],
+    "dependencies": ["T-307"],
+    "scope": {
+      "files": [
+        "frontend/src/features/dashboard/TaskCard.tsx",
+        "frontend/src/features/dashboard/TaskCard.css"
+      ],
+      "directories": ["frontend/src/features/dashboard/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-dashboard",
+    "tests": [
+      {
+        "id": "TT-308-01",
+        "description": "Renders task title, agent badge, and status accent border",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+      },
+      {
+        "id": "TT-308-02",
+        "description": "Long title is truncated with tooltip showing full text",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+      },
+      {
+        "id": "TT-308-03",
+        "description": "PR link renders as clickable link opening in new tab when PR exists",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+      },
+      {
+        "id": "TT-308-04",
+        "description": "Clicking card calls onClick handler with task ID",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/TaskCard.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-309",
+    "title": "TaskDetailModal: task detail overlay",
+    "description": "Create a TaskDetailModal component as a modal overlay showing: header (title, status badge, priority badge), description (markdown-rendered), scope (file list), dependencies (with status indicators), assigned agent (link to activity viewer), PR status (number, URL, CI status, review status, merge queue position), and activity log (filtered timeline). Read-only. Acceptance: modal opens with full task details; markdown description renders; dependencies show status; PR section shows all fields; modal closes on overlay click or X button.",
+    "design_refs": ["DES-04"],
+    "requirements": ["UI-R054"],
+    "dependencies": ["T-308"],
+    "scope": {
+      "files": [
+        "frontend/src/features/dashboard/TaskDetailModal.tsx",
+        "frontend/src/features/dashboard/TaskDetailModal.css"
+      ],
+      "directories": ["frontend/src/features/dashboard/"]
+    },
+    "complexity": "L",
+    "parallel_group": "ui-dashboard",
+    "tests": [
+      {
+        "id": "TT-309-01",
+        "description": "Renders task title, status badge, and priority in header",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/TaskDetailModal.test.tsx"
+      },
+      {
+        "id": "TT-309-02",
+        "description": "Renders markdown description with code blocks and lists",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/TaskDetailModal.test.tsx"
+      },
+      {
+        "id": "TT-309-03",
+        "description": "Shows dependencies with their current status indicators",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/TaskDetailModal.test.tsx"
+      },
+      {
+        "id": "TT-309-04",
+        "description": "Closes modal when overlay is clicked or X button is pressed",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/TaskDetailModal.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-310",
+    "title": "AgentStatusBar: compact agent status strip",
+    "description": "Create an AgentStatusBar component that shows a compact strip below/above the Kanban board with each agent's current state: status dot (green=idle, blue=running, amber=blocked, gray=offline), agent name, provider, and current task title. Clicking an agent opens their activity viewer. Acceptance: all agents render with correct status dot colors; current task shows when assigned; clicking agent calls onSelectAgent.",
+    "design_refs": ["DES-04"],
+    "requirements": ["UI-R052"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/features/dashboard/AgentStatusBar.tsx",
+        "frontend/src/features/dashboard/AgentStatusBar.css"
+      ],
+      "directories": ["frontend/src/features/dashboard/"]
+    },
+    "complexity": "S",
+    "parallel_group": "ui-dashboard",
+    "tests": [
+      {
+        "id": "TT-310-01",
+        "description": "Renders all agents with name, provider, and status dot",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/AgentStatusBar.test.tsx"
+      },
+      {
+        "id": "TT-310-02",
+        "description": "Status dot has correct color class for each status (idle=green, running=blue, blocked=amber, offline=gray)",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/AgentStatusBar.test.tsx"
+      },
+      {
+        "id": "TT-310-03",
+        "description": "Shows current task title when agent has an assigned task",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/AgentStatusBar.test.tsx"
+      },
+      {
+        "id": "TT-310-04",
+        "description": "Clicking an agent row calls onSelectAgent with agent ID",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/AgentStatusBar.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-311",
+    "title": "MergeQueue: merge queue display panel",
+    "description": "Create a MergeQueue component showing an ordered list of PRs waiting to merge. Each entry shows: position number, status icon (waiting/rebasing/testing/merging), PR number, task title, author agent, and current status text. The currently-merging PR is highlighted. Acceptance: entries render in order; status icons match state; active PR is highlighted; empty state shows 'No PRs in queue'.",
+    "design_refs": ["DES-04"],
+    "requirements": ["UI-R053"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/features/dashboard/MergeQueue.tsx",
+        "frontend/src/features/dashboard/MergeQueue.css"
+      ],
+      "directories": ["frontend/src/features/dashboard/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-dashboard",
+    "tests": [
+      {
+        "id": "TT-311-01",
+        "description": "Renders merge queue entries in order with position, PR number, and task title",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/MergeQueue.test.tsx"
+      },
+      {
+        "id": "TT-311-02",
+        "description": "Currently-merging PR has highlighted styling",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/MergeQueue.test.tsx"
+      },
+      {
+        "id": "TT-311-03",
+        "description": "Shows 'No PRs in queue' when list is empty",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/MergeQueue.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-312",
+    "title": "AgentRoster: enhanced roster with status, task, and activity viewer toggle",
+    "description": "Enhance the existing AgentRoster and AgentCard to show: role badge (Analyst/Team Lead/Developer), provider icon, status dot (green/blue/amber/gray), and current task title if assigned. Clicking an agent opens their activity viewer in the right pane (replacing the roster). Add 'Back to Roster' navigation. Acceptance: agent cards show role, provider icon, status, and current task; clicking opens activity viewer; back button returns to roster.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R060", "UI-R061"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/features/agents/AgentRoster.tsx",
+        "frontend/src/features/agents/AgentCard.tsx",
+        "frontend/src/features/agents/AgentCard.css",
+        "frontend/src/features/agents/AgentRoster.css",
+        "frontend/src/features/agents/types.ts"
+      ],
+      "directories": ["frontend/src/features/agents/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-chat",
+    "tests": [
+      {
+        "id": "TT-312-01",
+        "description": "Agent card shows role badge, provider icon, status dot, and current task",
+        "type": "unit",
+        "file": "frontend/src/features/agents/__tests__/AgentCard.test.tsx"
+      },
+      {
+        "id": "TT-312-02",
+        "description": "Clicking agent card calls onSelectAgent to open activity viewer",
+        "type": "unit",
+        "file": "frontend/src/features/agents/__tests__/AgentRoster.test.tsx"
+      },
+      {
+        "id": "TT-312-03",
+        "description": "Back to Roster button calls onBackToRoster callback",
+        "type": "unit",
+        "file": "frontend/src/features/agents/__tests__/AgentRoster.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-313",
+    "title": "Add/Remove agent form in roster",
+    "description": "Enhance the existing agent editor to work as a proper form within the roster panel. Add agent form collects: name, role, provider, model selection. Remove agent button detaches agent from conversation. Acceptance: form validates required fields; create calls API and adds agent to roster; remove calls API and removes from roster; form closes on save/cancel.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R062"],
+    "dependencies": ["T-312"],
+    "scope": {
+      "files": [
+        "frontend/src/features/agents/AgentForm.tsx",
+        "frontend/src/features/agents/AgentForm.css"
+      ],
+      "directories": ["frontend/src/features/agents/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-chat",
+    "tests": [
+      {
+        "id": "TT-313-01",
+        "description": "Add agent form renders name, role, provider, and model fields",
+        "type": "unit",
+        "file": "frontend/src/features/agents/__tests__/AgentForm.test.tsx"
+      },
+      {
+        "id": "TT-313-02",
+        "description": "Form validates that name and model are required before submit",
+        "type": "unit",
+        "file": "frontend/src/features/agents/__tests__/AgentForm.test.tsx"
+      },
+      {
+        "id": "TT-313-03",
+        "description": "Submitting calls onSave with form data; cancel calls onCancel",
+        "type": "unit",
+        "file": "frontend/src/features/agents/__tests__/AgentForm.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-314",
+    "title": "ActivityViewer: terminal-like agent activity stream",
+    "description": "Create an ActivityViewer component with terminal aesthetic (dark background, monospace font, green/amber text). Renders event types: thinking (dimmed italic), text (normal), tool_call (highlighted with tool name badge), tool_result (indented), file_edit (filename + diff), shell_command (command + output), error (red text). Auto-scroll to bottom with 'Resume' button when scrolled up. Replaces roster in right pane when active. Acceptance: terminal styling applied; all event types render distinctly; auto-scroll works with resume button; back button returns to roster.",
+    "design_refs": ["DES-04"],
+    "requirements": ["UI-R040", "UI-R041", "UI-R042", "UI-R043"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/features/activity/ActivityViewer.tsx",
+        "frontend/src/features/activity/ActivityViewer.css",
+        "frontend/src/features/activity/types.ts",
+        "frontend/src/features/activity/ActivityEvent.tsx"
+      ],
+      "directories": ["frontend/src/features/activity/"]
+    },
+    "complexity": "L",
+    "parallel_group": "ui-activity",
+    "tests": [
+      {
+        "id": "TT-314-01",
+        "description": "Renders with terminal aesthetic: dark background, monospace font",
+        "type": "unit",
+        "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+      },
+      {
+        "id": "TT-314-02",
+        "description": "Renders thinking event as dimmed italic text",
+        "type": "unit",
+        "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+      },
+      {
+        "id": "TT-314-03",
+        "description": "Renders tool_call event with highlighted tool name badge and tool_result indented below",
+        "type": "unit",
+        "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+      },
+      {
+        "id": "TT-314-04",
+        "description": "Shows Resume button when user scrolls up; clicking it re-enables auto-scroll",
+        "type": "unit",
+        "file": "frontend/src/features/activity/__tests__/ActivityViewer.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-315",
+    "title": "ViewSwitcher: Chat/Dashboard toggle in center pane",
+    "description": "Add a view toggle to the TopBar or center pane that switches the main content between ChatPane and DashboardPane (KanbanBoard). The sidebar (HistoryPane) and right pane (IntelligencePane/Roster) persist across views. Acceptance: toggle renders with Chat and Dashboard options; switching shows the correct pane; current view is visually indicated; sidebar and right pane remain visible.",
+    "design_refs": ["DES-03", "DES-04"],
+    "requirements": ["UI-R001", "UI-R002"],
+    "dependencies": ["T-307"],
+    "scope": {
+      "files": [
+        "frontend/src/layout/TopBar.tsx",
+        "frontend/src/layout/TopBar.css",
+        "frontend/src/layout/ChatPane.tsx",
+        "frontend/src/layout/AppShell.tsx"
+      ],
+      "directories": ["frontend/src/layout/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-chat",
+    "tests": [
+      {
+        "id": "TT-315-01",
+        "description": "Renders Chat and Dashboard toggle buttons in TopBar",
+        "type": "unit",
+        "file": "frontend/src/layout/__tests__/TopBar.test.tsx"
+      },
+      {
+        "id": "TT-315-02",
+        "description": "Clicking Dashboard shows KanbanBoard in center pane",
+        "type": "integration",
+        "file": "frontend/src/layout/__tests__/AppShell.test.tsx"
+      },
+      {
+        "id": "TT-315-03",
+        "description": "Clicking Chat returns to ChatPane with messages preserved",
+        "type": "integration",
+        "file": "frontend/src/layout/__tests__/AppShell.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-316",
+    "title": "ConversationSidebar: conversation list with create/switch/delete",
+    "description": "Enhance the existing HistoryPane to fully implement the conversation sidebar: sorted by updated_at DESC, each entry shows title + phase badge + relative time, create button opens dialog for title + project directory, active conversation highlighted, click to switch (calls /conversations/select), right-click context menu for delete. Acceptance: conversations sorted by recency; phase badge shows; create dialog works; active highlight; context menu delete.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R070", "UI-R071", "UI-R072"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/layout/HistoryPane.tsx",
+        "frontend/src/features/history/ConversationItem.tsx",
+        "frontend/src/features/history/ConversationList.tsx",
+        "frontend/src/features/history/types.ts"
+      ],
+      "directories": ["frontend/src/features/history/", "frontend/src/layout/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-chat",
+    "tests": [
+      {
+        "id": "TT-316-01",
+        "description": "Renders conversations sorted by updated_at descending",
+        "type": "unit",
+        "file": "frontend/src/features/history/__tests__/ConversationList.test.tsx"
+      },
+      {
+        "id": "TT-316-02",
+        "description": "Active conversation has highlighted styling",
+        "type": "unit",
+        "file": "frontend/src/features/history/__tests__/ConversationItem.test.tsx"
+      },
+      {
+        "id": "TT-316-03",
+        "description": "Clicking create opens dialog; submitting creates conversation",
+        "type": "integration",
+        "file": "frontend/src/features/history/__tests__/ConversationList.test.tsx"
+      },
+      {
+        "id": "TT-316-04",
+        "description": "Right-click shows context menu with delete option",
+        "type": "unit",
+        "file": "frontend/src/features/history/__tests__/ConversationItem.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-317",
+    "title": "ToastNotification: in-app notification system",
+    "description": "Create a ToastNotification system with a NotificationProvider context and useNotification hook. Toast types: clarification (amber), max_rounds (warning/yellow), pr_ready (info/blue), agent_blocked (alert/red). Toasts appear in top-right corner, auto-dismiss after 8 seconds, and are clickable (navigate to relevant context). Acceptance: toasts render in top-right; auto-dismiss after 8s; click navigates; correct color per type; multiple toasts stack.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R080", "UI-R081"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/features/notifications/ToastNotification.tsx",
+        "frontend/src/features/notifications/ToastNotification.css",
+        "frontend/src/features/notifications/NotificationProvider.tsx",
+        "frontend/src/features/notifications/useNotification.ts",
+        "frontend/src/features/notifications/types.ts"
+      ],
+      "directories": ["frontend/src/features/notifications/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-activity",
+    "tests": [
+      {
+        "id": "TT-317-01",
+        "description": "Renders toast with correct color styling based on notification type",
+        "type": "unit",
+        "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+      },
+      {
+        "id": "TT-317-02",
+        "description": "Toast auto-dismisses after 8 seconds",
+        "type": "unit",
+        "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+      },
+      {
+        "id": "TT-317-03",
+        "description": "Clicking toast calls onClick handler for navigation",
+        "type": "unit",
+        "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+      },
+      {
+        "id": "TT-317-04",
+        "description": "Multiple toasts stack vertically in top-right corner",
+        "type": "unit",
+        "file": "frontend/src/features/notifications/__tests__/ToastNotification.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-318",
+    "title": "useSSE: SSE hook for real-time event streaming",
+    "description": "Create a useSSE custom hook that connects to an SSE endpoint, parses events, handles reconnection with Last-Event-ID, and exposes events via state. Hook accepts URL and optional event type filters. Handles connection lifecycle (open, error, reconnect). Used by ActivityViewer and notification system. Acceptance: connects to SSE endpoint; parses event data; reconnects on error with Last-Event-ID; exposes events array and connection status; cleanup on unmount.",
+    "design_refs": ["DES-04"],
+    "requirements": ["UI-R040"],
+    "dependencies": [],
+    "scope": {
+      "files": [
+        "frontend/src/hooks/useSSE.ts",
+        "frontend/src/hooks/types.ts"
+      ],
+      "directories": ["frontend/src/hooks/"]
+    },
+    "complexity": "L",
+    "parallel_group": "ui-activity",
+    "tests": [
+      {
+        "id": "TT-318-01",
+        "description": "Connects to SSE endpoint and receives parsed events",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+      },
+      {
+        "id": "TT-318-02",
+        "description": "Reconnects with Last-Event-ID header after connection error",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+      },
+      {
+        "id": "TT-318-03",
+        "description": "Closes EventSource on component unmount (cleanup)",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+      },
+      {
+        "id": "TT-318-04",
+        "description": "Exposes connection status (connecting, open, closed, error)",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useSSE.test.ts"
+      }
+    ]
+  },
+  {
+    "id": "T-319",
+    "title": "useConversationMessages: real-time message hook with SSE",
+    "description": "Create a useConversationMessages hook that combines initial message fetch (GET /api/conversations/{id}/messages) with SSE streaming for new messages. Merges API messages with SSE events. Handles conversation switching (cleanup old SSE, start new). Acceptance: fetches initial messages on mount; merges SSE messages in real-time; switches SSE connection on conversation change; deduplicates messages by ID.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R010", "UI-R013"],
+    "dependencies": ["T-318"],
+    "scope": {
+      "files": [
+        "frontend/src/hooks/useConversationMessages.ts"
+      ],
+      "directories": ["frontend/src/hooks/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-activity",
+    "tests": [
+      {
+        "id": "TT-319-01",
+        "description": "Fetches initial messages from API on mount",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+      },
+      {
+        "id": "TT-319-02",
+        "description": "Appends new messages from SSE stream in real-time",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+      },
+      {
+        "id": "TT-319-03",
+        "description": "Deduplicates messages by ID when SSE delivers already-fetched messages",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useConversationMessages.test.ts"
+      }
+    ]
+  },
+  {
+    "id": "T-320",
+    "title": "useAgentActivity: SSE hook for per-agent activity stream",
+    "description": "Create a useAgentActivity hook that connects to GET /api/agents/{id}/activity SSE endpoint and streams activity events (thinking, text, tool_call, tool_result, file_edit, shell_command, error). Exposes events array, connection status, and clear function. Accepts agent ID and auto-connects when non-null. Acceptance: connects to agent activity SSE; parses typed events; auto-disconnects when agent ID changes; clears events on agent switch.",
+    "design_refs": ["DES-04"],
+    "requirements": ["UI-R040", "UI-R042"],
+    "dependencies": ["T-318"],
+    "scope": {
+      "files": [
+        "frontend/src/hooks/useAgentActivity.ts"
+      ],
+      "directories": ["frontend/src/hooks/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-activity",
+    "tests": [
+      {
+        "id": "TT-320-01",
+        "description": "Connects to agent activity SSE endpoint when agent ID is provided",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+      },
+      {
+        "id": "TT-320-02",
+        "description": "Parses typed activity events (thinking, tool_call, error)",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+      },
+      {
+        "id": "TT-320-03",
+        "description": "Disconnects and clears events when agent ID changes",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useAgentActivity.test.ts"
+      }
+    ]
+  },
+  {
+    "id": "T-321",
+    "title": "useNotifications: SSE-driven notification hook",
+    "description": "Create a useNotifications hook that listens to the conversation SSE stream for notification-triggering events (agent @mention of customer, max_rounds reached, PR ready, agent blocked). Dispatches notifications via the NotificationProvider context. Acceptance: detects @mention events and dispatches clarification notification; detects max_rounds and dispatches warning; detects PR ready and dispatches info; integrates with ToastNotification system.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R080", "UI-R031"],
+    "dependencies": ["T-317", "T-318"],
+    "scope": {
+      "files": [
+        "frontend/src/hooks/useNotifications.ts"
+      ],
+      "directories": ["frontend/src/hooks/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-activity",
+    "tests": [
+      {
+        "id": "TT-321-01",
+        "description": "Dispatches clarification notification when agent @mentions customer",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useNotifications.test.ts"
+      },
+      {
+        "id": "TT-321-02",
+        "description": "Dispatches warning notification when max_rounds is reached",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useNotifications.test.ts"
+      },
+      {
+        "id": "TT-321-03",
+        "description": "Dispatches info notification when PR is ready",
+        "type": "unit",
+        "file": "frontend/src/hooks/__tests__/useNotifications.test.ts"
+      }
+    ]
+  },
+  {
+    "id": "T-322",
+    "title": "RightPane state machine: roster vs activity viewer toggle",
+    "description": "Implement the right pane state management in IntelligencePane to toggle between AgentRoster view and ActivityViewer view. Clicking an agent in roster switches to ActivityViewer for that agent. 'Back to Roster' button returns to roster. When in dashboard mode, right pane shows activity viewer or agent status. Acceptance: right pane defaults to roster; clicking agent switches to activity viewer; back button returns to roster; selected agent ID is passed to activity viewer.",
+    "design_refs": ["DES-03", "DES-04"],
+    "requirements": ["UI-R041", "UI-R061"],
+    "dependencies": ["T-312", "T-314"],
+    "scope": {
+      "files": [
+        "frontend/src/layout/IntelligencePane.tsx",
+        "frontend/src/layout/IntelligencePane.css"
+      ],
+      "directories": ["frontend/src/layout/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-chat",
+    "tests": [
+      {
+        "id": "TT-322-01",
+        "description": "Defaults to showing AgentRoster in right pane",
+        "type": "unit",
+        "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+      },
+      {
+        "id": "TT-322-02",
+        "description": "Switches to ActivityViewer when an agent is selected",
+        "type": "integration",
+        "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+      },
+      {
+        "id": "TT-322-03",
+        "description": "Back to Roster button returns to roster view",
+        "type": "integration",
+        "file": "frontend/src/layout/__tests__/IntelligencePane.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-323",
+    "title": "DashboardPane: integrated dashboard with Kanban, status bar, merge queue",
+    "description": "Create a DashboardPane component that composes KanbanBoard, AgentStatusBar, and MergeQueue into the center pane layout. Fetches task data and passes to children. Handles task card click to open TaskDetailModal. Acceptance: all three sub-components render; task data flows correctly; clicking card opens modal; layout is responsive with horizontal scroll for Kanban.",
+    "design_refs": ["DES-04"],
+    "requirements": ["UI-R050", "UI-R052", "UI-R053"],
+    "dependencies": ["T-307", "T-310", "T-311"],
+    "scope": {
+      "files": [
+        "frontend/src/features/dashboard/DashboardPane.tsx",
+        "frontend/src/features/dashboard/DashboardPane.css"
+      ],
+      "directories": ["frontend/src/features/dashboard/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-dashboard",
+    "tests": [
+      {
+        "id": "TT-323-01",
+        "description": "Renders KanbanBoard, AgentStatusBar, and MergeQueue sections",
+        "type": "integration",
+        "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+      },
+      {
+        "id": "TT-323-02",
+        "description": "Opens TaskDetailModal when a task card is clicked",
+        "type": "integration",
+        "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+      },
+      {
+        "id": "TT-323-03",
+        "description": "Renders empty state when no tasks exist",
+        "type": "unit",
+        "file": "frontend/src/features/dashboard/__tests__/DashboardPane.test.tsx"
+      }
+    ]
+  },
+  {
+    "id": "T-324",
+    "title": "Responsive layout: desktop-first with mobile fallback",
+    "description": "Add responsive CSS and layout adjustments to make the four-zone layout work on desktop browsers (P0) with a reasonable fallback on tablet/phone. On narrow screens: collapse sidebar to icon-only, stack right pane below chat, and make Kanban scroll vertically. Acceptance: layout is usable at 1280px+ (desktop); sidebar collapses at <1024px; right pane stacks below at <768px; no horizontal overflow at any breakpoint.",
+    "design_refs": ["DES-03"],
+    "requirements": ["UI-R003"],
+    "dependencies": ["T-315"],
+    "scope": {
+      "files": [
+        "frontend/src/layout/AppShell.css",
+        "frontend/src/layout/HistoryPane.css"
+      ],
+      "directories": ["frontend/src/layout/"]
+    },
+    "complexity": "M",
+    "parallel_group": "ui-chat",
+    "tests": [
+      {
+        "id": "TT-324-01",
+        "description": "Four-zone layout renders correctly at 1280px viewport width",
+        "type": "integration",
+        "file": "frontend/src/layout/__tests__/AppShell.responsive.test.tsx"
+      },
+      {
+        "id": "TT-324-02",
+        "description": "Sidebar collapses to icon-only at <1024px viewport",
+        "type": "integration",
+        "file": "frontend/src/layout/__tests__/AppShell.responsive.test.tsx"
+      },
+      {
+        "id": "TT-324-03",
+        "description": "No horizontal overflow at 768px viewport width",
+        "type": "integration",
+        "file": "frontend/src/layout/__tests__/AppShell.responsive.test.tsx"
+      }
+    ]
+  }
+]

@@ -1,0 +1,92 @@
+{
+  "id": "DES-03",
+  "title": "Chat & Debate UI",
+  "date": "2026-03-08",
+  "requirements": ["UI-R001", "UI-R002", "UI-R003", "UI-R010", "UI-R011", "UI-R012", "UI-R013", "UI-R020", "UI-R021", "UI-R022", "UI-R030", "UI-R031", "UI-R032", "UI-R060", "UI-R061", "UI-R062", "UI-R070", "UI-R071", "UI-R072", "UI-R080", "UI-R081"],
+  "sections": [
+    {
+      "title": "Overview",
+      "content": "The Chat View is the primary interaction surface — a Slack-like group conversation where the customer and agents communicate. It handles both the debate phase (structured round-robin discussion) and general messaging. The UI is built with React 19 components, styled with the deep navy/violet engineering cockpit theme.",
+      "decisions": []
+    },
+    {
+      "title": "Layout Architecture",
+      "content": "The application uses a four-zone layout:\n\n```\n┌──────────────────────────────────────────────────────┐\n│                     TopBar                            │\n├────────────┬──────────────────────┬───────────────────┤\n│            │                      │                   │\n│  History   │     Chat Pane        │  Intelligence     │\n│  Pane      │  (or Dashboard)      │  Pane / Activity  │\n│  (sidebar) │                      │  Viewer           │\n│            │                      │                   │\n├────────────┴──────────────────────┴───────────────────┤\n│              Bottom Controls (Composer)               │\n└──────────────────────────────────────────────────────┘\n```\n\n- **HistoryPane** (left): Conversation list sidebar, create/switch/delete conversations.\n- **ChatPane** (center): Message timeline or Dashboard view (toggled).\n- **IntelligencePane** (right): Agent roster + activity viewer when an agent is selected.\n- **BottomControls**: Message composer with @ mentions, run/stop/steer controls.",
+      "decisions": [
+        {
+          "id": "D-020",
+          "title": "View toggle in center pane",
+          "decision": "Chat and Dashboard are toggled within the center pane via tabs or a view switcher in the TopBar.",
+          "rationale": "UI-R001 requires both views. UI-R002 leaves the switching mechanism TBD. A toggle in the center pane keeps the sidebar (conversations) and right pane (agents) persistent across views.",
+          "alternatives": ["Split pane — rejected: too cramped on smaller screens", "Separate routes — acceptable but loses context continuity"]
+        }
+      ]
+    },
+    {
+      "title": "Message Component",
+      "content": "Each message in the chat timeline is a `<ChatMessage>` component displaying:\n\n- **Avatar**: Color-coded circle with agent initial or user icon.\n- **Header**: Agent display name (or \"You\"), role badge, timestamp.\n- **Body**: Markdown-rendered content using a lightweight MD renderer (e.g., react-markdown or marked).\n- **Visual distinction**: Each agent gets a unique accent color derived from a hash of their ID. Messages from the customer use a distinct \"you\" style.\n\nMessage types:\n- `chat_message` — standard text message\n- `debate_turn` — agent's debate contribution (may include structured options)\n- `phase_change` — system event (styled as divider)\n- `system_notice` — informational (styled as muted inline)\n- `steer` — customer steering input (styled with a highlight border)",
+      "decisions": [
+        {
+          "id": "D-021",
+          "title": "Hash-based agent colors",
+          "decision": "Agent accent colors are deterministically generated from agent ID using a hash-to-HSL function.",
+          "rationale": "UI-R011 requires visually distinct agents. Hash-based colors are automatic, consistent across sessions, and don't require manual assignment.",
+          "alternatives": ["Manual color picker — P2 enhancement, not needed for MVP", "Fixed color palette — limited to N agents"]
+        },
+        {
+          "id": "D-022",
+          "title": "react-markdown for rendering",
+          "decision": "Use react-markdown with remark-gfm for GitHub-flavored markdown rendering.",
+          "rationale": "UI-R012 requires markdown support. react-markdown is well-maintained, supports code blocks, tables, and lists. remark-gfm adds task lists and tables.",
+          "alternatives": ["marked + dangerouslySetInnerHTML — rejected: XSS risk", "Custom parser — rejected: reinventing the wheel"]
+        }
+      ]
+    },
+    {
+      "title": "Composer Component",
+      "content": "The message composer is a `<Composer>` component with:\n\n- **Textarea**: Multi-line input. Enter sends, Shift+Enter inserts newline (UI-R022).\n- **@ Mention Autocomplete**: Typing `@` triggers a dropdown showing agents in the current conversation, filtered as the user types. Selecting an agent inserts `@AgentName` into the text and sets `target_agent_id` on the message payload (UI-R020).\n- **Send button**: Visible alongside the textarea.\n\nMessage routing:\n- If the text contains `@AgentName` or the user selected a target from the dropdown, the message is **directed** — sent to that specific agent (UI-R020, PRD-003).\n- If no @ mention, the message is **broadcast** — all agents see it on their next turn (UI-R021).\n\nThe composer also includes the run control buttons (Run Batch / Continue / Stop / Steer) below the textarea, accessible during execution phases.",
+      "decisions": [
+        {
+          "id": "D-023",
+          "title": "Inline @ mention detection",
+          "decision": "Parse @ mentions from the message text rather than using a separate 'To:' field.",
+          "rationale": "Matches the natural Slack-like UX. The user types @rick naturally in their message. The composer detects this and sets the target_agent_id. Falls back to broadcast if no mention.",
+          "alternatives": ["Dropdown 'To' selector — rejected: less natural, adds UI clutter"]
+        }
+      ]
+    },
+    {
+      "title": "Debate Phase UI",
+      "content": "During the debate phase, the chat augments with debate-specific indicators:\n\n- **Phase Banner**: Sticky bar at the top of the chat showing the current phase name and round counter (e.g., \"Debate — Round 5/20\") (UI-R030).\n- **Speaking Indicator**: When an agent is currently generating a response, show a typing indicator with the agent's name and avatar (UI-R030).\n- **Clarification Banner**: When an agent @ mentions the customer, a prominent amber banner appears: \"Agent X needs your input\" with a button to scroll to the question (UI-R031).\n- **Customer Controls**: Three buttons visible during debate:\n  - **Approve & Advance** — approves the current agreement and moves to next phase (UI-R032)\n  - **Steer** — sends a steering message (uses the normal composer)\n  - **Decide** — ends the debate and lets the customer pick the direction\n\nAll controls respect the gate system — Approve sets gate_status to `approved`, triggering a phase transition.",
+      "decisions": [
+        {
+          "id": "D-024",
+          "title": "Gate controls as explicit buttons",
+          "decision": "Phase transitions are triggered by explicit UI buttons (Approve, Decide), not by typing commands.",
+          "rationale": "UI-R032 requires clear customer controls. Buttons are discoverable and prevent accidental phase changes. They map directly to API calls (gate_approval event).",
+          "alternatives": ["Slash commands (/approve) — acceptable as secondary mechanism but buttons are primary"]
+        }
+      ]
+    },
+    {
+      "title": "Auto-scroll & History",
+      "content": "The chat pane implements smart auto-scrolling (UI-R013):\n\n- **Auto-scroll ON**: When the user is at (or near) the bottom of the chat, new messages auto-scroll into view.\n- **Auto-scroll OFF**: When the user scrolls up to read history, auto-scroll disables. A floating \"New messages ↓\" badge appears at the bottom.\n- **Scroll restore**: Clicking the badge scrolls to the latest message and re-enables auto-scroll.\n\nMessages are loaded incrementally — initial load fetches the most recent N messages, scrolling up triggers pagination (`?after=` cursor).",
+      "decisions": []
+    },
+    {
+      "title": "Conversation Sidebar",
+      "content": "The HistoryPane (left sidebar) shows all conversations:\n\n- **Conversation list**: Sorted by updated_at DESC. Each entry shows title, phase badge, and relative time.\n- **Create button**: Opens a dialog for title + project directory path (UI-R070).\n- **Active indicator**: The currently active conversation is highlighted.\n- **Click to switch**: Selecting a conversation calls the `/conversations/select` endpoint and reloads the chat pane (UI-R071).\n- **Context menu**: Right-click for delete option.\n\nConversation state is fully persisted — closing the browser and returning loads the same conversation with its agents, messages, and phase (UI-R072).",
+      "decisions": []
+    },
+    {
+      "title": "Agent Roster",
+      "content": "The roster appears in the right pane (IntelligencePane) and shows all agents in the current conversation:\n\n- **Agent card**: Display name, role badge (Analyst/Team Lead/Developer), provider icon (Claude/Codex/Ollama), status dot (green=idle, blue=running, amber=blocked, gray=offline), current task title if assigned (UI-R060).\n- **Drag to reorder**: Agents can be reordered via drag-and-drop, which updates turn_order for the debate round-robin.\n- **Click to view activity**: Clicking an agent opens their activity viewer in the right pane, replacing the roster (UI-R061). A back button returns to roster.\n- **Add agent**: Button opens a form for name, role, provider, model (UI-R062).\n- **Remove agent**: Each card has a remove button that detaches the agent from the conversation.",
+      "decisions": []
+    },
+    {
+      "title": "Notification System",
+      "content": "In-app notifications (UI-R080) are implemented as toast messages:\n\n- **Clarification needed**: Amber toast when an agent @ mentions the customer.\n- **Max rounds reached**: Warning toast when debate hits max_rounds.\n- **PR ready**: Info toast when a PR needs customer attention.\n- **Agent blocked**: Alert toast when an agent is blocked/needs input.\n\nToasts appear in the top-right corner, auto-dismiss after 8 seconds, and are clickable (navigate to the relevant context). Browser notifications (UI-R081) are a P2 enhancement using the Notifications API.",
+      "decisions": []
+    }
+  ]
+}

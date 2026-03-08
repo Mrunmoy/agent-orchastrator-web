@@ -1,0 +1,1098 @@
+{
+  "id": "REQ-04",
+  "title": "Orchestration Requirements",
+  "date": "2026-03-08",
+  "sections": [
+    {
+      "title": "Debate Engine",
+      "subsections": [
+        {
+          "title": "Round-Robin Turns",
+          "requirements": [
+            {
+              "id": "OR-R001",
+              "priority": "P0",
+              "area": "Debate",
+              "text": "The debate engine shall cycle through agents in turn_order sequence. Each agent gets exactly one turn per round. A round is complete when all enabled agents have spoken.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-401"
+              ],
+              "tests": [
+                {
+                  "id": "TT-401-01",
+                  "task_id": "T-401",
+                  "description": "Round-robin cycles through all agents in turn_order, then increments round",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-401-02",
+                  "task_id": "T-401",
+                  "description": "Skips disabled agents (enabled=0) in the rotation",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-401-03",
+                  "task_id": "T-401",
+                  "description": "is_complete() returns true after max_rounds rounds",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-401-04",
+                  "task_id": "T-401",
+                  "description": "State correctly resets when starting a new debate session",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R002",
+              "priority": "P0",
+              "area": "Debate",
+              "text": "The debate shall run for up to max_rounds (configurable, default 20). After max_rounds, the system shall trigger an auto-summary and ask the customer to decide.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-401",
+                "T-406"
+              ],
+              "tests": [
+                {
+                  "id": "TT-401-01",
+                  "task_id": "T-401",
+                  "description": "Round-robin cycles through all agents in turn_order, then increments round",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-401-02",
+                  "task_id": "T-401",
+                  "description": "Skips disabled agents (enabled=0) in the rotation",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-401-03",
+                  "task_id": "T-401",
+                  "description": "is_complete() returns true after max_rounds rounds",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-401-04",
+                  "task_id": "T-401",
+                  "description": "State correctly resets when starting a new debate session",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-406-01",
+                  "task_id": "T-406",
+                  "description": "Reaching max_rounds sends summary prompt to all agents",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-406-02",
+                  "task_id": "T-406",
+                  "description": "Structured summary responses are collected and formatted into comparison",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-406-03",
+                  "task_id": "T-406",
+                  "description": "System notice with comparison is emitted and gate set to pending_approval",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R003",
+              "priority": "P0",
+              "area": "Debate",
+              "text": "The customer shall be a first-class participant. When the customer sends a message during debate, it shall be injected into the conversation context visible to all agents on their next turn.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-402"
+              ],
+              "tests": [
+                {
+                  "id": "TT-402-01",
+                  "task_id": "T-402",
+                  "description": "Customer message appears in all agents' context on their next turn",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-402-02",
+                  "task_id": "T-402",
+                  "description": "Customer message does not advance the turn counter or round",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-402-03",
+                  "task_id": "T-402",
+                  "description": "Multiple customer messages between turns are all preserved in order",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Directed Messages",
+          "requirements": [
+            {
+              "id": "OR-R010",
+              "priority": "P0",
+              "area": "Debate",
+              "text": "When the customer addresses a specific agent (via @ mention or name), the system shall give that agent the next turn regardless of round-robin order. The round-robin resumes from where it left off after.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-403"
+              ],
+              "tests": [
+                {
+                  "id": "TT-403-01",
+                  "task_id": "T-403",
+                  "description": "Directed message gives targeted agent immediate next turn",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-403-02",
+                  "task_id": "T-403",
+                  "description": "Round-robin resumes from interrupted position after directed turn",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-403-03",
+                  "task_id": "T-403",
+                  "description": "Directed message mid-round does not cause any agent to be skipped",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R011",
+              "priority": "P0",
+              "area": "Debate",
+              "text": "When an agent @ mentions the customer, the debate engine shall pause and emit a clarification_needed event. The debate resumes when the customer responds.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-404"
+              ],
+              "tests": [
+                {
+                  "id": "TT-404-01",
+                  "task_id": "T-404",
+                  "description": "Agent response with @Customer triggers paused state and clarification_needed event",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-404-02",
+                  "task_id": "T-404",
+                  "description": "No turns are dispatched while debate is paused",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-404-03",
+                  "task_id": "T-404",
+                  "description": "Customer response unpauses debate and next agent in order proceeds",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Agreement Detection",
+          "requirements": [
+            {
+              "id": "OR-R020",
+              "priority": "P1",
+              "area": "Debate",
+              "text": "The system shall detect when agents express agreement (e.g., explicit markers like \"I agree with option X\" or structured JSON output). Agreement shall be presented to the customer but does NOT auto-advance the phase.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-405"
+              ],
+              "tests": [
+                {
+                  "id": "TT-405-01",
+                  "task_id": "T-405",
+                  "description": "Structured JSON agreement marker is parsed correctly from agent response",
+                  "type": "unit",
+                  "file": "backend/tests/test_agreement.py"
+                },
+                {
+                  "id": "TT-405-02",
+                  "task_id": "T-405",
+                  "description": "Text-based agreement phrases are detected as fallback",
+                  "type": "unit",
+                  "file": "backend/tests/test_agreement.py"
+                },
+                {
+                  "id": "TT-405-03",
+                  "task_id": "T-405",
+                  "description": "Unanimous agreement emits system_notice and sets gate to pending_approval",
+                  "type": "unit",
+                  "file": "backend/tests/test_agreement.py"
+                },
+                {
+                  "id": "TT-405-04",
+                  "task_id": "T-405",
+                  "description": "Partial agreement (2/3 agents) does not trigger gate change",
+                  "type": "unit",
+                  "file": "backend/tests/test_agreement.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R021",
+              "priority": "P1",
+              "area": "Debate",
+              "text": "After max_rounds without agreement, the system shall instruct agents to each produce a structured summary of their position with pros/cons, then present all positions to the customer.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-406"
+              ],
+              "tests": [
+                {
+                  "id": "TT-406-01",
+                  "task_id": "T-406",
+                  "description": "Reaching max_rounds sends summary prompt to all agents",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-406-02",
+                  "task_id": "T-406",
+                  "description": "Structured summary responses are collected and formatted into comparison",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                },
+                {
+                  "id": "TT-406-03",
+                  "task_id": "T-406",
+                  "description": "System notice with comparison is emitted and gate set to pending_approval",
+                  "type": "unit",
+                  "file": "backend/tests/test_debate_engine.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Context Management",
+          "requirements": [
+            {
+              "id": "OR-R030",
+              "priority": "P0",
+              "area": "Debate",
+              "text": "Each agent's debate turn shall receive: the full conversation history (or a summarized version if too long), the current round number, and any customer steering messages since the agent's last turn.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-407"
+              ],
+              "tests": [
+                {
+                  "id": "TT-407-01",
+                  "task_id": "T-407",
+                  "description": "Context payload includes all required fields (conversation_id, phase, round, etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_context_builder.py"
+                },
+                {
+                  "id": "TT-407-02",
+                  "task_id": "T-407",
+                  "description": "customer_messages_since_your_last_turn returns only messages after agent's last turn",
+                  "type": "unit",
+                  "file": "backend/tests/test_context_builder.py"
+                },
+                {
+                  "id": "TT-407-03",
+                  "task_id": "T-407",
+                  "description": "System prompt varies correctly based on agent role",
+                  "type": "unit",
+                  "file": "backend/tests/test_context_builder.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R031",
+              "priority": "P1",
+              "area": "Debate",
+              "text": "When the conversation history exceeds a configurable token threshold, the system shall create a rolling summary (checkpoint) and truncate older messages. Agents shall receive the summary + recent messages.",
+              "status": "todo",
+              "design_ref": "DES-05",
+              "tasks": [
+                "T-408"
+              ],
+              "tests": [
+                {
+                  "id": "TT-408-01",
+                  "task_id": "T-408",
+                  "description": "History below token threshold returns full history unchanged",
+                  "type": "unit",
+                  "file": "backend/tests/test_context_builder.py"
+                },
+                {
+                  "id": "TT-408-02",
+                  "task_id": "T-408",
+                  "description": "History above threshold triggers Ollama summary and returns summary + recent messages",
+                  "type": "integration",
+                  "file": "backend/tests/test_context_builder.py"
+                },
+                {
+                  "id": "TT-408-03",
+                  "task_id": "T-408",
+                  "description": "Generated summary checkpoint is stored as an artifact",
+                  "type": "unit",
+                  "file": "backend/tests/test_context_builder.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Phase & Gate State Machine",
+      "subsections": [
+        {
+          "title": "Phase Gates",
+          "requirements": [
+            {
+              "id": "OR-R040",
+              "priority": "P0",
+              "area": "Phase/Gate",
+              "text": "The conversation shall progress through ordered phases: debate \u2192 task_planning \u2192 execution \u2192 review \u2192 merge \u2192 done.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-501"
+              ],
+              "tests": [
+                {
+                  "id": "TT-501-01",
+                  "task_id": "T-501",
+                  "description": "Valid phase transitions succeed (debate -> task_planning -> execution -> etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-501-02",
+                  "task_id": "T-501",
+                  "description": "Phase transition without approved gate raises error",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-501-03",
+                  "task_id": "T-501",
+                  "description": "Rejected gate keeps conversation in current phase",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-501-04",
+                  "task_id": "T-501",
+                  "description": "Invalid phase transitions (e.g., debate -> merge) raise InvalidTransition",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R041",
+              "priority": "P0",
+              "area": "Phase/Gate",
+              "text": "Each phase transition shall require an explicit gate approval from the customer. The system shall never auto-advance phases.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-501"
+              ],
+              "tests": [
+                {
+                  "id": "TT-501-01",
+                  "task_id": "T-501",
+                  "description": "Valid phase transitions succeed (debate -> task_planning -> execution -> etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-501-02",
+                  "task_id": "T-501",
+                  "description": "Phase transition without approved gate raises error",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-501-03",
+                  "task_id": "T-501",
+                  "description": "Rejected gate keeps conversation in current phase",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-501-04",
+                  "task_id": "T-501",
+                  "description": "Invalid phase transitions (e.g., debate -> merge) raise InvalidTransition",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R042",
+              "priority": "P0",
+              "area": "Phase/Gate",
+              "text": "Gate statuses shall be: open (in progress), pending_approval (awaiting customer), approved (customer approved, transitioning), rejected (customer sent back, re-entering current phase).",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-501"
+              ],
+              "tests": [
+                {
+                  "id": "TT-501-01",
+                  "task_id": "T-501",
+                  "description": "Valid phase transitions succeed (debate -> task_planning -> execution -> etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-501-02",
+                  "task_id": "T-501",
+                  "description": "Phase transition without approved gate raises error",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-501-03",
+                  "task_id": "T-501",
+                  "description": "Rejected gate keeps conversation in current phase",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-501-04",
+                  "task_id": "T-501",
+                  "description": "Invalid phase transitions (e.g., debate -> merge) raise InvalidTransition",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R043",
+              "priority": "P1",
+              "area": "Phase/Gate",
+              "text": "The customer shall be able to move the conversation back to a previous phase (e.g., from execution back to debate) if they change direction.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-502"
+              ],
+              "tests": [
+                {
+                  "id": "TT-502-01",
+                  "task_id": "T-502",
+                  "description": "Rollback from execution to debate succeeds and resets gate to open",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-502-02",
+                  "task_id": "T-502",
+                  "description": "Rollback emits system_notice event with rollback details",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                },
+                {
+                  "id": "TT-502-03",
+                  "task_id": "T-502",
+                  "description": "Cannot rollback from done or completed phases",
+                  "type": "unit",
+                  "file": "backend/tests/test_phase_gate.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Execution Engine",
+      "subsections": [
+        {
+          "title": "Task Assignment",
+          "requirements": [
+            {
+              "id": "OR-R050",
+              "priority": "P0",
+              "area": "Execution",
+              "text": "During the execution phase, the system shall assign tasks to available Developer agents. Assignment logic: pick highest-priority unblocked task, assign to idle Developer with matching capabilities.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-503",
+                "T-504"
+              ],
+              "tests": [
+                {
+                  "id": "TT-503-01",
+                  "task_id": "T-503",
+                  "description": "Valid structured task list JSON is parsed into Task records",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_planner.py"
+                },
+                {
+                  "id": "TT-503-02",
+                  "task_id": "T-503",
+                  "description": "Tasks with no dependencies are identified as parallelizable",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_planner.py"
+                },
+                {
+                  "id": "TT-503-03",
+                  "task_id": "T-503",
+                  "description": "Invalid task JSON format returns descriptive error",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_planner.py"
+                },
+                {
+                  "id": "TT-504-01",
+                  "task_id": "T-504",
+                  "description": "Only tasks with all dependencies done are returned as assignable",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-02",
+                  "task_id": "T-504",
+                  "description": "Idle agent gets highest-priority available task assigned",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-03",
+                  "task_id": "T-504",
+                  "description": "Agent already working on a task does not get a second assignment",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-04",
+                  "task_id": "T-504",
+                  "description": "Assignment updates task owner_agent_id, task status, and agent status",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R051",
+              "priority": "P0",
+              "area": "Execution",
+              "text": "Each Developer agent shall work on exactly one task at a time. The agent's status shall be running while working and idle when between tasks.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-504"
+              ],
+              "tests": [
+                {
+                  "id": "TT-504-01",
+                  "task_id": "T-504",
+                  "description": "Only tasks with all dependencies done are returned as assignable",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-02",
+                  "task_id": "T-504",
+                  "description": "Idle agent gets highest-priority available task assigned",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-03",
+                  "task_id": "T-504",
+                  "description": "Agent already working on a task does not get a second assignment",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-04",
+                  "task_id": "T-504",
+                  "description": "Assignment updates task owner_agent_id, task status, and agent status",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R052",
+              "priority": "P1",
+              "area": "Execution",
+              "text": "The Team Lead (Ollama) shall handle task assignment decisions at zero paid-token cost. The backend shall format the task queue and agent statuses for the Team Lead to consume.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-504"
+              ],
+              "tests": [
+                {
+                  "id": "TT-504-01",
+                  "task_id": "T-504",
+                  "description": "Only tasks with all dependencies done are returned as assignable",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-02",
+                  "task_id": "T-504",
+                  "description": "Idle agent gets highest-priority available task assigned",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-03",
+                  "task_id": "T-504",
+                  "description": "Agent already working on a task does not get a second assignment",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                },
+                {
+                  "id": "TT-504-04",
+                  "task_id": "T-504",
+                  "description": "Assignment updates task owner_agent_id, task status, and agent status",
+                  "type": "unit",
+                  "file": "backend/tests/test_task_assigner.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Batch Execution Model",
+          "requirements": [
+            {
+              "id": "OR-R060",
+              "priority": "P0",
+              "area": "Execution",
+              "text": "Agent execution shall operate in batches. A batch is a bounded set of turns (default 20). After a batch completes, the system pauses for the customer to review and steer.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-505"
+              ],
+              "tests": [
+                {
+                  "id": "TT-505-01",
+                  "task_id": "T-505",
+                  "description": "Steering notes appear in agent prompt prefix when pending",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-02",
+                  "task_id": "T-505",
+                  "description": "Batch pauses after batch_size turns and records scheduler_run as completed",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-03",
+                  "task_id": "T-505",
+                  "description": "Continue from paused state resumes with a new batch",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-04",
+                  "task_id": "T-505",
+                  "description": "Directed steer message (@AgentName) targets specific agent",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R061",
+              "priority": "P0",
+              "area": "Execution",
+              "text": "The customer shall have controls to: continue (run another batch), stop (pause execution), or steer (inject a note visible to agents on their next turn).",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-505"
+              ],
+              "tests": [
+                {
+                  "id": "TT-505-01",
+                  "task_id": "T-505",
+                  "description": "Steering notes appear in agent prompt prefix when pending",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-02",
+                  "task_id": "T-505",
+                  "description": "Batch pauses after batch_size turns and records scheduler_run as completed",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-03",
+                  "task_id": "T-505",
+                  "description": "Continue from paused state resumes with a new batch",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-04",
+                  "task_id": "T-505",
+                  "description": "Directed steer message (@AgentName) targets specific agent",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R062",
+              "priority": "P1",
+              "area": "Execution",
+              "text": "Batch runs shall be tracked in a scheduler_run table with: status (running, completed, stopped, failed), batch size, timestamps.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-505"
+              ],
+              "tests": [
+                {
+                  "id": "TT-505-01",
+                  "task_id": "T-505",
+                  "description": "Steering notes appear in agent prompt prefix when pending",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-02",
+                  "task_id": "T-505",
+                  "description": "Batch pauses after batch_size turns and records scheduler_run as completed",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-03",
+                  "task_id": "T-505",
+                  "description": "Continue from paused state resumes with a new batch",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                },
+                {
+                  "id": "TT-505-04",
+                  "task_id": "T-505",
+                  "description": "Directed steer message (@AgentName) targets specific agent",
+                  "type": "unit",
+                  "file": "backend/tests/test_batch_runner.py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Work Order",
+          "requirements": [
+            {
+              "id": "OR-R070",
+              "priority": "P0",
+              "area": "Execution",
+              "text": "Each task shall follow a fixed work order: design \u2192 tdd \u2192 implementing \u2192 testing \u2192 pr_raised. The system shall enforce this ordering via task status transitions.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-506"
+              ],
+              "tests": [
+                {
+                  "id": "TT-506-01",
+                  "task_id": "T-506",
+                  "description": "Valid work order transitions succeed (design -> tdd -> implementing -> etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-02",
+                  "task_id": "T-506",
+                  "description": "Invalid transition (e.g., design -> implementing skipping tdd) raises error",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-03",
+                  "task_id": "T-506",
+                  "description": "testing -> implementing is allowed (test failure rollback)",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-04",
+                  "task_id": "T-506",
+                  "description": "Configurable work order can skip TDD step for docs tasks",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R071",
+              "priority": "P1",
+              "area": "Execution",
+              "text": "The work order shall be configurable per conversation (e.g., skip TDD phase for documentation tasks). Default is the full order.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-506"
+              ],
+              "tests": [
+                {
+                  "id": "TT-506-01",
+                  "task_id": "T-506",
+                  "description": "Valid work order transitions succeed (design -> tdd -> implementing -> etc.)",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-02",
+                  "task_id": "T-506",
+                  "description": "Invalid transition (e.g., design -> implementing skipping tdd) raises error",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-03",
+                  "task_id": "T-506",
+                  "description": "testing -> implementing is allowed (test failure rollback)",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                },
+                {
+                  "id": "TT-506-04",
+                  "task_id": "T-506",
+                  "description": "Configurable work order can skip TDD step for docs tasks",
+                  "type": "unit",
+                  "file": "backend/tests/test_work_order.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Agent Priority Loop",
+      "subsections": [
+        {
+          "title": "Priority Loop",
+          "requirements": [
+            {
+              "id": "OR-R080",
+              "priority": "P0",
+              "area": "Post-Task",
+              "text": "After an agent raises a PR, it shall enter the priority loop: 1) Check own PRs for review comments \u2192 fix them. 2) Check if PR approved \u2192 merge if queue allows. 3) Check if tagged to review another PR \u2192 review it. 4) Otherwise \u2192 pick next task or wait.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-507"
+              ],
+              "tests": [
+                {
+                  "id": "TT-507-01",
+                  "task_id": "T-507",
+                  "description": "Agent with comments on own PR gets fix_comments as highest priority action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-02",
+                  "task_id": "T-507",
+                  "description": "Agent with approved PR and no comments gets merge action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-03",
+                  "task_id": "T-507",
+                  "description": "Agent assigned as reviewer gets review action when no own PR work needed",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-04",
+                  "task_id": "T-507",
+                  "description": "Agent with no work returns idle action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R081",
+              "priority": "P1",
+              "area": "Post-Task",
+              "text": "The priority loop shall be evaluated by the Team Lead (Ollama) to avoid spending paid tokens on status polling.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-507"
+              ],
+              "tests": [
+                {
+                  "id": "TT-507-01",
+                  "task_id": "T-507",
+                  "description": "Agent with comments on own PR gets fix_comments as highest priority action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-02",
+                  "task_id": "T-507",
+                  "description": "Agent with approved PR and no comments gets merge action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-03",
+                  "task_id": "T-507",
+                  "description": "Agent assigned as reviewer gets review action when no own PR work needed",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                },
+                {
+                  "id": "TT-507-04",
+                  "task_id": "T-507",
+                  "description": "Agent with no work returns idle action",
+                  "type": "unit",
+                  "file": "backend/tests/test_priority_loop.py"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Resource Management",
+      "subsections": [
+        {
+          "title": "Resources",
+          "requirements": [
+            {
+              "id": "OR-R090",
+              "priority": "P1",
+              "area": "Resources",
+              "text": "The system shall monitor local resource usage: CPU load, RAM, GPU (if applicable). Resource snapshots shall be stored periodically for the dashboard.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-508"
+              ],
+              "tests": [
+                {
+                  "id": "TT-508-01",
+                  "task_id": "T-508",
+                  "description": "Resource snapshot captures CPU load and RAM usage from system",
+                  "type": "unit",
+                  "file": "backend/tests/test_resource_monitor.py"
+                },
+                {
+                  "id": "TT-508-02",
+                  "task_id": "T-508",
+                  "description": "Concurrency limit blocks new agent processes when at max capacity",
+                  "type": "unit",
+                  "file": "backend/tests/test_resource_monitor.py"
+                },
+                {
+                  "id": "TT-508-03",
+                  "task_id": "T-508",
+                  "description": "Queued task starts when active agent slot is freed",
+                  "type": "unit",
+                  "file": "backend/tests/test_resource_monitor.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R091",
+              "priority": "P1",
+              "area": "Resources",
+              "text": "The system shall enforce a configurable concurrency limit (max simultaneous agent processes). Tasks beyond the limit shall queue.",
+              "status": "todo",
+              "design_ref": "DES-06",
+              "tasks": [
+                "T-508"
+              ],
+              "tests": [
+                {
+                  "id": "TT-508-01",
+                  "task_id": "T-508",
+                  "description": "Resource snapshot captures CPU load and RAM usage from system",
+                  "type": "unit",
+                  "file": "backend/tests/test_resource_monitor.py"
+                },
+                {
+                  "id": "TT-508-02",
+                  "task_id": "T-508",
+                  "description": "Concurrency limit blocks new agent processes when at max capacity",
+                  "type": "unit",
+                  "file": "backend/tests/test_resource_monitor.py"
+                },
+                {
+                  "id": "TT-508-03",
+                  "task_id": "T-508",
+                  "description": "Queued task starts when active agent slot is freed",
+                  "type": "unit",
+                  "file": "backend/tests/test_resource_monitor.py"
+                }
+              ]
+            },
+            {
+              "id": "OR-R092",
+              "priority": "P2",
+              "area": "Resources",
+              "text": "The system shall track per-agent token usage and cost estimates across conversations for billing visibility.",
+              "status": "todo",
+              "design_ref": null,
+              "tasks": [],
+              "tests": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

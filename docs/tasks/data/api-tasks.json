@@ -1,0 +1,566 @@
+[
+  {
+    "id": "T-201",
+    "title": "Conversation detail and update endpoints",
+    "description": "Implement GET /api/conversations/{id} returning full conversation details (phase, gate_status, agent count, task count) and PATCH /api/conversations/{id} for updating title, project_path, and other metadata fields. The GET endpoint joins conversation_agent and task tables to include counts. PATCH validates that the conversation exists and is not soft-deleted. Acceptance criteria: GET returns enriched conversation object with agent_count and task_count; PATCH updates only provided fields; both use standard envelope.",
+    "design_refs": ["DES-01", "DES-02"],
+    "requirements": ["BE-R071", "BE-R060"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/conversations.py"],
+      "directories": ["backend/src/agent_orchestrator/api/"]
+    },
+    "complexity": "S",
+    "parallel_group": "api-conversations",
+    "tests": [
+      {
+        "id": "TT-201-01",
+        "description": "GET /api/conversations/{id} returns full details with agent_count and task_count",
+        "type": "integration",
+        "file": "backend/tests/test_api_conversations.py"
+      },
+      {
+        "id": "TT-201-02",
+        "description": "GET /api/conversations/{id} returns 404 for non-existent or soft-deleted conversation",
+        "type": "integration",
+        "file": "backend/tests/test_api_conversations.py"
+      },
+      {
+        "id": "TT-201-03",
+        "description": "PATCH /api/conversations/{id} updates title and project_path, returns updated object",
+        "type": "integration",
+        "file": "backend/tests/test_api_conversations.py"
+      },
+      {
+        "id": "TT-201-04",
+        "description": "PATCH /api/conversations/{id} ignores null fields and returns 404 for missing conversation",
+        "type": "integration",
+        "file": "backend/tests/test_api_conversations.py"
+      }
+    ]
+  },
+  {
+    "id": "T-202",
+    "title": "Message CRUD endpoints",
+    "description": "Implement POST /api/conversations/{id}/messages to send a customer message (with optional target_agent_id for directed messages) and GET /api/conversations/{id}/messages for paginated message retrieval with ?after=event_id cursor and ?limit=N. POST creates a message_event row with source_type='customer', event_type='chat_message', and a generated UUID event_id. GET returns events ordered by auto-increment id. Acceptance criteria: POST persists message and returns it; GET supports cursor-based pagination; directed messages include target_agent_id in metadata_json.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R090", "BE-R030", "BE-R031", "BE-R032", "BE-R060"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/messages.py"],
+      "directories": ["backend/src/agent_orchestrator/api/routes/"]
+    },
+    "complexity": "M",
+    "parallel_group": "api-messages",
+    "tests": [
+      {
+        "id": "TT-202-01",
+        "description": "POST /api/conversations/{id}/messages creates a customer message event and returns it",
+        "type": "integration",
+        "file": "backend/tests/test_api_messages.py"
+      },
+      {
+        "id": "TT-202-02",
+        "description": "POST with target_agent_id stores directed message metadata",
+        "type": "integration",
+        "file": "backend/tests/test_api_messages.py"
+      },
+      {
+        "id": "TT-202-03",
+        "description": "GET /api/conversations/{id}/messages returns paginated results with ?after cursor",
+        "type": "integration",
+        "file": "backend/tests/test_api_messages.py"
+      },
+      {
+        "id": "TT-202-04",
+        "description": "GET /api/conversations/{id}/messages returns 404 for non-existent conversation",
+        "type": "integration",
+        "file": "backend/tests/test_api_messages.py"
+      }
+    ]
+  },
+  {
+    "id": "T-203",
+    "title": "Event filtering endpoint",
+    "description": "Implement GET /api/conversations/{id}/events returning all events for a conversation filterable by ?event_type= query parameter. Supports multiple event types via comma-separated values. Returns events from the message_event SQLite table (not just JSONL), ordered by id ascending. Acceptance criteria: filtering by single and multiple event_types works; unfiltered returns all events; returns 404 for missing conversation.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R091", "BE-R031", "BE-R060"],
+    "dependencies": ["T-101", "T-202"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/messages.py"],
+      "directories": ["backend/src/agent_orchestrator/api/routes/"]
+    },
+    "complexity": "S",
+    "parallel_group": "api-messages",
+    "tests": [
+      {
+        "id": "TT-203-01",
+        "description": "GET /api/conversations/{id}/events returns all events unfiltered",
+        "type": "integration",
+        "file": "backend/tests/test_api_messages.py"
+      },
+      {
+        "id": "TT-203-02",
+        "description": "GET with ?event_type=chat_message filters correctly",
+        "type": "integration",
+        "file": "backend/tests/test_api_messages.py"
+      },
+      {
+        "id": "TT-203-03",
+        "description": "GET with multiple event_type values (comma-separated) returns matching events",
+        "type": "integration",
+        "file": "backend/tests/test_api_messages.py"
+      }
+    ]
+  },
+  {
+    "id": "T-204",
+    "title": "Task CRUD endpoints",
+    "description": "Implement GET /api/conversations/{id}/tasks to list tasks for a conversation, POST /api/conversations/{id}/tasks to create a task, and PATCH /api/tasks/{task_id} to update task status, owner, result, and evidence. POST accepts title, spec_json, priority, depends_on_json, and optional owner_agent_id. PATCH validates status transitions per BE-R021 (todo -> design -> tdd -> implementing -> testing -> pr_raised -> in_review -> fixing_comments -> merging -> done, plus blocked from any state). Acceptance criteria: CRUD works end-to-end; invalid status transitions return 400; dependency JSON is stored and returned correctly.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R100", "BE-R020", "BE-R021", "BE-R022", "BE-R060"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/tasks.py"],
+      "directories": ["backend/src/agent_orchestrator/api/routes/"]
+    },
+    "complexity": "L",
+    "parallel_group": "api-tasks",
+    "tests": [
+      {
+        "id": "TT-204-01",
+        "description": "POST /api/conversations/{id}/tasks creates a task with spec_json and returns it",
+        "type": "integration",
+        "file": "backend/tests/test_api_tasks.py"
+      },
+      {
+        "id": "TT-204-02",
+        "description": "GET /api/conversations/{id}/tasks lists all tasks ordered by priority",
+        "type": "integration",
+        "file": "backend/tests/test_api_tasks.py"
+      },
+      {
+        "id": "TT-204-03",
+        "description": "PATCH /api/tasks/{id} updates status through valid transitions",
+        "type": "integration",
+        "file": "backend/tests/test_api_tasks.py"
+      },
+      {
+        "id": "TT-204-04",
+        "description": "PATCH /api/tasks/{id} rejects invalid status transitions with 400",
+        "type": "integration",
+        "file": "backend/tests/test_api_tasks.py"
+      }
+    ]
+  },
+  {
+    "id": "T-205",
+    "title": "Task dependency validation",
+    "description": "Add dependency enforcement to task status transitions. When PATCH /api/tasks/{task_id} attempts to transition a task to 'implementing', verify that all task IDs listed in depends_on_json have status 'done'. If any dependency is not done, return 409 Conflict with a list of blocking dependency IDs. Acceptance criteria: transition to implementing blocked when deps not done; transition allowed when all deps are done; tasks with empty depends_on_json can transition freely.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R022", "BE-R150"],
+    "dependencies": ["T-204"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/tasks.py"],
+      "directories": ["backend/src/agent_orchestrator/api/routes/"]
+    },
+    "complexity": "M",
+    "parallel_group": "api-tasks",
+    "tests": [
+      {
+        "id": "TT-205-01",
+        "description": "Task with unmet dependencies cannot transition to implementing, returns 409",
+        "type": "integration",
+        "file": "backend/tests/test_api_tasks.py"
+      },
+      {
+        "id": "TT-205-02",
+        "description": "Task with all dependencies done can transition to implementing",
+        "type": "integration",
+        "file": "backend/tests/test_api_tasks.py"
+      },
+      {
+        "id": "TT-205-03",
+        "description": "Task with empty depends_on_json transitions freely",
+        "type": "unit",
+        "file": "backend/tests/test_api_tasks.py"
+      }
+    ]
+  },
+  {
+    "id": "T-206",
+    "title": "Phase and gate endpoints",
+    "description": "Implement GET /api/conversations/{id}/phase returning current phase and gate_status, and POST /api/conversations/{id}/gate to advance the gate. Gate advancement follows the phase sequence: design_debate -> task_planning -> execution -> review -> merge -> done. POST /gate accepts action ('approve' or 'reject'). On approve: gate_status -> 'approved', then phase advances to next phase and gate_status resets to 'open'. On reject: gate_status -> 'rejected', phase stays. Acceptance criteria: phase sequence is enforced; approve advances phase; reject keeps phase; already-done conversation returns 409.",
+    "design_refs": ["DES-01", "DES-02"],
+    "requirements": ["BE-R001", "BE-R060"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/phases.py"],
+      "directories": ["backend/src/agent_orchestrator/api/routes/"]
+    },
+    "complexity": "M",
+    "parallel_group": "api-conversations",
+    "tests": [
+      {
+        "id": "TT-206-01",
+        "description": "GET /api/conversations/{id}/phase returns current phase and gate_status",
+        "type": "integration",
+        "file": "backend/tests/test_api_phases.py"
+      },
+      {
+        "id": "TT-206-02",
+        "description": "POST /gate with approve advances phase to next in sequence",
+        "type": "integration",
+        "file": "backend/tests/test_api_phases.py"
+      },
+      {
+        "id": "TT-206-03",
+        "description": "POST /gate with reject sets gate_status to rejected, phase unchanged",
+        "type": "integration",
+        "file": "backend/tests/test_api_phases.py"
+      },
+      {
+        "id": "TT-206-04",
+        "description": "POST /gate on a done conversation returns 409",
+        "type": "integration",
+        "file": "backend/tests/test_api_phases.py"
+      }
+    ]
+  },
+  {
+    "id": "T-207",
+    "title": "Merge queue endpoints",
+    "description": "Implement merge queue CRUD: GET /api/conversations/{id}/merge-queue lists queued items ordered by position, POST /api/conversations/{id}/merge-queue enqueues a task (sets position to max+1, status='queued'), PATCH /api/merge-queue/{item_id} updates status (queued -> rebasing -> testing -> merging -> merged | failed | blocked), and DELETE /api/merge-queue/{item_id} removes an item and recompacts positions. POST requires task_id, pr_number, pr_url, pr_branch, author_agent_id, and optional reviewer_agent_id. Acceptance criteria: FIFO ordering maintained; only one item can be 'merging' at a time; position recompaction on delete.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R060"],
+    "dependencies": ["T-101", "T-204"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/merge_queue.py"],
+      "directories": ["backend/src/agent_orchestrator/api/routes/"]
+    },
+    "complexity": "L",
+    "parallel_group": "api-tasks",
+    "tests": [
+      {
+        "id": "TT-207-01",
+        "description": "POST /merge-queue enqueues item at next position with status queued",
+        "type": "integration",
+        "file": "backend/tests/test_api_merge_queue.py"
+      },
+      {
+        "id": "TT-207-02",
+        "description": "GET /merge-queue returns items ordered by position",
+        "type": "integration",
+        "file": "backend/tests/test_api_merge_queue.py"
+      },
+      {
+        "id": "TT-207-03",
+        "description": "PATCH /merge-queue/{id} rejects merging when another item is already merging",
+        "type": "integration",
+        "file": "backend/tests/test_api_merge_queue.py"
+      },
+      {
+        "id": "TT-207-04",
+        "description": "DELETE /merge-queue/{id} removes item and recompacts positions",
+        "type": "integration",
+        "file": "backend/tests/test_api_merge_queue.py"
+      }
+    ]
+  },
+  {
+    "id": "T-208",
+    "title": "SSE conversation stream endpoint",
+    "description": "Implement GET /api/conversations/{id}/stream as a Server-Sent Events endpoint using FastAPI StreamingResponse. The endpoint streams new message_events for a conversation in real-time. Uses an async generator that polls for new events by auto-increment id (last seen id tracked per connection). SSE envelope format: 'id: {event_id}\\nevent: {event_type}\\ndata: {json_payload}\\n\\n'. Supports Last-Event-ID header for reconnection — replays missed events from the store. Sends heartbeat comments every 15 seconds to keep connection alive. Acceptance criteria: SSE stream delivers new events; reconnection via Last-Event-ID replays missed events; heartbeat keeps connection open.",
+    "design_refs": ["DES-01"],
+    "requirements": ["BE-R120", "BE-R122", "BE-R060"],
+    "dependencies": ["T-101", "T-202"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/streams.py", "backend/src/agent_orchestrator/api/sse.py"],
+      "directories": ["backend/src/agent_orchestrator/api/"]
+    },
+    "complexity": "L",
+    "parallel_group": "api-streaming",
+    "tests": [
+      {
+        "id": "TT-208-01",
+        "description": "SSE stream delivers events in correct SSE envelope format",
+        "type": "integration",
+        "file": "backend/tests/test_api_streams.py"
+      },
+      {
+        "id": "TT-208-02",
+        "description": "Last-Event-ID header causes replay of missed events",
+        "type": "integration",
+        "file": "backend/tests/test_api_streams.py"
+      },
+      {
+        "id": "TT-208-03",
+        "description": "Heartbeat comments are sent to keep connection alive",
+        "type": "integration",
+        "file": "backend/tests/test_api_streams.py"
+      },
+      {
+        "id": "TT-208-04",
+        "description": "Stream returns 404 for non-existent conversation",
+        "type": "integration",
+        "file": "backend/tests/test_api_streams.py"
+      }
+    ]
+  },
+  {
+    "id": "T-209",
+    "title": "SSE agent activity stream endpoint",
+    "description": "Implement GET /api/agents/{id}/activity as a Server-Sent Events endpoint for per-agent activity. Streams agent-specific events: thinking output, tool calls, file reads/writes, shell commands, and their results. Uses the same SSE envelope format as T-208. Events are sourced from message_event rows where source_id matches the agent_id and event_type is in the activity category. Supports Last-Event-ID for reconnection. Acceptance criteria: stream delivers only events for the specified agent; activity event types are correctly filtered; reconnection works.",
+    "design_refs": ["DES-01"],
+    "requirements": ["BE-R121", "BE-R122", "BE-R060"],
+    "dependencies": ["T-208"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/streams.py", "backend/src/agent_orchestrator/api/sse.py"],
+      "directories": ["backend/src/agent_orchestrator/api/"]
+    },
+    "complexity": "M",
+    "parallel_group": "api-streaming",
+    "tests": [
+      {
+        "id": "TT-209-01",
+        "description": "Agent activity stream delivers only events for the specified agent",
+        "type": "integration",
+        "file": "backend/tests/test_api_streams.py"
+      },
+      {
+        "id": "TT-209-02",
+        "description": "Activity stream filters to activity-related event types",
+        "type": "integration",
+        "file": "backend/tests/test_api_streams.py"
+      },
+      {
+        "id": "TT-209-03",
+        "description": "Agent activity stream supports Last-Event-ID reconnection",
+        "type": "integration",
+        "file": "backend/tests/test_api_streams.py"
+      }
+    ]
+  },
+  {
+    "id": "T-210",
+    "title": "SSE infrastructure: event bus and broadcaster",
+    "description": "Implement an in-process event bus (asyncio-based) that routes new events to SSE stream subscribers. Components: EventBus class with publish(event) and subscribe(filter) -> AsyncIterator methods. When a message_event is inserted (via POST message, steer, or orchestration), the bus publishes the event. SSE stream endpoints subscribe with filters (conversation_id, agent_id). This replaces the polling approach in T-208/T-209 with push-based delivery. Acceptance criteria: events published to bus are received by all matching subscribers; unsubscribe on disconnect cleans up; bus handles multiple concurrent subscribers.",
+    "design_refs": ["DES-01"],
+    "requirements": ["BE-R120", "BE-R121"],
+    "dependencies": ["T-208"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/event_bus.py", "backend/src/agent_orchestrator/api/sse.py"],
+      "directories": ["backend/src/agent_orchestrator/api/"]
+    },
+    "complexity": "L",
+    "parallel_group": "api-streaming",
+    "tests": [
+      {
+        "id": "TT-210-01",
+        "description": "EventBus delivers published events to all matching subscribers",
+        "type": "unit",
+        "file": "backend/tests/test_event_bus.py"
+      },
+      {
+        "id": "TT-210-02",
+        "description": "Subscriber with conversation_id filter only receives events for that conversation",
+        "type": "unit",
+        "file": "backend/tests/test_event_bus.py"
+      },
+      {
+        "id": "TT-210-03",
+        "description": "Disconnected subscriber is cleaned up and does not block bus",
+        "type": "unit",
+        "file": "backend/tests/test_event_bus.py"
+      },
+      {
+        "id": "TT-210-04",
+        "description": "Multiple concurrent subscribers receive events independently",
+        "type": "unit",
+        "file": "backend/tests/test_event_bus.py"
+      }
+    ]
+  },
+  {
+    "id": "T-211",
+    "title": "API error handling middleware",
+    "description": "Implement a FastAPI exception handler middleware that catches all unhandled exceptions and returns the standard error envelope ({ok: false, error: message}) with appropriate HTTP status codes. Handle: ValidationError -> 400, HTTPException -> its status code, NotFoundError (custom) -> 404, ConflictError (custom) -> 409, generic Exception -> 500 with sanitized message. Define custom exception classes (NotFoundError, ConflictError, ValidationError) in a new exceptions module. Register the handler in create_app(). Acceptance criteria: all error responses use the envelope format; validation errors include field-level details; 500 errors do not leak stack traces.",
+    "design_refs": ["DES-01"],
+    "requirements": ["BE-R150", "BE-R060"],
+    "dependencies": [],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/exceptions.py", "backend/src/agent_orchestrator/api/middleware.py", "backend/src/agent_orchestrator/api/__init__.py"],
+      "directories": ["backend/src/agent_orchestrator/api/"]
+    },
+    "complexity": "M",
+    "parallel_group": "api-conversations",
+    "tests": [
+      {
+        "id": "TT-211-01",
+        "description": "Unhandled exceptions return 500 with envelope format and no stack trace",
+        "type": "integration",
+        "file": "backend/tests/test_api_middleware.py"
+      },
+      {
+        "id": "TT-211-02",
+        "description": "Pydantic ValidationError returns 400 with field-level error details",
+        "type": "integration",
+        "file": "backend/tests/test_api_middleware.py"
+      },
+      {
+        "id": "TT-211-03",
+        "description": "Custom NotFoundError returns 404 with envelope",
+        "type": "integration",
+        "file": "backend/tests/test_api_middleware.py"
+      },
+      {
+        "id": "TT-211-04",
+        "description": "Custom ConflictError returns 409 with envelope",
+        "type": "integration",
+        "file": "backend/tests/test_api_middleware.py"
+      }
+    ]
+  },
+  {
+    "id": "T-212",
+    "title": "Agent status tracking endpoints",
+    "description": "Implement GET /api/agents/{id}/status returning current agent status (idle, running, blocked, offline) and PATCH /api/agents/{id}/status for updating status with validated transitions. Status transitions: idle -> running (task assigned), running -> idle (turn complete), running -> blocked (waiting), blocked -> idle (unblocked), any -> offline (process died). Status changes emit a system event (event_type='agent_status_change') to the conversation's message_event table. Acceptance criteria: GET returns current status; PATCH validates transitions; status change creates system event.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R131", "BE-R010", "BE-R060"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/agents.py"],
+      "directories": ["backend/src/agent_orchestrator/api/routes/"]
+    },
+    "complexity": "M",
+    "parallel_group": "api-agents",
+    "tests": [
+      {
+        "id": "TT-212-01",
+        "description": "GET /api/agents/{id}/status returns current status",
+        "type": "integration",
+        "file": "backend/tests/test_api_agents.py"
+      },
+      {
+        "id": "TT-212-02",
+        "description": "PATCH /api/agents/{id}/status accepts valid transition idle -> running",
+        "type": "integration",
+        "file": "backend/tests/test_api_agents.py"
+      },
+      {
+        "id": "TT-212-03",
+        "description": "PATCH /api/agents/{id}/status rejects invalid transition idle -> blocked",
+        "type": "integration",
+        "file": "backend/tests/test_api_agents.py"
+      },
+      {
+        "id": "TT-212-04",
+        "description": "Status change emits agent_status_change system event",
+        "type": "integration",
+        "file": "backend/tests/test_api_agents.py"
+      }
+    ]
+  },
+  {
+    "id": "T-213",
+    "title": "Agent-to-conversation assignment endpoint",
+    "description": "Implement POST /api/conversations/{id}/agents to add an existing agent to a conversation. Accepts agent_id and optional permission_profile and is_merge_coordinator fields. Auto-assigns turn_order as max(existing) + 1. Enforces UNIQUE(conversation_id, agent_id) constraint — returns 409 if agent already in conversation. Validates both conversation and agent exist. Acceptance criteria: agent is linked to conversation with correct turn_order; duplicate assignment returns 409; is_merge_coordinator flag is stored.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R011", "BE-R012", "BE-R013", "BE-R060"],
+    "dependencies": ["T-101"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/conversation_agents.py"],
+      "directories": ["backend/src/agent_orchestrator/api/routes/"]
+    },
+    "complexity": "S",
+    "parallel_group": "api-agents",
+    "tests": [
+      {
+        "id": "TT-213-01",
+        "description": "POST /api/conversations/{id}/agents links agent with auto-assigned turn_order",
+        "type": "integration",
+        "file": "backend/tests/test_api_conversation_agents.py"
+      },
+      {
+        "id": "TT-213-02",
+        "description": "Duplicate agent assignment returns 409 Conflict",
+        "type": "integration",
+        "file": "backend/tests/test_api_conversation_agents.py"
+      },
+      {
+        "id": "TT-213-03",
+        "description": "is_merge_coordinator flag is stored and returned correctly",
+        "type": "integration",
+        "file": "backend/tests/test_api_conversation_agents.py"
+      }
+    ]
+  },
+  {
+    "id": "T-214",
+    "title": "Agent process failure event surfacing",
+    "description": "Implement error event creation for agent process failures. Add a utility function create_agent_failure_event(conversation_id, agent_id, error_type, message) that inserts a message_event with event_type='system_notice', source_type='system', and metadata containing the error details (error_type: 'crash'|'timeout'|'rate_limit', agent_id, traceback summary). Integrate this with the adapter layer's error handling. Acceptance criteria: agent failures create system_notice events; events appear in conversation timeline; metadata includes error classification.",
+    "design_refs": ["DES-02"],
+    "requirements": ["BE-R151", "BE-R030", "BE-R031"],
+    "dependencies": ["T-101", "T-202"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/routes/messages.py", "backend/src/agent_orchestrator/orchestrator/error_events.py"],
+      "directories": ["backend/src/agent_orchestrator/api/", "backend/src/agent_orchestrator/orchestrator/"]
+    },
+    "complexity": "M",
+    "parallel_group": "api-agents",
+    "tests": [
+      {
+        "id": "TT-214-01",
+        "description": "create_agent_failure_event inserts system_notice event with correct metadata",
+        "type": "unit",
+        "file": "backend/tests/test_error_events.py"
+      },
+      {
+        "id": "TT-214-02",
+        "description": "Crash error event includes agent_id and error classification in metadata",
+        "type": "unit",
+        "file": "backend/tests/test_error_events.py"
+      },
+      {
+        "id": "TT-214-03",
+        "description": "Failure events appear in GET /api/conversations/{id}/messages timeline",
+        "type": "integration",
+        "file": "backend/tests/test_error_events.py"
+      }
+    ]
+  },
+  {
+    "id": "T-215",
+    "title": "Register new route modules in FastAPI app",
+    "description": "Update the FastAPI application factory (create_app in api/__init__.py) to include all new routers created in T-202 through T-210: messages, tasks, phases, merge_queue, and streams. Add the router imports and include_router calls with the /api prefix. Verify all endpoints are accessible and do not conflict with existing routes. Acceptance criteria: all new endpoints are reachable; no route conflicts; OpenAPI schema includes all endpoints.",
+    "design_refs": ["DES-01"],
+    "requirements": ["BE-R061"],
+    "dependencies": ["T-202", "T-204", "T-206", "T-207", "T-208"],
+    "scope": {
+      "files": ["backend/src/agent_orchestrator/api/__init__.py"],
+      "directories": ["backend/src/agent_orchestrator/api/"]
+    },
+    "complexity": "S",
+    "parallel_group": "api-conversations",
+    "tests": [
+      {
+        "id": "TT-215-01",
+        "description": "All new route modules are included in the FastAPI app",
+        "type": "integration",
+        "file": "backend/tests/test_api_app.py"
+      },
+      {
+        "id": "TT-215-02",
+        "description": "OpenAPI schema includes all new endpoints under /api prefix",
+        "type": "integration",
+        "file": "backend/tests/test_api_app.py"
+      },
+      {
+        "id": "TT-215-03",
+        "description": "No route path conflicts between existing and new routers",
+        "type": "integration",
+        "file": "backend/tests/test_api_app.py"
+      }
+    ]
+  }
+]

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Document Viewer</title>
+  <style>
+    :root { --ink:#f3e7c9; --muted:#b8ac8d; --gold:#d6b164; --bg:#0c0f16; --panel:#1b2130; --surface:#232840; --ok:#4ade80; --accent:#818cf8; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:radial-gradient(circle at 20% 0,#243149,var(--bg) 55%); color:var(--ink); font-family: Georgia, serif; min-height:100vh; }
+    .page { max-width:1020px; margin:32px auto; padding:36px; border:1px solid #5a4728; border-radius:16px; background:linear-gradient(180deg,var(--panel),#111521); box-shadow:0 16px 48px #0008; }
+    h1 { color:var(--gold); font-size:2.2rem; margin:0 0 6px; }
+    h2 { color:var(--gold); font-size:1.4rem; margin:32px 0 12px; border-bottom:1px solid #5a4728; padding-bottom:6px; }
+    h3 { color:var(--accent); font-size:1.05rem; margin:20px 0 8px; }
+    p, li { line-height:1.7; }
+    a { color:var(--gold); }
+    .meta { color:var(--muted); margin-bottom:24px; font-size:0.95em; }
+
+    /* Nav */
+    .nav { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
+    .nav a { display:inline-block; padding:6px 14px; background:var(--surface); border:1px solid #5a4728; border-radius:6px; color:var(--gold); text-decoration:none; font-size:0.85em; transition:background 0.15s; }
+    .nav a:hover, .nav a.active { background:#3a3f5a; }
+    .nav a.ext { border-color:var(--accent); color:var(--accent); }
+
+    /* Requirement tags */
+    .req-tags { margin:12px 0; display:flex; flex-wrap:wrap; gap:6px; }
+    .req-tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.75em; font-weight:bold; background:#2a2d3a; color:var(--gold); border:1px solid #5a4728; }
+
+    /* Content */
+    .section { margin:24px 0; }
+    .section-content { white-space:pre-wrap; line-height:1.7; }
+    .section-content code, pre { background:#1a1d2e; padding:2px 6px; border-radius:4px; font-family:'Fira Code',monospace; font-size:0.85em; }
+    pre { padding:16px; border-radius:8px; overflow-x:auto; border:1px solid #5a4728; }
+
+    /* Decisions */
+    .decision { background:var(--surface); border-left:3px solid var(--accent); padding:12px 16px; margin:12px 0; border-radius:0 8px 8px 0; }
+    .decision-id { color:var(--accent); font-weight:bold; font-size:0.9em; }
+    .decision-title { color:var(--gold); font-weight:bold; margin:4px 0; }
+    .decision-body { margin-top:8px; }
+    .decision-body strong { color:var(--ok); }
+    .alternatives { margin-top:8px; padding-left:20px; color:var(--muted); font-size:0.9em; }
+    .alternatives li { margin:2px 0; }
+
+    /* Stats */
+    .stats { display:flex; gap:16px; flex-wrap:wrap; margin:16px 0; padding:12px 16px; background:var(--surface); border-radius:8px; }
+    .stat { text-align:center; }
+    .stat-num { font-size:1.6em; font-weight:bold; color:var(--gold); }
+    .stat-label { font-size:0.75em; color:var(--muted); }
+
+    .loading { text-align:center; padding:60px; color:var(--muted); font-size:1.2em; }
+    .error { text-align:center; padding:60px; color:#f87171; font-size:1.1em; }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <div class="nav" id="nav"></div>
+    <div id="content"><div class="loading">Loading...</div></div>
+  </article>
+
+  <script>
+    const DOCS = [
+      { key: '01-system-architecture', label: '01 Architecture' },
+      { key: '02-data-model',          label: '02 Data Model' },
+      { key: '03-chat-debate-ui',      label: '03 Chat UI' },
+      { key: '04-dashboard-activity',  label: '04 Dashboard' },
+      { key: '05-debate-engine',       label: '05 Debate' },
+      { key: '06-execution-engine',    label: '06 Execution' },
+      { key: '07-agent-adapters',      label: '07 Adapters' },
+      { key: '08-merge-coordination',  label: '08 Merge' },
+    ];
+
+    function getDocKey() {
+      return new URLSearchParams(location.search).get('doc') || DOCS[0].key;
+    }
+
+    function buildNav(activeKey) {
+      const nav = document.getElementById('nav');
+      nav.innerHTML = '<a class="ext" href="../requirements/traceability.html">Traceability</a><a class="ext" href="../requirements/viewer.html">Requirements</a>';
+      for (const d of DOCS) {
+        const a = document.createElement('a');
+        a.href = `?doc=${d.key}`;
+        a.textContent = d.label;
+        if (d.key === activeKey) a.classList.add('active');
+        nav.appendChild(a);
+      }
+    }
+
+    function renderContent(text) {
+      // Convert ```...``` blocks to <pre>
+      return text.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
+        `<pre>${code.replace(/</g, '&lt;')}</pre>`
+      ).replace(/`([^`]+)`/g, '<code>$1</code>')
+       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+       .replace(/\n\n/g, '</p><p>')
+       .replace(/^/, '<p>').replace(/$/, '</p>');
+    }
+
+    function renderDecision(d) {
+      let html = `<div class="decision">
+        <div class="decision-id">${d.id}</div>
+        <div class="decision-title">${d.title}</div>
+        <div class="decision-body">
+          <strong>Decision:</strong> ${d.decision}<br/>
+          <em>Rationale:</em> ${d.rationale}
+        </div>`;
+      if (d.alternatives && d.alternatives.length) {
+        html += `<ul class="alternatives">`;
+        for (const alt of d.alternatives) {
+          html += `<li>${alt}</li>`;
+        }
+        html += `</ul>`;
+      }
+      html += `</div>`;
+      return html;
+    }
+
+    function renderDoc(doc) {
+      const totalDecisions = doc.sections.reduce((n, s) => n + (s.decisions?.length || 0), 0);
+
+      let html = `<h1>${doc.title}</h1>`;
+      html += `<div class="meta">${doc.id} &middot; Agent Orchestrator Web &middot; ${doc.date}</div>`;
+
+      html += `<div class="stats">
+        <div class="stat"><div class="stat-num">${doc.sections.length}</div><div class="stat-label">Sections</div></div>
+        <div class="stat"><div class="stat-num">${totalDecisions}</div><div class="stat-label">Decisions</div></div>
+        <div class="stat"><div class="stat-num">${doc.requirements.length}</div><div class="stat-label">Requirements</div></div>
+      </div>`;
+
+      html += `<h3>Linked Requirements</h3><div class="req-tags">`;
+      for (const r of doc.requirements) {
+        html += `<span class="req-tag">${r}</span>`;
+      }
+      html += `</div>`;
+
+      for (const sec of doc.sections) {
+        html += `<h2>${sec.title}</h2>`;
+        html += `<div class="section-content">${renderContent(sec.content)}</div>`;
+        if (sec.decisions && sec.decisions.length) {
+          for (const d of sec.decisions) {
+            html += renderDecision(d);
+          }
+        }
+      }
+      return html;
+    }
+
+    function main() {
+      const key = getDocKey();
+      buildNav(key);
+      const el = document.getElementById('content');
+      const data = window.__DESIGN_DATA__;
+      if (!data || !data[key]) {
+        el.innerHTML = `<div class="error">Data not found for "${key}".<br/>Run <code>python3 build.py</code> to regenerate _bundle.js</div>`;
+        return;
+      }
+      const doc = data[key];
+      document.title = doc.title + ' — Design';
+      el.innerHTML = renderDoc(doc);
+    }
+  </script>
+  <script src="_bundle.js"></script>
+  <script>main();</script>
+</body>
+</html>
