@@ -21,6 +21,8 @@ const api = vi.hoisted(() => ({
   steerConversation: vi.fn(),
   fetchEvents: vi.fn(),
   fetchLatestEvents: vi.fn(),
+  fetchTasks: vi.fn(),
+  fetchRunStatus: vi.fn(),
 }));
 
 vi.mock("../api/client", () => api);
@@ -51,6 +53,8 @@ describe("AppShell", () => {
     api.continueBatch.mockResolvedValue(undefined);
     api.stopBatch.mockResolvedValue(undefined);
     api.steerConversation.mockResolvedValue(undefined);
+    api.fetchTasks.mockResolvedValue([]);
+    api.fetchRunStatus.mockResolvedValue(null);
     api.createAgent.mockResolvedValue({
       id: "agent-1",
       display_name: "Codex Worker",
@@ -226,7 +230,13 @@ describe("AppShell", () => {
 
   it("removes agent from conversation (not global delete) when conversation is selected", async () => {
     api.listConversations.mockResolvedValue([
-      { id: "conv-1", title: "Test", project_path: "/tmp", updated_at: "2026-01-01T00:00:00Z", active: 1 },
+      {
+        id: "conv-1",
+        title: "Test",
+        project_path: "/tmp",
+        updated_at: "2026-01-01T00:00:00Z",
+        active: 1,
+      },
     ]);
     api.listConversationAgents.mockResolvedValue([
       {
@@ -315,5 +325,126 @@ describe("T-306: PhaseBanner integration in AppShell", () => {
 
     expect(topBarIndex).toBeLessThan(bannerIndex);
     expect(bannerIndex).toBeLessThan(mainIndex);
+  });
+});
+
+describe("T-404: Dashboard view toggle", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    api.listConversations.mockResolvedValue([]);
+    api.listAgents.mockResolvedValue([]);
+    api.listConversationAgents.mockResolvedValue([]);
+    api.removeAgentFromConversation.mockResolvedValue(undefined);
+    api.reorderConversationAgents.mockResolvedValue(undefined);
+    api.fetchTasks.mockResolvedValue([]);
+    api.fetchRunStatus.mockResolvedValue(null);
+    api.createConversation.mockResolvedValue({
+      id: "conv-1",
+      title: "Conversation 1",
+      updated_at: "2026-01-01T00:00:00Z",
+    });
+    api.selectConversation.mockResolvedValue({
+      id: "conv-1",
+      title: "Conversation 1",
+      updated_at: "2026-01-01T00:00:00Z",
+    });
+    api.runBatch.mockResolvedValue(undefined);
+    api.continueBatch.mockResolvedValue(undefined);
+    api.stopBatch.mockResolvedValue(undefined);
+    api.steerConversation.mockResolvedValue(undefined);
+  });
+
+  it("renders view toggle with Chat and Dashboard buttons", async () => {
+    render(<AppShell />);
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
+
+    expect(screen.getByTestId("view-toggle")).toBeInTheDocument();
+    expect(screen.getByTestId("view-toggle-chat")).toBeInTheDocument();
+    expect(screen.getByTestId("view-toggle-dashboard")).toBeInTheDocument();
+  });
+
+  it("shows ChatPane by default, not KanbanBoard", async () => {
+    render(<AppShell />);
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
+
+    expect(screen.getByTestId("chat-pane")).toBeInTheDocument();
+    expect(screen.queryByTestId("dashboard-view")).not.toBeInTheDocument();
+  });
+
+  it("switches to dashboard view when Dashboard button is clicked", async () => {
+    render(<AppShell />);
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
+
+    fireEvent.click(screen.getByTestId("view-toggle-dashboard"));
+
+    expect(screen.queryByTestId("chat-pane")).not.toBeInTheDocument();
+    expect(screen.getByTestId("dashboard-view")).toBeInTheDocument();
+    expect(screen.getByTestId("kanban-board")).toBeInTheDocument();
+  });
+
+  it("switches back to chat view when Chat button is clicked", async () => {
+    render(<AppShell />);
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
+
+    fireEvent.click(screen.getByTestId("view-toggle-dashboard"));
+    expect(screen.getByTestId("dashboard-view")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("view-toggle-chat"));
+    expect(screen.getByTestId("chat-pane")).toBeInTheDocument();
+    expect(screen.queryByTestId("dashboard-view")).not.toBeInTheDocument();
+  });
+
+  it("fetches tasks when switching to dashboard with a selected conversation", async () => {
+    api.listConversations.mockResolvedValue([
+      {
+        id: "conv-1",
+        title: "Test",
+        project_path: "/tmp",
+        updated_at: "2026-01-01T00:00:00Z",
+        active: 1,
+      },
+    ]);
+    api.fetchTasks.mockResolvedValue([
+      { id: "UI-001", title: "Build top bar", status: "done", assignee: "claude" },
+      { id: "UI-002", title: "History pane", status: "implementing", assignee: "codex" },
+    ]);
+
+    render(<AppShell />);
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
+
+    fireEvent.click(screen.getByTestId("view-toggle-dashboard"));
+
+    await waitFor(() => expect(api.fetchTasks).toHaveBeenCalledWith("conv-1"));
+    expect(screen.getByTestId("kanban-card-UI-001")).toBeInTheDocument();
+    expect(screen.getByTestId("kanban-card-UI-002")).toBeInTheDocument();
+  });
+
+  it("displays tasks in correct kanban columns", async () => {
+    api.listConversations.mockResolvedValue([
+      {
+        id: "conv-1",
+        title: "Test",
+        project_path: "/tmp",
+        updated_at: "2026-01-01T00:00:00Z",
+        active: 1,
+      },
+    ]);
+    api.fetchTasks.mockResolvedValue([
+      { id: "T-1", title: "Task A", status: "todo" },
+      { id: "T-2", title: "Task B", status: "done" },
+    ]);
+
+    render(<AppShell />);
+    await waitFor(() => expect(api.listConversations).toHaveBeenCalledOnce());
+
+    fireEvent.click(screen.getByTestId("view-toggle-dashboard"));
+
+    await waitFor(() => expect(api.fetchTasks).toHaveBeenCalledWith("conv-1"));
+
+    const todoCol = screen.getByTestId("kanban-column-todo");
+    expect(todoCol).toContainElement(screen.getByTestId("kanban-card-T-1"));
+
+    const doneCol = screen.getByTestId("kanban-column-done");
+    expect(doneCol).toContainElement(screen.getByTestId("kanban-card-T-2"));
   });
 });

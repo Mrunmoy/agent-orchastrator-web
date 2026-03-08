@@ -31,27 +31,18 @@ export function KanbanBoard({ tasks }: KanbanBoardProps) {
           >
             <div className="kanban-column__header">
               <span className="kanban-column__title">{col.label}</span>
-              <span
-                className="kanban-column__count"
-                data-testid={`kanban-count-${col.status}`}
-              >
+              <span className="kanban-column__count" data-testid={`kanban-count-${col.status}`}>
                 {columnTasks.length}
               </span>
             </div>
             <div className="kanban-column__body">
               {columnTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="kanban-card"
-                  data-testid={`kanban-card-${task.id}`}
-                >
+                <div key={task.id} className="kanban-card" data-testid={`kanban-card-${task.id}`}>
                   <div className="kanban-card__title">{task.title}</div>
                   <div className="kanban-card__meta">
                     <span className="kanban-card__id">{task.id}</span>
                     {task.assignee && (
-                      <span className="kanban-card__assignee">
-                        {task.assignee}
-                      </span>
+                      <span className="kanban-card__assignee">{task.assignee}</span>
                     )}
                   </div>
                 </div>

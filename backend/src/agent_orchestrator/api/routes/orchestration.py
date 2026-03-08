@@ -64,8 +64,23 @@ _RUN_KEYS = [
 ]
 
 
-def _run_row_to_dict(row: tuple[Any, ...]) -> dict[str, Any]:
-    return dict(zip(_RUN_KEYS, row))
+def _run_row_to_dict(row: tuple[Any, ...], conn: Any = None) -> dict[str, Any]:
+    d = dict(zip(_RUN_KEYS, row))
+    # Computed fields expected by the frontend RunStatusData type
+    d["run_id"] = d["id"]
+    turns_completed = 0
+    if conn is not None:
+        count_row = conn.execute(
+            "SELECT COUNT(*) FROM message_event "
+            "WHERE conversation_id = ? "
+            "AND json_extract(metadata_json, '$.run_id') = ?",
+            (d["conversation_id"], d["id"]),
+        ).fetchone()
+        turns_completed = count_row[0] if count_row else 0
+    d["turns_completed"] = turns_completed
+    d["turns_total"] = d.get("batch_size", 0)
+    d["updated_at"] = d.get("ended_at") or d.get("started_at") or d.get("created_at")
+    return d
 
 
 _EVENT_KEYS = [
@@ -141,7 +156,8 @@ def start_run(conversation_id: str, body: RunBody | None = None) -> Any:
         )
         conn.commit()
         row = conn.execute("SELECT * FROM scheduler_run WHERE id = ?", (run_id,)).fetchone()
-    return ok_response({"run": _run_row_to_dict(row)})
+        result = _run_row_to_dict(row, conn)
+    return ok_response({"run": result})
 
 
 @router.post("/orchestration/{conversation_id}/continue")
@@ -174,7 +190,8 @@ def continue_run(conversation_id: str) -> Any:
         )
         conn.commit()
         row = conn.execute("SELECT * FROM scheduler_run WHERE id = ?", (run_id,)).fetchone()
-    return ok_response({"run": _run_row_to_dict(row)})
+        result = _run_row_to_dict(row, conn)
+    return ok_response({"run": result})
 
 
 @router.post("/orchestration/{conversation_id}/stop")
@@ -208,7 +225,52 @@ def stop_run(conversation_id: str) -> Any:
         )
         conn.commit()
         row = conn.execute("SELECT * FROM scheduler_run WHERE id = ?", (run_id,)).fetchone()
-    return ok_response({"run": _run_row_to_dict(row)})
+        result = _run_row_to_dict(row, conn)
+    return ok_response({"run": result})
+
+
+@router.get("/orchestration/{conversation_id}/status")
+def run_status(conversation_id: str) -> Any:
+    """Return the latest scheduler_run for a conversation."""
+    db = get_db()
+    with db.connection() as conn:
+        if not _conversation_exists(conn, conversation_id):
+            return JSONResponse(
+                status_code=404,
+                content=error_response("Conversation not found"),
+            )
+
+        row = conn.execute(
+            "SELECT * FROM scheduler_run "
+            "WHERE conversation_id = ? "
+            "ORDER BY created_at DESC LIMIT 1",
+            (conversation_id,),
+        ).fetchone()
+        run = _run_row_to_dict(row, conn) if row else None
+
+    return ok_response({"run": run})
+
+
+@router.get("/orchestration/{conversation_id}/runs")
+def list_runs(conversation_id: str) -> Any:
+    """List all runs for a conversation, most recent first."""
+    db = get_db()
+    with db.connection() as conn:
+        if not _conversation_exists(conn, conversation_id):
+            return JSONResponse(
+                status_code=404,
+                content=error_response("Conversation not found"),
+            )
+
+        rows = conn.execute(
+            "SELECT * FROM scheduler_run "
+            "WHERE conversation_id = ? "
+            "ORDER BY created_at DESC LIMIT 20",
+            (conversation_id,),
+        ).fetchall()
+        runs = [_run_row_to_dict(row, conn) for row in rows]
+
+    return ok_response({"runs": runs})
 
 
 @router.post("/orchestration/{conversation_id}/steer")

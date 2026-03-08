@@ -149,10 +149,9 @@ export async function removeAgentFromConversation(
   conversationId: string,
   agentId: string,
 ): Promise<void> {
-  await request<Record<string, unknown>>(
-    `/conversations/${conversationId}/agents/${agentId}`,
-    { method: "DELETE" },
-  );
+  await request<Record<string, unknown>>(`/conversations/${conversationId}/agents/${agentId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function reorderConversationAgents(
@@ -182,10 +181,7 @@ export type BackendEvent = {
  * Fetch events for a conversation.
  * When `since` is provided, only returns events after that event_id.
  */
-export async function fetchEvents(
-  conversationId: string,
-  since?: string,
-): Promise<BackendEvent[]> {
+export async function fetchEvents(conversationId: string, since?: string): Promise<BackendEvent[]> {
   const params = new URLSearchParams({ conversation_id: conversationId });
   if (since) {
     params.set("since", since);
@@ -197,10 +193,7 @@ export async function fetchEvents(
 /**
  * Fetch the latest N events for a conversation.
  */
-export async function fetchLatestEvents(
-  conversationId: string,
-  n = 10,
-): Promise<BackendEvent[]> {
+export async function fetchLatestEvents(conversationId: string, n = 10): Promise<BackendEvent[]> {
   const params = new URLSearchParams({
     conversation_id: conversationId,
     n: String(n),
@@ -229,4 +222,90 @@ export async function steerConversation(conversationId: string, note: string): P
     method: "POST",
     body: JSON.stringify({ note }),
   });
+}
+
+// ---------------------------------------------------------------------------
+// Tasks (T-404)
+// ---------------------------------------------------------------------------
+
+export type Task = {
+  id: string;
+  title: string;
+  status: string;
+  assignee?: string;
+  priority?: "low" | "medium" | "high" | "critical";
+};
+
+export async function fetchTasks(conversationId: string): Promise<Task[]> {
+  const data = await request<{ tasks: Task[] }>(
+    `/tasks?conversation_id=${encodeURIComponent(conversationId)}`,
+  );
+  return data.tasks;
+}
+
+// ---------------------------------------------------------------------------
+// Artifacts (T-405)
+// ---------------------------------------------------------------------------
+
+export type ArtifactType =
+  | "agreement_map"
+  | "conflict_map"
+  | "neutral_memo"
+  | "checkpoint"
+  | "test_report"
+  | "decision_log";
+
+export type Artifact = {
+  id: string;
+  conversation_id: string;
+  type: ArtifactType;
+  payload_json: string;
+  created_at: string;
+  batch_id: string | null;
+};
+
+export async function fetchArtifacts(
+  conversationId: string,
+  type?: ArtifactType,
+): Promise<Artifact[]> {
+  const params = new URLSearchParams({ conversation_id: conversationId });
+  if (type) {
+    params.set("type", type);
+  }
+  const data = await request<{ artifacts: Artifact[] }>(`/artifacts?${params.toString()}`);
+  return data.artifacts;
+}
+
+export async function fetchLatestArtifact(conversationId: string): Promise<Artifact | null> {
+  const data = await request<{ artifact: Artifact | null }>(
+    `/artifacts/latest?conversation_id=${encodeURIComponent(conversationId)}`,
+  );
+  return data.artifact;
+}
+
+// ---------------------------------------------------------------------------
+// Run Status (T-406)
+// ---------------------------------------------------------------------------
+
+/** Shape returned by GET /api/orchestration/:id/status */
+export type RunStatusData = {
+  run_id: string;
+  status: "queued" | "running" | "paused" | "done" | "failed";
+  turns_completed: number;
+  turns_total: number;
+  started_at: string;
+  updated_at: string;
+};
+
+/**
+ * Fetch the latest run status for a conversation.
+ * Returns null when no run exists (404) or on network error.
+ */
+export async function fetchRunStatus(conversationId: string): Promise<RunStatusData | null> {
+  try {
+    const data = await request<{ run: RunStatusData }>(`/orchestration/${conversationId}/status`);
+    return data.run;
+  } catch {
+    return null;
+  }
 }
