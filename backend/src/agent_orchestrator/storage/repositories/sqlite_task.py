@@ -127,8 +127,9 @@ class SQLiteTaskRepository(TaskRepository):
         if task is None:
             raise KeyError(f"Task not found: {task_id}")
 
-        # Dependency gate: cannot enter in_progress unless all deps are done.
-        if status == TaskStatus.IN_PROGRESS:
+        # Dependency gate: cannot advance unless all deps are done.
+        # (Skip the check for BLOCKED — you can always block a task.)
+        if status != TaskStatus.BLOCKED:
             dep_ids: list[str] = json.loads(task.depends_on_json)
             if dep_ids:
                 self._assert_all_deps_done(dep_ids, task_id)
@@ -137,9 +138,9 @@ class SQLiteTaskRepository(TaskRepository):
         updates = {"status": status.value, "updated_at": now}
 
         # Track started/finished timestamps.
-        if status == TaskStatus.IN_PROGRESS and task.started_at is None:
+        if status != TaskStatus.TODO and task.started_at is None:
             updates["started_at"] = now
-        if status in (TaskStatus.DONE, TaskStatus.FAILED):
+        if status in (TaskStatus.DONE, TaskStatus.BLOCKED):
             updates["finished_at"] = now
 
         set_clause = ", ".join(f"{k} = ?" for k in updates)
@@ -194,7 +195,7 @@ class SQLiteTaskRepository(TaskRepository):
             dep_status = found.get(dep_id)
             if dep_status != TaskStatus.DONE.value:
                 raise ValueError(
-                    f"Cannot transition task {task_id} to in_progress: "
+                    f"Cannot transition task {task_id} to implementing: "
                     f"dependency {dep_id} has status {dep_status!r} (expected 'done')"
                 )
 

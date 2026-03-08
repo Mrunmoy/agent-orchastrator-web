@@ -72,7 +72,7 @@ class TestCreate:
 
 
 # ------------------------------------------------------------------
-# TT-107-02: update_status to 'in_progress' blocked when deps not done
+# TT-107-02: update_status blocked when deps not done
 # ------------------------------------------------------------------
 
 
@@ -81,16 +81,16 @@ class TestDependencyGateBlocked:
         dep = repo.create("conv-1", "Dep task", "{}")
         task = repo.create("conv-1", "Main task", "{}", depends_on=[dep.id])
 
-        with pytest.raises(ValueError, match="dependency.*status.*todo"):
-            repo.update_status(task.id, TaskStatus.IN_PROGRESS)
+        with pytest.raises(ValueError, match="dependency"):
+            repo.update_status(task.id, TaskStatus.DESIGN)
 
-    def test_blocked_when_dep_is_in_progress(self, repo: SQLiteTaskRepository):
+    def test_blocked_when_dep_is_not_done(self, repo: SQLiteTaskRepository):
         dep = repo.create("conv-1", "Dep task", "{}")
-        repo.update_status(dep.id, TaskStatus.IN_PROGRESS)
+        repo.update_status(dep.id, TaskStatus.DESIGN)
         task = repo.create("conv-1", "Main task", "{}", depends_on=[dep.id])
 
         with pytest.raises(ValueError, match="dependency"):
-            repo.update_status(task.id, TaskStatus.IN_PROGRESS)
+            repo.update_status(task.id, TaskStatus.DESIGN)
 
     def test_blocked_when_one_of_multiple_deps_not_done(
         self, repo: SQLiteTaskRepository
@@ -104,7 +104,7 @@ class TestDependencyGateBlocked:
         )
 
         with pytest.raises(ValueError, match="dependency"):
-            repo.update_status(task.id, TaskStatus.IN_PROGRESS)
+            repo.update_status(task.id, TaskStatus.DESIGN)
 
     def test_blocked_when_dep_does_not_exist(self, repo: SQLiteTaskRepository):
         task = repo.create(
@@ -112,11 +112,11 @@ class TestDependencyGateBlocked:
         )
 
         with pytest.raises(ValueError, match="dependency"):
-            repo.update_status(task.id, TaskStatus.IN_PROGRESS)
+            repo.update_status(task.id, TaskStatus.DESIGN)
 
 
 # ------------------------------------------------------------------
-# TT-107-03: update_status to 'in_progress' succeeds when deps done
+# TT-107-03: update_status succeeds when deps done
 # ------------------------------------------------------------------
 
 
@@ -130,23 +130,23 @@ class TestDependencyGateSuccess:
         task = repo.create(
             "conv-1", "Main task", "{}", depends_on=[dep_a.id, dep_b.id]
         )
-        repo.update_status(task.id, TaskStatus.IN_PROGRESS)
+        repo.update_status(task.id, TaskStatus.DESIGN)
 
         updated = repo.get_by_id(task.id)
         assert updated is not None
-        assert updated.status == TaskStatus.IN_PROGRESS
+        assert updated.status == TaskStatus.DESIGN
 
     def test_succeeds_with_no_deps(self, repo: SQLiteTaskRepository):
         task = repo.create("conv-1", "No deps", "{}")
-        repo.update_status(task.id, TaskStatus.IN_PROGRESS)
+        repo.update_status(task.id, TaskStatus.DESIGN)
 
         updated = repo.get_by_id(task.id)
         assert updated is not None
-        assert updated.status == TaskStatus.IN_PROGRESS
+        assert updated.status == TaskStatus.DESIGN
 
-    def test_sets_started_at_on_in_progress(self, repo: SQLiteTaskRepository):
+    def test_sets_started_at_on_implementing(self, repo: SQLiteTaskRepository):
         task = repo.create("conv-1", "Task A", "{}")
-        repo.update_status(task.id, TaskStatus.IN_PROGRESS)
+        repo.update_status(task.id, TaskStatus.DESIGN)
 
         updated = repo.get_by_id(task.id)
         assert updated is not None
@@ -196,7 +196,7 @@ class TestListByConversation:
     def test_returns_empty_for_no_match(self, repo: SQLiteTaskRepository):
         repo.create("conv-1", "Task A", "{}")
         tasks = repo.list_by_conversation(
-            "conv-1", status_filter=TaskStatus.FAILED
+            "conv-1", status_filter=TaskStatus.BLOCKED
         )
         assert tasks == []
 

@@ -78,3 +78,12 @@ def get_config() -> AppConfig:
     if _config is None:
         _config = AppConfig.from_env()
     return _config
+
+
+def reset_config() -> None:
+    """Clear the cached singleton so the next ``get_config()`` re-reads env vars.
+
+    Intended for test teardown only.
+    """
+    global _config  # noqa: PLW0603
+    _config = None
