@@ -13,12 +13,43 @@
   flex-direction: row-reverse;
 }
 
+/* Steer message — amber/gold highlight border */
+.chat-message--steer .chat-bubble {
+  border-color: var(--gold);
+  border-width: 2px;
+  background: rgba(214, 177, 100, 0.08);
+}
+
+/* Debate turn — like agent but subtle left accent */
+.chat-message--debate {
+  justify-content: flex-start;
+}
+
+/* System notice — muted inline banner */
+.chat-message--system {
+  justify-content: center;
+}
+
+.chat-message--system .chat-avatar {
+  display: none;
+}
+
+.chat-message--system .chat-bubble {
+  max-width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  opacity: 0.75;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* Avatar */
 .chat-avatar {
   width: 30px;
   height: 30px;
   border-radius: 50%;
   background: var(--surface-3);
-  color: var(--ink);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,6 +61,7 @@
 }
 
 .chat-message--agent .chat-avatar {
+  /* Default gradient; overridden by inline style when agentId present */
   background: linear-gradient(135deg, var(--brand), var(--teal));
   border: none;
   color: #fff;
@@ -41,6 +73,7 @@
   color: #fff;
 }
 
+/* Bubble */
 .chat-bubble {
   max-width: 72%;
   padding: 8px 12px;
@@ -50,7 +83,8 @@
   color: var(--ink);
 }
 
-.chat-message--agent .chat-bubble {
+.chat-message--agent .chat-bubble,
+.chat-message--debate .chat-bubble {
   background: var(--surface-2);
   border: 1px solid var(--line);
 }
@@ -60,6 +94,7 @@
   border: 1px solid var(--brand);
 }
 
+/* Header */
 .chat-bubble__header {
   display: flex;
   align-items: baseline;
@@ -78,11 +113,99 @@
   color: var(--muted);
 }
 
+/* Role badge */
+.chat-bubble__role {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(136, 146, 176, 0.15);
+  color: var(--muted);
+  text-transform: lowercase;
+  font-weight: 500;
+}
+
+/* Round badge (debate turns) */
+.chat-bubble__round {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--brand-glow);
+  color: var(--brand-light);
+  font-weight: 600;
+}
+
+/* Message body — markdown */
 .chat-bubble__text {
-  white-space: pre-wrap;
   word-break: break-word;
 }
 
+.chat-bubble__text p {
+  margin: 0 0 0.5em;
+}
+
+.chat-bubble__text p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-bubble__text code {
+  background: var(--surface-3);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.chat-bubble__text pre {
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px;
+  overflow-x: auto;
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+.chat-bubble__text pre code {
+  background: none;
+  padding: 0;
+}
+
+.chat-bubble__text a {
+  color: var(--brand-light);
+  text-decoration: underline;
+}
+
+.chat-bubble__text ul,
+.chat-bubble__text ol {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+/* Phase divider */
+.phase-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.phase-divider::before,
+.phase-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.phase-divider__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Thinking indicator */
 .thinking-indicator {
   display: inline-flex;
   gap: 4px;

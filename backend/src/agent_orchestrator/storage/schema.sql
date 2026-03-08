@@ -106,6 +106,22 @@ CREATE TABLE IF NOT EXISTS resource_snapshot (
   agent_capacity_available INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS merge_queue (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
+  task_id TEXT NOT NULL REFERENCES task(id) ON DELETE CASCADE,
+  pr_number INTEGER,
+  pr_url TEXT,
+  pr_branch TEXT,
+  author_agent_id TEXT NOT NULL REFERENCES agent(id) ON DELETE CASCADE,
+  reviewer_agent_id TEXT,
+  position INTEGER,
+  status TEXT NOT NULL,
+  queued_at TEXT,
+  merged_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Recommended indexes from domain model spec
 CREATE INDEX IF NOT EXISTS idx_conversation_updated_at
   ON conversation(updated_at DESC);
@@ -124,3 +140,9 @@ CREATE INDEX IF NOT EXISTS idx_artifact_conversation_created
 
 CREATE INDEX IF NOT EXISTS idx_scheduler_run_conversation_status
   ON scheduler_run(conversation_id, status, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_merge_queue_conversation
+  ON merge_queue(conversation_id, status);
+
+CREATE INDEX IF NOT EXISTS idx_merge_queue_status_position
+  ON merge_queue(status, position);
