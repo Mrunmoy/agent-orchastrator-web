@@ -65,7 +65,13 @@ _RUN_KEYS = [
 
 
 def _run_row_to_dict(row: tuple[Any, ...]) -> dict[str, Any]:
-    return dict(zip(_RUN_KEYS, row))
+    d = dict(zip(_RUN_KEYS, row))
+    # Computed fields expected by the frontend RunStatusData type
+    d["run_id"] = d["id"]
+    d["turns_completed"] = 0  # TODO: derive from message_event count
+    d["turns_total"] = d.get("batch_size", 0)
+    d["updated_at"] = d.get("ended_at") or d.get("started_at") or d.get("created_at")
+    return d
 
 
 _EVENT_KEYS = [

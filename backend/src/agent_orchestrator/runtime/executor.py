@@ -151,15 +151,28 @@ class BatchExecutor:
     # -- Poll & execute ------------------------------------------------------
 
     async def _poll_and_run(self) -> None:
-        """Find one queued run and execute it."""
+        """Find one queued run and atomically claim it."""
+        now = datetime.now(UTC).isoformat()
         with self._db.connection() as conn:
+            # Atomic claim: UPDATE … WHERE subselect avoids TOCTOU race
+            conn.execute(
+                "UPDATE scheduler_run "
+                "SET status = 'running', started_at = ? "
+                "WHERE id = ("
+                "  SELECT id FROM scheduler_run "
+                "  WHERE status = 'queued' "
+                "  ORDER BY created_at ASC LIMIT 1"
+                ")",
+                (now,),
+            )
             row = conn.execute(
                 "SELECT id, conversation_id, batch_size "
                 "FROM scheduler_run "
-                "WHERE status = 'queued' "
-                "ORDER BY created_at ASC "
-                "LIMIT 1",
+                "WHERE status = 'running' AND started_at = ? "
+                "ORDER BY created_at ASC LIMIT 1",
+                (now,),
             ).fetchone()
+            conn.commit()
 
         if row is None:
             return
@@ -182,16 +195,7 @@ class BatchExecutor:
         5. Write each turn as a MessageEvent
         6. Mark run as 'done' or 'failed'
         """
-        now = datetime.now(UTC).isoformat()
-
-        # Mark running
-        with self._db.connection() as conn:
-            conn.execute(
-                "UPDATE scheduler_run SET status = 'running', started_at = ? WHERE id = ?",
-                (now, run_id),
-            )
-            conn.commit()
-
+        # Run is already marked 'running' by _poll_and_run (atomic claim).
         try:
             # Load agents for conversation
             agents, adapter_map = self._load_agents_for_conversation(conversation_id)
@@ -292,6 +296,11 @@ class BatchExecutor:
             for (agent_id,) in ca_rows:
                 row = conn.execute("SELECT * FROM agent WHERE id = ?", (agent_id,)).fetchone()
                 if row is None:
+                    logger.warning(
+                        "Agent %s linked to conversation %s not found — skipping",
+                        agent_id,
+                        conversation_id,
+                    )
                     continue
 
                 d = dict(zip(_AGENT_COLUMNS, row))

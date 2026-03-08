@@ -46,7 +46,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     from agent_orchestrator.api.db_provider import get_db
     from agent_orchestrator.runtime.executor import BatchExecutor
 
+    # NOTE: BatchExecutor uses an in-process poll loop — run with a single
+    # worker only (no multi-process Gunicorn).
     executor = BatchExecutor(get_db())
+    app.state.executor = executor
     await executor.start()
     logger.info("BatchExecutor started in lifespan")
     yield

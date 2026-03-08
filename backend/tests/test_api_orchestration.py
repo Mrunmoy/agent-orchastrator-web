@@ -302,6 +302,17 @@ class TestStatusEndpoint:
         assert "started_at" in run
         assert "created_at" in run
 
+    def test_response_includes_frontend_fields(self, client: TestClient):
+        """Ensure run_id, turns_completed, turns_total, updated_at are present."""
+        cid = _create_conversation(client)
+        _insert_run(cid, status="running", batch_size=10)
+        resp = client.get(f"/api/orchestration/{cid}/status")
+        run = resp.json()["data"]["run"]
+        assert run["run_id"] == run["id"]
+        assert run["turns_completed"] == 0
+        assert run["turns_total"] == 10
+        assert run["updated_at"] is not None
+
 
 # ── GET /orchestration/{conversation_id}/runs ─────────────────────
 
