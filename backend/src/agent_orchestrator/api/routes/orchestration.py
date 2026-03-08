@@ -72,8 +72,9 @@ def _run_row_to_dict(row: tuple[Any, ...], conn: Any = None) -> dict[str, Any]:
     if conn is not None:
         count_row = conn.execute(
             "SELECT COUNT(*) FROM message_event "
-            "WHERE conversation_id = ? AND metadata_json LIKE ?",
-            (d["conversation_id"], f'%"run_id": "{d["id"]}"%'),
+            "WHERE conversation_id = ? "
+            "AND json_extract(metadata_json, '$.run_id') = ?",
+            (d["conversation_id"], d["id"]),
         ).fetchone()
         turns_completed = count_row[0] if count_row else 0
     d["turns_completed"] = turns_completed
