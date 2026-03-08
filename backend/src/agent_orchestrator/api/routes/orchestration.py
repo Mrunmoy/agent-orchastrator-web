@@ -64,11 +64,19 @@ _RUN_KEYS = [
 ]
 
 
-def _run_row_to_dict(row: tuple[Any, ...]) -> dict[str, Any]:
+def _run_row_to_dict(row: tuple[Any, ...], conn: Any = None) -> dict[str, Any]:
     d = dict(zip(_RUN_KEYS, row))
     # Computed fields expected by the frontend RunStatusData type
     d["run_id"] = d["id"]
-    d["turns_completed"] = 0  # TODO: derive from message_event count
+    turns_completed = 0
+    if conn is not None:
+        count_row = conn.execute(
+            "SELECT COUNT(*) FROM message_event "
+            "WHERE conversation_id = ? AND metadata_json LIKE ?",
+            (d["conversation_id"], f'%"run_id": "{d["id"]}"%'),
+        ).fetchone()
+        turns_completed = count_row[0] if count_row else 0
+    d["turns_completed"] = turns_completed
     d["turns_total"] = d.get("batch_size", 0)
     d["updated_at"] = d.get("ended_at") or d.get("started_at") or d.get("created_at")
     return d
@@ -147,7 +155,8 @@ def start_run(conversation_id: str, body: RunBody | None = None) -> Any:
         )
         conn.commit()
         row = conn.execute("SELECT * FROM scheduler_run WHERE id = ?", (run_id,)).fetchone()
-    return ok_response({"run": _run_row_to_dict(row)})
+        result = _run_row_to_dict(row, conn)
+    return ok_response({"run": result})
 
 
 @router.post("/orchestration/{conversation_id}/continue")
@@ -180,7 +189,8 @@ def continue_run(conversation_id: str) -> Any:
         )
         conn.commit()
         row = conn.execute("SELECT * FROM scheduler_run WHERE id = ?", (run_id,)).fetchone()
-    return ok_response({"run": _run_row_to_dict(row)})
+        result = _run_row_to_dict(row, conn)
+    return ok_response({"run": result})
 
 
 @router.post("/orchestration/{conversation_id}/stop")
@@ -214,7 +224,8 @@ def stop_run(conversation_id: str) -> Any:
         )
         conn.commit()
         row = conn.execute("SELECT * FROM scheduler_run WHERE id = ?", (run_id,)).fetchone()
-    return ok_response({"run": _run_row_to_dict(row)})
+        result = _run_row_to_dict(row, conn)
+    return ok_response({"run": result})
 
 
 @router.get("/orchestration/{conversation_id}/status")
@@ -234,8 +245,8 @@ def run_status(conversation_id: str) -> Any:
             "ORDER BY created_at DESC LIMIT 1",
             (conversation_id,),
         ).fetchone()
+        run = _run_row_to_dict(row, conn) if row else None
 
-    run = _run_row_to_dict(row) if row else None
     return ok_response({"run": run})
 
 
@@ -256,8 +267,8 @@ def list_runs(conversation_id: str) -> Any:
             "ORDER BY created_at DESC LIMIT 20",
             (conversation_id,),
         ).fetchall()
+        runs = [_run_row_to_dict(row, conn) for row in rows]
 
-    runs = [_run_row_to_dict(row) for row in rows]
     return ok_response({"runs": runs})
 
 

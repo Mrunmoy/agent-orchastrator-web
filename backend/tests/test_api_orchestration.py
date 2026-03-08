@@ -313,6 +313,29 @@ class TestStatusEndpoint:
         assert run["turns_total"] == 10
         assert run["updated_at"] is not None
 
+    def test_turns_completed_counts_message_events(self, client: TestClient):
+        """turns_completed should reflect actual message_event rows for this run."""
+        cid = _create_conversation(client)
+        run_id = _insert_run(cid, status="running", batch_size=10)
+        # Insert 3 message_events tied to this run via metadata_json
+        db = get_db()
+        now = datetime.now(UTC).isoformat()
+        with db.connection() as conn:
+            for i in range(3):
+                eid = str(uuid.uuid4())
+                meta = f'{{"turn_number": {i + 1}, "run_id": "{run_id}"}}'
+                conn.execute(
+                    "INSERT INTO message_event "
+                    "(conversation_id, event_id, source_type, source_id, "
+                    " text, event_type, metadata_json, created_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (cid, eid, "agent", None, "resp", "debate_turn", meta, now),
+                )
+            conn.commit()
+        resp = client.get(f"/api/orchestration/{cid}/status")
+        run = resp.json()["data"]["run"]
+        assert run["turns_completed"] == 3
+
 
 # ── GET /orchestration/{conversation_id}/runs ─────────────────────
 
