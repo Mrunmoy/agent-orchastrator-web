@@ -14,11 +14,30 @@ from agent_orchestrator.storage.db import DatabaseManager
 from agent_orchestrator.storage.repositories.sqlite_task import SQLiteTaskRepository
 
 
+_NOW = "2026-03-07T00:00:00Z"
+
+
+def _seed_conversations(db: DatabaseManager) -> None:
+    """Insert conversation and agent rows used by task repo tests."""
+    with db.connection() as conn:
+        for cid in ("conv-1", "conv-2"):
+            conn.execute(
+                "INSERT OR IGNORE INTO conversation VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (cid, "Conv", "/tmp", "debate", "design_debate", "open", 100, 1, None, None, _NOW, _NOW, None),
+            )
+        conn.execute(
+            "INSERT OR IGNORE INTO agent VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            ("agent-42", "Agent 42", "claude", "opus-4", None, "worker", "idle", None, "[]", 0, _NOW, _NOW),
+        )
+        conn.commit()
+
+
 @pytest.fixture
 def repo():
     """Create an in-memory DB with schema and return a SQLiteTaskRepository."""
     db = DatabaseManager(":memory:")
     db.initialize()
+    _seed_conversations(db)
     yield SQLiteTaskRepository(db)
     db.close()
 
@@ -28,6 +47,7 @@ def db_and_repo():
     """Return both the DatabaseManager and repo for tests that need direct DB access."""
     db = DatabaseManager(":memory:")
     db.initialize()
+    _seed_conversations(db)
     yield db, SQLiteTaskRepository(db)
     db.close()
 
