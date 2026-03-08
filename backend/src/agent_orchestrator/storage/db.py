@@ -207,16 +207,33 @@ class DatabaseManager:
     # ------------------------------------------------------------------
 
     def _apply_migrations(self, from_version: int) -> None:
-        """Run incremental migrations from *from_version* to _SCHEMA_VERSION."""
+        """Run incremental migrations from *from_version* to _SCHEMA_VERSION.
+
+        Table-recreation migrations (v5+) are executed atomically via
+        ``executescript`` to prevent partial-failure states (e.g. table
+        dropped but rename not yet applied).  Simpler ADD COLUMN migrations
+        use individual ``execute`` calls with idempotent error handling.
+        """
+        # Migrations that use table-recreation and MUST run atomically.
+        _ATOMIC_VERSIONS = frozenset({5})
+
         for target in range(from_version + 1, _SCHEMA_VERSION + 1):
             stmts = _MIGRATIONS.get(target, [])
-            for stmt in stmts:
-                try:
-                    self._conn.execute(stmt)
-                except sqlite3.OperationalError:
-                    # Column/table may already exist (idempotent).
-                    pass
-            self._conn.commit()
+            if not stmts:
+                continue
+            if target in _ATOMIC_VERSIONS:
+                script = "BEGIN;\n" + ";\n".join(stmts) + ";\nCOMMIT;"
+                self._conn.executescript(script)
+                # executescript issues implicit COMMIT that resets PRAGMAs
+                self._conn.execute("PRAGMA foreign_keys = ON")
+            else:
+                for stmt in stmts:
+                    try:
+                        self._conn.execute(stmt)
+                    except sqlite3.OperationalError:
+                        # Column/table may already exist (idempotent).
+                        pass
+                self._conn.commit()
 
     def _read_user_version(self) -> int:
         cur = self._conn.execute("PRAGMA user_version")

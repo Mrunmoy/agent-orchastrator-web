@@ -23,6 +23,8 @@ export function PhaseBanner({
         <span
           className="phase-banner__speaking"
           data-testid="speaking-indicator"
+          aria-live="polite"
+          aria-atomic="true"
         >
           {speakingAgent}
           <span
