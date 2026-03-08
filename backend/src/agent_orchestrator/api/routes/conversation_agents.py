@@ -1,7 +1,8 @@
-"""Conversation-scoped agent endpoints (UI-014)."""
+"""Conversation-scoped agent endpoints (UI-014, T-106)."""
 
 from __future__ import annotations
 
+import sqlite3
 from typing import Any
 
 from fastapi import APIRouter
@@ -10,14 +11,26 @@ from pydantic import BaseModel
 
 from agent_orchestrator.api.db_provider import get_db
 from agent_orchestrator.api.responses import error_response, ok_response
+from agent_orchestrator.storage.repositories.sqlite_conversation_agent import (
+    SQLiteConversationAgentRepository,
+)
 
 # ---------------------------------------------------------------------------
 # Request bodies
 # ---------------------------------------------------------------------------
 
 
+class AddAgentBody(BaseModel):
+    agent_id: str
+    permission_profile: str = "default"
+
+
 class ReorderBody(BaseModel):
     agent_ids: list[str]
+
+
+class MergeCoordinatorBody(BaseModel):
+    agent_id: str
 
 
 # ---------------------------------------------------------------------------
@@ -66,6 +79,10 @@ def _get_conversation_agents(conn, conversation_id: str) -> list[dict[str, Any]]
     return agents
 
 
+def _get_repo() -> SQLiteConversationAgentRepository:
+    return SQLiteConversationAgentRepository(get_db())
+
+
 # ---------------------------------------------------------------------------
 # Router
 # ---------------------------------------------------------------------------
@@ -87,25 +104,40 @@ def list_conversation_agents(conversation_id: str) -> Any:
     return ok_response({"agents": agents})
 
 
+@router.post("/conversations/{conversation_id}/agents")
+def add_agent_to_conversation(conversation_id: str, body: AddAgentBody) -> Any:
+    """Add an agent to a conversation with auto-assigned turn_order."""
+    db = get_db()
+    repo = _get_repo()
+    with db.connection() as conn:
+        if not _conversation_exists(conn, conversation_id):
+            return JSONResponse(
+                status_code=404,
+                content=error_response("Conversation not found"),
+            )
+    try:
+        record = repo.add_agent_to_conversation(
+            conversation_id, body.agent_id, body.permission_profile
+        )
+    except sqlite3.IntegrityError:
+        return JSONResponse(
+            status_code=409,
+            content=error_response("Agent already assigned to this conversation"),
+        )
+    return ok_response(record)
+
+
 @router.delete("/conversations/{conversation_id}/agents/{agent_id}")
 def remove_agent_from_conversation(conversation_id: str, agent_id: str) -> Any:
     """Remove an agent from a conversation (deletes the join row, not the agent)."""
-    db = get_db()
-    with db.connection() as conn:
-        row = conn.execute(
-            "SELECT id FROM conversation_agent " "WHERE conversation_id = ? AND agent_id = ?",
-            (conversation_id, agent_id),
-        ).fetchone()
-        if row is None:
-            return JSONResponse(
-                status_code=404,
-                content=error_response("Agent not linked to this conversation"),
-            )
-        conn.execute(
-            "DELETE FROM conversation_agent " "WHERE conversation_id = ? AND agent_id = ?",
-            (conversation_id, agent_id),
+    repo = _get_repo()
+    try:
+        repo.remove_agent(conversation_id, agent_id)
+    except KeyError:
+        return JSONResponse(
+            status_code=404,
+            content=error_response("Agent not linked to this conversation"),
         )
-        conn.commit()
     return ok_response({"removed_agent_id": agent_id})
 
 
@@ -113,36 +145,42 @@ def remove_agent_from_conversation(conversation_id: str, agent_id: str) -> Any:
 def reorder_conversation_agents(conversation_id: str, body: ReorderBody) -> Any:
     """Reorder agents in a conversation by specifying the desired agent_ids order."""
     db = get_db()
+    repo = _get_repo()
     with db.connection() as conn:
         if not _conversation_exists(conn, conversation_id):
             return JSONResponse(
                 status_code=404,
                 content=error_response("Conversation not found"),
             )
-        # Get current agent ids for this conversation
-        rows = conn.execute(
-            "SELECT agent_id FROM conversation_agent " "WHERE conversation_id = ? AND enabled = 1",
-            (conversation_id,),
-        ).fetchall()
-        current_ids = {r[0] for r in rows}
-        requested_ids = set(body.agent_ids)
+    try:
+        repo.reorder(conversation_id, body.agent_ids)
+    except ValueError as exc:
+        return JSONResponse(
+            status_code=400,
+            content=error_response(str(exc)),
+        )
 
-        if current_ids != requested_ids:
-            return JSONResponse(
-                status_code=400,
-                content=error_response(
-                    "agent_ids must exactly match the conversation's current agents"
-                ),
-            )
-
-        # Update turn_order for each agent (1-based)
-        for idx, agent_id in enumerate(body.agent_ids, start=1):
-            conn.execute(
-                "UPDATE conversation_agent SET turn_order = ? "
-                "WHERE conversation_id = ? AND agent_id = ?",
-                (idx, conversation_id, agent_id),
-            )
-        conn.commit()
-
+    with db.connection() as conn:
         agents = _get_conversation_agents(conn, conversation_id)
     return ok_response({"agents": agents})
+
+
+@router.patch("/conversations/{conversation_id}/agents/merge-coordinator")
+def set_merge_coordinator(conversation_id: str, body: MergeCoordinatorBody) -> Any:
+    """Set the merge coordinator for a conversation."""
+    db = get_db()
+    repo = _get_repo()
+    with db.connection() as conn:
+        if not _conversation_exists(conn, conversation_id):
+            return JSONResponse(
+                status_code=404,
+                content=error_response("Conversation not found"),
+            )
+    try:
+        repo.set_merge_coordinator(conversation_id, body.agent_id)
+    except KeyError:
+        return JSONResponse(
+            status_code=404,
+            content=error_response("Agent not linked to this conversation"),
+        )
+    return ok_response({"merge_coordinator": body.agent_id})

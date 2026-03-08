@@ -14,7 +14,7 @@ from pathlib import Path
 _SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 
 # Schema version embedded by this loader.  Bump when schema.sql changes.
-_SCHEMA_VERSION = 4
+_SCHEMA_VERSION = 5
 
 # Migrations keyed by target version.  Each entry is a list of SQL statements
 # that bring the schema from (version - 1) to version.
@@ -58,6 +58,68 @@ _MIGRATIONS: dict[int, list[str]] = {
             ON merge_queue(conversation_id, status)""",
         """CREATE INDEX IF NOT EXISTS idx_merge_queue_status_position
             ON merge_queue(status, position)""",
+    ],
+    5: [
+        # Clean up partial migration leftovers
+        "DROP TABLE IF EXISTS task_new",
+        "DROP TABLE IF EXISTS artifact_new",
+        "DROP TABLE IF EXISTS message_event_new",
+        # -- Recreate task with FK constraints --
+        """CREATE TABLE IF NOT EXISTS task_new (
+            id TEXT PRIMARY KEY,
+            conversation_id TEXT NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
+            title TEXT NOT NULL,
+            spec_json TEXT NOT NULL,
+            status TEXT NOT NULL,
+            priority INTEGER NOT NULL DEFAULT 100,
+            owner_agent_id TEXT REFERENCES agent(id) ON DELETE SET NULL,
+            depends_on_json TEXT NOT NULL DEFAULT '[]',
+            started_at TEXT,
+            finished_at TEXT,
+            result_summary TEXT,
+            evidence_json TEXT NOT NULL DEFAULT '[]',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )""",
+        "INSERT INTO task_new SELECT * FROM task",
+        "DROP TABLE task",
+        "ALTER TABLE task_new RENAME TO task",
+        """CREATE INDEX IF NOT EXISTS idx_task_conversation_status
+            ON task(conversation_id, status, priority)""",
+        # -- Recreate artifact with FK constraint --
+        """CREATE TABLE IF NOT EXISTS artifact_new (
+            id TEXT PRIMARY KEY,
+            conversation_id TEXT NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
+            batch_id TEXT,
+            type TEXT NOT NULL,
+            payload_json TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )""",
+        "INSERT INTO artifact_new SELECT * FROM artifact",
+        "DROP TABLE artifact",
+        "ALTER TABLE artifact_new RENAME TO artifact",
+        """CREATE INDEX IF NOT EXISTS idx_artifact_conversation_created
+            ON artifact(conversation_id, created_at DESC)""",
+        # -- Recreate message_event with FK constraints --
+        """CREATE TABLE IF NOT EXISTS message_event_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            conversation_id TEXT NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
+            event_id TEXT NOT NULL UNIQUE,
+            source_type TEXT NOT NULL,
+            source_id TEXT REFERENCES agent(id) ON DELETE SET NULL,
+            text TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            metadata_json TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL
+        )""",
+        "INSERT INTO message_event_new SELECT * FROM message_event",
+        "DROP TABLE message_event",
+        "ALTER TABLE message_event_new RENAME TO message_event",
+        """CREATE INDEX IF NOT EXISTS idx_message_event_conversation
+            ON message_event(conversation_id, id)""",
+        # -- New index for SSE Last-Event-ID lookups --
+        """CREATE INDEX IF NOT EXISTS idx_message_event_event_id
+            ON message_event(event_id)""",
     ],
 }
 
@@ -145,16 +207,33 @@ class DatabaseManager:
     # ------------------------------------------------------------------
 
     def _apply_migrations(self, from_version: int) -> None:
-        """Run incremental migrations from *from_version* to _SCHEMA_VERSION."""
+        """Run incremental migrations from *from_version* to _SCHEMA_VERSION.
+
+        Table-recreation migrations (v5+) are executed atomically via
+        ``executescript`` to prevent partial-failure states (e.g. table
+        dropped but rename not yet applied).  Simpler ADD COLUMN migrations
+        use individual ``execute`` calls with idempotent error handling.
+        """
+        # Migrations that use table-recreation and MUST run atomically.
+        _ATOMIC_VERSIONS = frozenset({5})
+
         for target in range(from_version + 1, _SCHEMA_VERSION + 1):
             stmts = _MIGRATIONS.get(target, [])
-            for stmt in stmts:
-                try:
-                    self._conn.execute(stmt)
-                except sqlite3.OperationalError:
-                    # Column/table may already exist (idempotent).
-                    pass
-            self._conn.commit()
+            if not stmts:
+                continue
+            if target in _ATOMIC_VERSIONS:
+                script = "BEGIN;\n" + ";\n".join(stmts) + ";\nCOMMIT;"
+                self._conn.executescript(script)
+                # executescript issues implicit COMMIT that resets PRAGMAs
+                self._conn.execute("PRAGMA foreign_keys = ON")
+            else:
+                for stmt in stmts:
+                    try:
+                        self._conn.execute(stmt)
+                    except sqlite3.OperationalError:
+                        # Column/table may already exist (idempotent).
+                        pass
+                self._conn.commit()
 
     def _read_user_version(self) -> int:
         cur = self._conn.execute("PRAGMA user_version")

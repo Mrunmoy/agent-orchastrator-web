@@ -273,6 +273,10 @@ def test_message_event_autoincrement(db):
     """message_event.id should autoincrement."""
     now = "2026-03-07T00:00:00Z"
     db.execute(
+        "INSERT INTO agent VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        ("a1", "Agent", "claude", "opus-4", None, "worker", "idle", None, "[]", 0, now, now),
+    )
+    db.execute(
         "INSERT INTO conversation VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (
             "c1",

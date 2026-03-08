@@ -49,12 +49,12 @@ CREATE TABLE IF NOT EXISTS conversation_agent (
 
 CREATE TABLE IF NOT EXISTS task (
   id TEXT PRIMARY KEY,
-  conversation_id TEXT NOT NULL,
+  conversation_id TEXT NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   spec_json TEXT NOT NULL,
   status TEXT NOT NULL,
   priority INTEGER NOT NULL DEFAULT 100,
-  owner_agent_id TEXT,
+  owner_agent_id TEXT REFERENCES agent(id) ON DELETE SET NULL,
   depends_on_json TEXT NOT NULL DEFAULT '[]',
   started_at TEXT,
   finished_at TEXT,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS task (
 
 CREATE TABLE IF NOT EXISTS artifact (
   id TEXT PRIMARY KEY,
-  conversation_id TEXT NOT NULL,
+  conversation_id TEXT NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
   batch_id TEXT,
   type TEXT NOT NULL,
   payload_json TEXT NOT NULL,
@@ -75,10 +75,10 @@ CREATE TABLE IF NOT EXISTS artifact (
 
 CREATE TABLE IF NOT EXISTS message_event (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  conversation_id TEXT NOT NULL,
+  conversation_id TEXT NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
   event_id TEXT NOT NULL UNIQUE,
   source_type TEXT NOT NULL,
-  source_id TEXT,
+  source_id TEXT REFERENCES agent(id) ON DELETE SET NULL,
   text TEXT NOT NULL,
   event_type TEXT NOT NULL,
   metadata_json TEXT NOT NULL DEFAULT '{}',
@@ -146,3 +146,6 @@ CREATE INDEX IF NOT EXISTS idx_merge_queue_conversation
 
 CREATE INDEX IF NOT EXISTS idx_merge_queue_status_position
   ON merge_queue(status, position);
+
+CREATE INDEX IF NOT EXISTS idx_message_event_event_id
+  ON message_event(event_id);

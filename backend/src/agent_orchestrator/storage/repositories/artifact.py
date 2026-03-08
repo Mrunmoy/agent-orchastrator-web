@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
-from agent_orchestrator.orchestrator.models import Artifact
+from agent_orchestrator.orchestrator.models import Artifact, ArtifactType
 from agent_orchestrator.storage.repositories.base import BaseRepository
 
 
@@ -22,8 +22,13 @@ class ArtifactRepository(BaseRepository):
         ...
 
     @abstractmethod
-    def list_by_conversation(self, conversation_id: str) -> list[Artifact]:
-        """Return all artifacts for a conversation, ordered by created_at DESC."""
+    def list_by_conversation(
+        self, conversation_id: str, *, type_filter: ArtifactType | None = None
+    ) -> list[Artifact]:
+        """Return all artifacts for a conversation, ordered by created_at DESC.
+
+        If *type_filter* is given, only artifacts of that type are returned.
+        """
         ...
 
     @abstractmethod

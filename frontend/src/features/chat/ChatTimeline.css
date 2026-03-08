@@ -4,6 +4,7 @@
   height: 100%;
   overflow-y: auto;
   background: var(--bg);
+  position: relative;
 }
 
 .chat-timeline__messages {
@@ -11,6 +12,29 @@
   display: flex;
   flex-direction: column;
   padding: 8px 0;
+}
+
+/* Floating "New messages" badge */
+.chat-timeline__new-messages-badge {
+  position: sticky;
+  bottom: 12px;
+  align-self: center;
+  padding: 6px 16px;
+  border: 1px solid var(--brand);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--brand-light);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.chat-timeline__new-messages-badge:hover {
+  background: var(--brand-glow);
+  transform: translateY(-1px);
 }
 
 .chat-timeline__empty {

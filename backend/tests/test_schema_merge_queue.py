@@ -76,9 +76,9 @@ class TestFreshDbMergeQueue:
             actual_cols = [row[1] for row in cur.fetchall()]
         assert actual_cols == MERGE_QUEUE_COLUMNS
 
-    def test_schema_version_is_4(self, mem_db):
-        """Schema version should be 4 after initialization."""
-        assert mem_db.schema_version == 4
+    def test_schema_version_is_5(self, mem_db):
+        """Schema version should be 5 after initialization."""
+        assert mem_db.schema_version == 5
 
     def test_merge_queue_indexes_exist(self, mem_db):
         """Indexes on merge_queue should exist."""
@@ -126,7 +126,7 @@ class TestMigrationV3ToV4:
                 "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='merge_queue'"
             )
             assert cur.fetchone()[0] == 1
-        assert mgr2.schema_version == 4
+        assert mgr2.schema_version == 5
         mgr2.close()
 
     def test_migration_from_v3_creates_merge_queue(self, tmp_path):
@@ -157,7 +157,7 @@ class TestMigrationV3ToV4:
                 "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='merge_queue'"
             )
             assert cur.fetchone()[0] == 1
-        assert mgr2.schema_version == 4
+        assert mgr2.schema_version == 5
         mgr2.close()
 
     def test_migration_preserves_conversation_data(self, tmp_path):
