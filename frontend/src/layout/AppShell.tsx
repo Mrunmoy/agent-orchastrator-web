@@ -1,12 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import personalitiesJson from "../config/personalities.json";
 import type { AgentData, AgentRole, Provider } from "../features/agents";
+import { useEventStream } from "../hooks/useEventStream";
+import { eventsToChatMessages, mergeWithLocal } from "../features/chat/eventTransform";
+import { useArtifacts } from "../hooks/useArtifacts";
+import { useRunStatus } from "../hooks/useRunStatus";
+import type { KanbanTask } from "../features/dashboard/types";
+import { KanbanBoard } from "../features/dashboard/KanbanBoard";
 import {
   clearConversations as clearConversationsApi,
   createAgent as createAgentApi,
   createConversation as createConversationApi,
   deleteAgent as deleteAgentApi,
   deleteConversation as deleteConversationApi,
+  fetchTasks,
   listConversationAgents,
   listConversations,
   removeAgentFromConversation as removeAgentFromConversationApi,
@@ -120,7 +127,15 @@ export function AppShell() {
     null,
   );
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
-  const [runStatus, setRunStatus] = useState("Idle");
+  const [runStatusOverride, setRunStatusOverride] = useState<string | null>(null);
+  const { status: polledRunStatus } = useRunStatus(selectedConversationId);
+  // Clear optimistic override once the polled status catches up.
+  useEffect(() => {
+    if (runStatusOverride !== null && polledRunStatus === runStatusOverride) {
+      setRunStatusOverride(null);
+    }
+  }, [polledRunStatus, runStatusOverride]);
+  const runStatus = runStatusOverride ?? polledRunStatus;
   const [gateStatus, setGateStatus] = useState("Open");
   const [memoSummary, setMemoSummary] = useState("No memo available.");
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -129,13 +144,58 @@ export function AppShell() {
   const [totalRounds] = useState(5);
   const [speakingAgent] = useState<string | null>(null);
 
+  const { agreementMap, conflictMap, neutralMemo } = useArtifacts(selectedConversationId);
+
+  const [activeView, setActiveView] = useState<"chat" | "dashboard">("chat");
+  const [dashboardTasks, setDashboardTasks] = useState<KanbanTask[]>([]);
+
+  const loadDashboardTasks = useCallback(async (conversationId: string) => {
+    try {
+      const tasks = await fetchTasks(conversationId);
+      setDashboardTasks(
+        tasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          status: t.status as KanbanTask["status"],
+          assignee: t.assignee,
+          priority: t.priority,
+        })),
+      );
+    } catch {
+      setDashboardTasks([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeView === "dashboard" && selectedConversationId) {
+      void loadDashboardTasks(selectedConversationId);
+    }
+  }, [activeView, selectedConversationId, loadDashboardTasks]);
+
   const selectedConversation = useMemo(
     () => conversations.find((c) => c.id === selectedConversationId) ?? null,
     [conversations, selectedConversationId],
   );
-  const selectedMessages = selectedConversationId
-    ? (messagesByConversation[selectedConversationId] ?? [])
-    : [];
+  // Live event stream — polls the backend for DB-backed events.
+  const { events: streamEvents } = useEventStream(selectedConversationId);
+
+  // Convert backend events to ChatMessageData using the agent roster for display names.
+  const eventMessages = useMemo(
+    () => eventsToChatMessages(streamEvents, agents),
+    [streamEvents, agents],
+  );
+
+  // Local optimistic messages for the selected conversation.
+  const localMessages = useMemo(
+    () => (selectedConversationId ? (messagesByConversation[selectedConversationId] ?? []) : []),
+    [selectedConversationId, messagesByConversation],
+  );
+
+  // Merge: event-sourced messages are primary, local optimistic messages fill gaps.
+  const selectedMessages = useMemo(
+    () => mergeWithLocal(eventMessages, localMessages),
+    [eventMessages, localMessages],
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -273,7 +333,7 @@ export function AppShell() {
       setConversations([]);
       setMessagesByConversation({});
       setSelectedConversationId(null);
-      setRunStatus("Idle");
+      setRunStatusOverride(null);
       setGateStatus("Open");
       setMemoSummary("No memo available.");
       setErrorText(null);
@@ -339,7 +399,7 @@ export function AppShell() {
     if (!conversationId) return;
     try {
       await runBatch(conversationId, 20);
-      setRunStatus("Running");
+      setRunStatusOverride("Running");
       setGateStatus("Open");
       setMemoSummary("Batch queued (20 turns).");
       setErrorText(null);
@@ -352,7 +412,7 @@ export function AppShell() {
     if (!selectedConversationId) return;
     try {
       await stopBatch(selectedConversationId);
-      setRunStatus("Idle");
+      setRunStatusOverride("Idle");
       setMemoSummary("Batch stopped.");
       setErrorText(null);
     } catch (error) {
@@ -370,7 +430,7 @@ export function AppShell() {
         appendLocalMessage(conversationId, "You -> Group", `Steering notes: ${notes}`);
       }
       await continueBatchApi(conversationId);
-      setRunStatus("Running");
+      setRunStatusOverride("Running");
       setGateStatus("Open");
       setMemoSummary("Batch resumed.");
       setErrorText(null);
@@ -381,7 +441,7 @@ export function AppShell() {
 
   const markGateReady = () => {
     setGateStatus("Ready");
-    setRunStatus("Paused");
+    setRunStatusOverride("Paused");
   };
 
   const openCreateAgent = () => {
@@ -484,6 +544,24 @@ export function AppShell() {
         totalRounds={totalRounds}
         speakingAgent={speakingAgent}
       />
+      <div className="view-toggle" data-testid="view-toggle">
+        <button
+          className={`btn ${activeView === "chat" ? "btn--primary" : "btn--subtle"}`}
+          data-testid="view-toggle-chat"
+          onClick={() => setActiveView("chat")}
+          aria-pressed={activeView === "chat"}
+        >
+          Chat
+        </button>
+        <button
+          className={`btn ${activeView === "dashboard" ? "btn--primary" : "btn--subtle"}`}
+          data-testid="view-toggle-dashboard"
+          onClick={() => setActiveView("dashboard")}
+          aria-pressed={activeView === "dashboard"}
+        >
+          Dashboard
+        </button>
+      </div>
       {errorText ? (
         <div className="app-shell__error" role="status">
           {errorText}
@@ -507,17 +585,26 @@ export function AppShell() {
               : undefined
           }
         />
-        <ChatPane
-          activeConversationTitle={selectedConversation?.title ?? null}
-          messages={selectedMessages}
-          onSend={(text) => void sendMessage(text, null)}
-        />
+        {activeView === "chat" ? (
+          <ChatPane
+            activeConversationTitle={selectedConversation?.title ?? null}
+            messages={selectedMessages}
+            onSend={(text) => void sendMessage(text, null)}
+          />
+        ) : (
+          <div className="dashboard-view" data-testid="dashboard-view">
+            <KanbanBoard tasks={dashboardTasks} />
+          </div>
+        )}
         <IntelligencePane
           agreementSummary={
             selectedMessages.length > 0
               ? "Conversation active. Agents are gathering agreement points."
               : undefined
           }
+          agreementArtifact={agreementMap}
+          conflictArtifact={conflictMap}
+          memoArtifact={neutralMemo}
           memoSummary={memoSummary}
         />
       </section>

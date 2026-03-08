@@ -211,6 +211,50 @@ def stop_run(conversation_id: str) -> Any:
     return ok_response({"run": _run_row_to_dict(row)})
 
 
+@router.get("/orchestration/{conversation_id}/status")
+def run_status(conversation_id: str) -> Any:
+    """Return the latest scheduler_run for a conversation."""
+    db = get_db()
+    with db.connection() as conn:
+        if not _conversation_exists(conn, conversation_id):
+            return JSONResponse(
+                status_code=404,
+                content=error_response("Conversation not found"),
+            )
+
+        row = conn.execute(
+            "SELECT * FROM scheduler_run "
+            "WHERE conversation_id = ? "
+            "ORDER BY created_at DESC LIMIT 1",
+            (conversation_id,),
+        ).fetchone()
+
+    run = _run_row_to_dict(row) if row else None
+    return ok_response({"run": run})
+
+
+@router.get("/orchestration/{conversation_id}/runs")
+def list_runs(conversation_id: str) -> Any:
+    """List all runs for a conversation, most recent first."""
+    db = get_db()
+    with db.connection() as conn:
+        if not _conversation_exists(conn, conversation_id):
+            return JSONResponse(
+                status_code=404,
+                content=error_response("Conversation not found"),
+            )
+
+        rows = conn.execute(
+            "SELECT * FROM scheduler_run "
+            "WHERE conversation_id = ? "
+            "ORDER BY created_at DESC LIMIT 20",
+            (conversation_id,),
+        ).fetchall()
+
+    runs = [_run_row_to_dict(row) for row in rows]
+    return ok_response({"runs": runs})
+
+
 @router.post("/orchestration/{conversation_id}/steer")
 def steer(conversation_id: str, body: SteerBody) -> Any:
     """Inject a steering note into the conversation."""

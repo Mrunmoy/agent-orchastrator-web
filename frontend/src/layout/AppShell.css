@@ -224,6 +224,20 @@ textarea::placeholder {
   min-height: 100vh;
 }
 
+.view-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.view-toggle .btn {
+  padding: 6px 16px;
+}
+
+.dashboard-view {
+  min-height: 0;
+  overflow: auto;
+}
+
 .app-shell__error {
   border: 1px solid var(--danger);
   background: rgba(224, 30, 90, 0.08);

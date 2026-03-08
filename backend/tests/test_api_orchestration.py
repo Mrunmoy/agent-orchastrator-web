@@ -261,3 +261,83 @@ class TestSteerEndpoint:
         assert row[0] == "Persist this"
         assert row[1] == "steering"
         assert row[2] == "user"
+
+
+# ── GET /orchestration/{conversation_id}/status ───────────────────
+
+
+class TestStatusEndpoint:
+    def test_returns_latest_run(self, client: TestClient):
+        cid = _create_conversation(client)
+        _insert_run(cid, status="done")
+        run_id = _insert_run(cid, status="running")
+        resp = client.get(f"/api/orchestration/{cid}/status")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["ok"] is True
+        run = body["data"]["run"]
+        assert run["id"] == run_id
+        assert run["status"] == "running"
+
+    def test_returns_null_when_no_runs(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.get(f"/api/orchestration/{cid}/status")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["ok"] is True
+        assert body["data"]["run"] is None
+
+    def test_404_for_missing_conversation(self, client: TestClient):
+        resp = client.get("/api/orchestration/nonexistent/status")
+        assert resp.status_code == 404
+        assert resp.json()["ok"] is False
+
+    def test_response_contains_all_run_fields(self, client: TestClient):
+        cid = _create_conversation(client)
+        _insert_run(cid, status="running", batch_size=15)
+        resp = client.get(f"/api/orchestration/{cid}/status")
+        run = resp.json()["data"]["run"]
+        assert run["conversation_id"] == cid
+        assert run["batch_size"] == 15
+        assert "started_at" in run
+        assert "created_at" in run
+
+
+# ── GET /orchestration/{conversation_id}/runs ─────────────────────
+
+
+class TestRunsListEndpoint:
+    def test_returns_all_runs_ordered_desc(self, client: TestClient):
+        cid = _create_conversation(client)
+        first_id = _insert_run(cid, status="done")
+        second_id = _insert_run(cid, status="running")
+        resp = client.get(f"/api/orchestration/{cid}/runs")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["ok"] is True
+        runs = body["data"]["runs"]
+        assert len(runs) == 2
+        # Most recent first
+        assert runs[0]["id"] == second_id
+        assert runs[1]["id"] == first_id
+
+    def test_returns_empty_list_when_no_runs(self, client: TestClient):
+        cid = _create_conversation(client)
+        resp = client.get(f"/api/orchestration/{cid}/runs")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["ok"] is True
+        assert body["data"]["runs"] == []
+
+    def test_404_for_missing_conversation(self, client: TestClient):
+        resp = client.get("/api/orchestration/nonexistent/runs")
+        assert resp.status_code == 404
+        assert resp.json()["ok"] is False
+
+    def test_limited_to_20_runs(self, client: TestClient):
+        cid = _create_conversation(client)
+        for _ in range(25):
+            _insert_run(cid, status="done")
+        resp = client.get(f"/api/orchestration/{cid}/runs")
+        runs = resp.json()["data"]["runs"]
+        assert len(runs) == 20
