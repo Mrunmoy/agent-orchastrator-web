@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/shims/spark-hooks'
 import type { Agent, Task, PullRequest, Conversation } from '@/lib/types'
 import { toast } from 'sonner'
 

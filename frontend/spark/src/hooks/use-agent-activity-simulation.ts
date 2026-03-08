@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/shims/spark-hooks'
 import type { Task, TaskStatus } from '@/lib/types'
 
 export function useAgentActivitySimulation(enabled: boolean = true) {

@@ -12,7 +12,7 @@ import { Hash, Bell, MagnifyingGlass, Gear, ChartBar, Plus, At, DotsThree, Trash
 import { motion } from 'framer-motion'
 import { DemoDataButton } from '@/components/DemoDataButton'
 import { ConversationDetails } from '@/components/ConversationDetails'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/shims/spark-hooks'
 import { useAgentActivitySimulation } from '@/hooks/use-agent-activity-simulation'
 import type { Conversation, Agent, Task } from '@/lib/types'
 import { toast } from 'sonner'
@@ -187,7 +187,8 @@ export function MainApp({ onNavigateToDashboard }: MainAppProps) {
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !activeConversationId) return
 
-    const user = await window.spark.user()
+    // SHIMMED: was window.spark.user() — replace with actual user context
+    const user = { id: 1, login: 'You', avatarUrl: '' }
     
     const newMessage: Message = {
       id: `message-${Date.now()}`,

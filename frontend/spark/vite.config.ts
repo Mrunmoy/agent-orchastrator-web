@@ -1,10 +1,11 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react-swc";
-import { defineConfig, PluginOption } from "vite";
-
-import sparkPlugin from "@github/spark/spark-vite-plugin";
-import createIconImportProxy from "@github/spark/vitePhosphorIconProxyPlugin";
+import { defineConfig } from "vite";
 import { resolve } from 'path'
+
+// REMOVED: @github/spark Vite plugins (sparkPlugin, createIconImportProxy)
+// These are Spark-internal and not available outside GitHub Spark.
+// Phosphor icons are imported directly — no proxy needed.
 
 const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 
@@ -13,9 +14,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    // DO NOT REMOVE
-    createIconImportProxy() as PluginOption,
-    sparkPlugin() as PluginOption,
   ],
   resolve: {
     alias: {
