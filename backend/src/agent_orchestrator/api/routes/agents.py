@@ -1,8 +1,12 @@
-"""Agent configuration CRUD endpoints (API-004)."""
+"""Agent configuration CRUD endpoints (API-004).
+
+Refactored to use SQLiteAgentRepository (T-201).
+"""
 
 from __future__ import annotations
 
 import uuid
+from dataclasses import asdict
 from datetime import UTC, datetime
 from typing import Any
 
@@ -12,14 +16,12 @@ from pydantic import BaseModel
 
 from agent_orchestrator.api.db_provider import get_db
 from agent_orchestrator.api.responses import error_response, ok_response
-from agent_orchestrator.orchestrator.models import AgentRole, Provider
+from agent_orchestrator.config_loaders.personalities import load_personalities
+from agent_orchestrator.storage.repositories.sqlite_agent import SQLiteAgentRepository
 
 # ---------------------------------------------------------------------------
 # Request bodies
 # ---------------------------------------------------------------------------
-
-VALID_PROVIDERS = {p.value for p in Provider}
-VALID_ROLES = {r.value for r in AgentRole}
 
 
 class NewAgentBody(BaseModel):
@@ -58,24 +60,23 @@ class ReorderAgentsBody(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
-_AGENT_KEYS = [
-    "id",
-    "display_name",
-    "provider",
-    "model",
-    "personality_key",
-    "role",
-    "status",
-    "session_id",
-    "capabilities_json",
-    "sort_order",
-    "created_at",
-    "updated_at",
-]
+
+def _get_repo() -> SQLiteAgentRepository:
+    return SQLiteAgentRepository(get_db())
 
 
-def _row_to_dict(row: tuple[Any, ...]) -> dict[str, Any]:
-    return dict(zip(_AGENT_KEYS, row))
+def _agent_to_dict(agent: Any) -> dict[str, Any]:
+    """Convert an Agent dataclass to a JSON-friendly dict.
+
+    Enum values are serialised as their string value so the API response
+    stays backward-compatible with the original inline-SQL implementation.
+    """
+    d = asdict(agent)
+    for key in ("provider", "role", "status"):
+        val = d.get(key)
+        if val is not None and hasattr(val, "value"):
+            d[key] = val.value
+    return d
 
 
 # ---------------------------------------------------------------------------
@@ -88,78 +89,65 @@ router = APIRouter()
 @router.get("/agents")
 def list_agents() -> dict[str, Any]:
     """List all agents ordered by sort_order, then display_name."""
-    db = get_db()
-    with db.connection() as conn:
-        rows = conn.execute(
-            "SELECT * FROM agent ORDER BY sort_order ASC, display_name ASC"
-        ).fetchall()
-    agents = [_row_to_dict(r) for r in rows]
+    repo = _get_repo()
+    agents = [_agent_to_dict(a) for a in repo.list_all()]
     return ok_response({"agents": agents})
 
 
 @router.post("/agents")
 def create_agent(body: NewAgentBody) -> Any:
     """Create a new agent with sensible defaults."""
-    # Validate provider
-    if body.provider not in VALID_PROVIDERS:
+    repo = _get_repo()
+
+    # Validate personality_key against loaded profiles
+    if body.personality_key is not None:
+        profiles = load_personalities()
+        if profiles and body.personality_key not in profiles:
+            return JSONResponse(
+                status_code=400,
+                content=error_response(
+                    f"Invalid personality_key '{body.personality_key}'. "
+                    f"Valid keys: {sorted(profiles.keys())}"
+                ),
+            )
+
+    try:
+        agent = repo.create(
+            display_name=body.display_name,
+            provider=body.provider,
+            model=body.model,
+            role=body.role,
+            personality_key=body.personality_key,
+        )
+    except ValueError as exc:
         return JSONResponse(
             status_code=400,
-            content=error_response(
-                f"Invalid provider '{body.provider}'. "
-                f"Valid providers: {sorted(VALID_PROVIDERS)}"
-            ),
-        )
-    # Validate role
-    if body.role not in VALID_ROLES:
-        return JSONResponse(
-            status_code=400,
-            content=error_response(
-                f"Invalid role '{body.role}'. " f"Valid roles: {sorted(VALID_ROLES)}"
-            ),
+            content=error_response(str(exc)),
         )
 
-    now = datetime.now(UTC).isoformat()
-    agent_id = str(uuid.uuid4())
-    capabilities = body.capabilities_json or "[]"
+    # If capabilities_json was provided, update it via the repo
+    if body.capabilities_json is not None:
+        agent = repo.update(agent.id, {"capabilities_json": body.capabilities_json})
 
-    db = get_db()
-    with db.connection() as conn:
-        # Validate conversation_id if provided
-        if body.conversation_id is not None:
+    result = _agent_to_dict(agent)
+
+    # Handle conversation_id linking (join table)
+    turn_order = None
+    if body.conversation_id is not None:
+        db = get_db()
+        with db.connection() as conn:
             conv_row = conn.execute(
                 "SELECT id FROM conversation WHERE id = ? AND deleted_at IS NULL",
                 (body.conversation_id,),
             ).fetchone()
             if conv_row is None:
+                # Roll back the agent creation
+                repo.delete(agent.id)
                 return JSONResponse(
                     status_code=404,
                     content=error_response("Conversation not found"),
                 )
 
-        conn.execute(
-            "INSERT INTO agent "
-            "(id, display_name, provider, model, personality_key, role, "
-            " status, session_id, capabilities_json, sort_order, created_at, updated_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                agent_id,
-                body.display_name,
-                body.provider,
-                body.model,
-                body.personality_key,
-                body.role,
-                "idle",
-                None,
-                capabilities,
-                0,
-                now,
-                now,
-            ),
-        )
-
-        turn_order = None
-        if body.conversation_id is not None:
-            # Get max turn_order for this conversation
             max_row = conn.execute(
                 "SELECT COALESCE(MAX(turn_order), 0) FROM conversation_agent "
                 "WHERE conversation_id = ?",
@@ -167,6 +155,7 @@ def create_agent(body: NewAgentBody) -> Any:
             ).fetchone()
             turn_order = max_row[0] + 1
             ca_id = str(uuid.uuid4())
+            now = datetime.now(UTC).isoformat()
             conn.execute(
                 "INSERT INTO conversation_agent "
                 "(id, conversation_id, agent_id, turn_order, enabled, "
@@ -175,7 +164,7 @@ def create_agent(body: NewAgentBody) -> Any:
                 (
                     ca_id,
                     body.conversation_id,
-                    agent_id,
+                    agent.id,
                     turn_order,
                     1,
                     "default",
@@ -183,100 +172,73 @@ def create_agent(body: NewAgentBody) -> Any:
                     now,
                 ),
             )
+            conn.commit()
 
-        conn.commit()
-        row = conn.execute("SELECT * FROM agent WHERE id = ?", (agent_id,)).fetchone()
-
-    agent = _row_to_dict(row)
     if turn_order is not None:
-        agent["turn_order"] = turn_order
-    return ok_response({"agent": agent})
+        result["turn_order"] = turn_order
+    return ok_response({"agent": result})
 
 
 @router.post("/agents/update")
 def update_agent(body: UpdateAgentBody) -> Any:
     """Update agent fields."""
-    db = get_db()
-    with db.connection() as conn:
-        row = conn.execute(
-            "SELECT id FROM agent WHERE id = ?",
-            (body.agent_id,),
-        ).fetchone()
-        if row is None:
-            return JSONResponse(
-                status_code=404,
-                content=error_response("Agent not found"),
-            )
+    repo = _get_repo()
 
-        # Build SET clause from provided fields
-        updatable = {
-            "display_name": body.display_name,
-            "provider": body.provider,
-            "model": body.model,
-            "role": body.role,
-            "personality_key": body.personality_key,
-            "capabilities_json": body.capabilities_json,
-        }
-        sets: list[str] = []
-        vals: list[Any] = []
-        for col, val in updatable.items():
-            if val is not None:
-                sets.append(f"{col} = ?")
-                vals.append(val)
+    updatable_cols = (
+        "display_name",
+        "provider",
+        "model",
+        "role",
+        "personality_key",
+        "capabilities_json",
+    )
+    fields: dict[str, Any] = {}
+    for col in updatable_cols:
+        val = getattr(body, col, None)
+        if val is not None:
+            fields[col] = val
 
-        # Validate provider if being updated
-        if body.provider is not None and body.provider not in VALID_PROVIDERS:
+    # Validate personality_key if being updated
+    if fields.get("personality_key") is not None:
+        profiles = load_personalities()
+        if fields["personality_key"] not in profiles:
             return JSONResponse(
                 status_code=400,
                 content=error_response(
-                    f"Invalid provider '{body.provider}'. "
-                    f"Valid providers: {sorted(VALID_PROVIDERS)}"
-                ),
-            )
-        # Validate role if being updated
-        if body.role is not None and body.role not in VALID_ROLES:
-            return JSONResponse(
-                status_code=400,
-                content=error_response(
-                    f"Invalid role '{body.role}'. " f"Valid roles: {sorted(VALID_ROLES)}"
+                    f"Invalid personality_key '{fields['personality_key']}'. "
+                    f"Valid keys: {sorted(profiles.keys())}"
                 ),
             )
 
-        if sets:
-            now = datetime.now(UTC).isoformat()
-            sets.append("updated_at = ?")
-            vals.append(now)
-            vals.append(body.agent_id)
-            conn.execute(
-                f"UPDATE agent SET {', '.join(sets)} WHERE id = ?",  # noqa: S608
-                vals,
-            )
-            conn.commit()
+    try:
+        agent = repo.update(body.agent_id, fields)
+    except KeyError:
+        return JSONResponse(
+            status_code=404,
+            content=error_response("Agent not found"),
+        )
+    except ValueError as exc:
+        return JSONResponse(
+            status_code=400,
+            content=error_response(str(exc)),
+        )
 
-        updated = conn.execute(
-            "SELECT * FROM agent WHERE id = ?",
-            (body.agent_id,),
-        ).fetchone()
-    return ok_response({"agent": _row_to_dict(updated)})
+    return ok_response({"agent": _agent_to_dict(agent)})
 
 
 @router.post("/agents/delete")
 def delete_agent(body: AgentIdBody) -> Any:
     """Hard-delete an agent."""
-    db = get_db()
-    with db.connection() as conn:
-        row = conn.execute(
-            "SELECT id FROM agent WHERE id = ?",
-            (body.agent_id,),
-        ).fetchone()
-        if row is None:
-            return JSONResponse(
-                status_code=404,
-                content=error_response("Agent not found"),
-            )
-        conn.execute("DELETE FROM conversation_agent WHERE agent_id = ?", (body.agent_id,))
-        conn.execute("DELETE FROM agent WHERE id = ?", (body.agent_id,))
-        conn.commit()
+    repo = _get_repo()
+
+    try:
+        repo.delete(body.agent_id)
+    except KeyError:
+        return JSONResponse(
+            status_code=404,
+            content=error_response("Agent not found"),
+        )
+
     return ok_response({"deleted_id": body.agent_id})
 
 
@@ -288,25 +250,16 @@ def patch_agent_order(agent_id: str, body: PatchAgentOrderBody) -> Any:
             status_code=400,
             content=error_response("sort_order must be a non-negative integer"),
         )
-    db = get_db()
-    with db.connection() as conn:
-        row = conn.execute(
-            "SELECT id FROM agent WHERE id = ?",
-            (agent_id,),
-        ).fetchone()
-        if row is None:
-            return JSONResponse(
-                status_code=404,
-                content=error_response("Agent not found"),
-            )
-        now = datetime.now(UTC).isoformat()
-        conn.execute(
-            "UPDATE agent SET sort_order = ?, updated_at = ? WHERE id = ?",
-            (body.sort_order, now, agent_id),
+
+    repo = _get_repo()
+
+    try:
+        repo.update_sort_order(agent_id, body.sort_order)
+    except KeyError:
+        return JSONResponse(
+            status_code=404,
+            content=error_response("Agent not found"),
         )
-        conn.commit()
-        updated = conn.execute(
-            "SELECT * FROM agent WHERE id = ?",
-            (agent_id,),
-        ).fetchone()
-    return ok_response({"agent": _row_to_dict(updated)})
+
+    agent = repo.get_by_id(agent_id)
+    return ok_response({"agent": _agent_to_dict(agent)})

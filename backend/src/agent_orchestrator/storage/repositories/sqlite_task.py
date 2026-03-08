@@ -10,7 +10,7 @@ import json
 import uuid
 from datetime import datetime, timezone
 
-from agent_orchestrator.orchestrator.models import Task, TaskStatus
+from agent_orchestrator.orchestrator.models import VALID_TRANSITIONS, Task, TaskStatus
 from agent_orchestrator.storage.db import DatabaseManager
 from agent_orchestrator.storage.repositories.task import TaskRepository
 
@@ -126,6 +126,16 @@ class SQLiteTaskRepository(TaskRepository):
         task = self.get_by_id(task_id)
         if task is None:
             raise KeyError(f"Task not found: {task_id}")
+
+        # State-machine guard: only allow transitions defined in VALID_TRANSITIONS.
+        current = task.status
+        allowed = VALID_TRANSITIONS.get(current, frozenset())
+        if status not in allowed:
+            raise ValueError(
+                f"Invalid transition: {current.value!r} -> {status.value!r}. "
+                f"Allowed targets from {current.value!r}: "
+                f"{sorted(s.value for s in allowed) if allowed else '(none — terminal)'}"
+            )
 
         # Dependency gate: cannot advance unless all deps are done.
         # (Skip the check for BLOCKED — you can always block a task.)

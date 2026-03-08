@@ -6,6 +6,7 @@ Provides run, continue, stop, and steer controls for batch orchestration.
 from __future__ import annotations
 
 import uuid
+from dataclasses import asdict
 from datetime import UTC, datetime
 from typing import Any
 
@@ -15,6 +16,10 @@ from pydantic import BaseModel, field_validator
 
 from agent_orchestrator.api.db_provider import get_db
 from agent_orchestrator.api.responses import error_response, ok_response
+from agent_orchestrator.orchestrator.models import MessageEvent
+from agent_orchestrator.storage.repositories.sqlite_message_event import (
+    SQLiteMessageEventRepository,
+)
 
 # ---------------------------------------------------------------------------
 # Request bodies
@@ -217,16 +222,15 @@ def steer(conversation_id: str, body: SteerBody) -> Any:
                 content=error_response("Conversation not found"),
             )
 
-        now = datetime.now(UTC).isoformat()
-        event_id = str(uuid.uuid4())
-        conn.execute(
-            "INSERT INTO message_event "
-            "(conversation_id, event_id, source_type, text, event_type, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (conversation_id, event_id, "user", body.note, "steering", now),
-        )
-        conn.commit()
-        row = conn.execute(
-            "SELECT * FROM message_event WHERE event_id = ?", (event_id,)
-        ).fetchone()
-    return ok_response({"event": _event_row_to_dict(row)})
+    now = datetime.now(UTC).isoformat()
+    event = MessageEvent(
+        conversation_id=conversation_id,
+        event_id=str(uuid.uuid4()),
+        source_type="user",
+        text=body.note,
+        event_type="steering",
+        created_at=now,
+    )
+    repo = SQLiteMessageEventRepository(db)
+    saved = repo.append(event)
+    return ok_response({"event": asdict(saved)})

@@ -94,13 +94,13 @@ class TestCreateAgent:
                 "provider": "gemini",
                 "model": "gemini-pro",
                 "role": "moderator",
-                "personality_key": "strict",
+                "personality_key": "software_developer",
                 "capabilities_json": '{"tools": ["search"]}',
             },
         )
         assert resp.status_code == 200
         agent = resp.json()["data"]["agent"]
-        assert agent["personality_key"] == "strict"
+        assert agent["personality_key"] == "software_developer"
         assert agent["capabilities_json"] == '{"tools": ["search"]}'
 
     def test_create_with_invalid_provider(self, client: TestClient):

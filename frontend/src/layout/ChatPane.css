@@ -15,31 +15,6 @@
   color: var(--muted);
 }
 
-.chat-pane__stream {
-  overflow: auto;
-  padding: 6px 0;
-  background: var(--bg);
-}
-
-.chat-message {
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.chat-message strong {
-  color: var(--ink);
-}
-
-.chat-pane__empty {
-  padding: 40px 14px;
-  text-align: center;
-  color: var(--muted);
-  font-size: 13px;
-}
-
 .chat-pane__composer {
   border-top: 1px solid var(--line);
   display: grid;

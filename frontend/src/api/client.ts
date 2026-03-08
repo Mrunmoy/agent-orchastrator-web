@@ -165,6 +165,50 @@ export async function reorderConversationAgents(
   });
 }
 
+/** Raw event shape returned by the backend JSONL event log. */
+export type BackendEvent = {
+  event_id: string;
+  conversation_id: string;
+  source_type: string;
+  source_id?: string;
+  text: string;
+  event_type: string;
+  metadata_json?: string;
+  timestamp?: string;
+  created_at?: string;
+};
+
+/**
+ * Fetch events for a conversation.
+ * When `since` is provided, only returns events after that event_id.
+ */
+export async function fetchEvents(
+  conversationId: string,
+  since?: string,
+): Promise<BackendEvent[]> {
+  const params = new URLSearchParams({ conversation_id: conversationId });
+  if (since) {
+    params.set("since", since);
+  }
+  const data = await request<{ events: BackendEvent[] }>(`/events?${params.toString()}`);
+  return data.events;
+}
+
+/**
+ * Fetch the latest N events for a conversation.
+ */
+export async function fetchLatestEvents(
+  conversationId: string,
+  n = 10,
+): Promise<BackendEvent[]> {
+  const params = new URLSearchParams({
+    conversation_id: conversationId,
+    n: String(n),
+  });
+  const data = await request<{ events: BackendEvent[] }>(`/events/latest?${params.toString()}`);
+  return data.events;
+}
+
 export async function runBatch(conversationId: string, batchSize = 20): Promise<void> {
   await request<{ run: unknown }>(`/orchestration/${conversationId}/run`, {
     method: "POST",

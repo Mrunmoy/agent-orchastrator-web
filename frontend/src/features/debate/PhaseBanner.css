@@ -1,58 +1,53 @@
-/* PhaseBanner — sticky phase indicator at top of ChatPane */
-
 .phase-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
   position: sticky;
   top: 0;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 14px;
-  background: var(--surface, #111827);
-  border-bottom: 1px solid var(--line, #1e293b);
-  font-size: 13px;
-  color: var(--ink, #e2e8f0);
 }
 
 .phase-banner__phase {
-  font-weight: 700;
-  color: var(--brand-light, #818cf8);
+  color: var(--brand);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-size: 12px;
 }
 
 .phase-banner__separator {
-  color: var(--muted, #94a3b8);
-  user-select: none;
+  color: var(--muted);
 }
 
 .phase-banner__round {
-  font-size: 12px;
-  color: var(--muted, #94a3b8);
-  font-weight: 500;
+  color: var(--muted);
 }
 
 .phase-banner__speaking {
-  margin-left: auto;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--brand-light, #818cf8);
+  gap: 4px;
+  margin-left: auto;
+  color: var(--ok);
   font-weight: 500;
 }
 
 .phase-banner__speaking-dots {
   display: inline-flex;
-  gap: 3px;
+  gap: 2px;
+  align-items: center;
 }
 
 .phase-banner__speaking-dot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  background: var(--brand-light, #818cf8);
+  background: var(--ok);
   animation: phase-banner-pulse 1.4s ease-in-out infinite;
 }
 

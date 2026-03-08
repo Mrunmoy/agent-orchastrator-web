@@ -13,9 +13,9 @@ describe("ChatPane", () => {
     expect(screen.getByText("Group Debate")).toBeInTheDocument();
   });
 
-  it("renders the message stream area", () => {
+  it("renders the ChatTimeline area", () => {
     render(<ChatPane />);
-    expect(screen.getByTestId("message-stream")).toBeInTheDocument();
+    expect(screen.getByTestId("chat-timeline")).toBeInTheDocument();
   });
 
   it("renders the composer area", () => {

@@ -188,6 +188,7 @@ class Agent:
     updated_at: str
     personality_key: str | None = None
     session_id: str | None = None
+    sort_order: int = 0
 
 
 @dataclass
