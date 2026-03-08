@@ -48,8 +48,6 @@ def _artifact_to_dict(art: Artifact) -> dict[str, Any]:
     # Enum fields need .value for JSON serialisation
     if hasattr(d.get("type"), "value"):
         d["type"] = d["type"].value
-    elif isinstance(art.type, ArtifactType):
-        d["type"] = art.type.value
     return d
 
 

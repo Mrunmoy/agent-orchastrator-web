@@ -70,9 +70,11 @@ def get_events(
     ----------------
     conversation_id : required
     since : optional event_id — return only events *after* this one
-    limit : page size (default 100)
+    limit : page size (default 100, max 1000)
     offset : number of rows to skip (default 0)
     """
+    # Cap limit to prevent unbounded queries
+    limit = max(1, min(limit, 1000))
     if conversation_id is None:
         return JSONResponse(
             status_code=400,

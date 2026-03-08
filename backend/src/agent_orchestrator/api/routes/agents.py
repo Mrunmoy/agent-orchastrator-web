@@ -111,6 +111,20 @@ def create_agent(body: NewAgentBody) -> Any:
                 ),
             )
 
+    # Validate conversation_id before creating the agent (avoids needing rollback)
+    if body.conversation_id is not None:
+        db = get_db()
+        with db.connection() as conn:
+            conv_row = conn.execute(
+                "SELECT id FROM conversation WHERE id = ? AND deleted_at IS NULL",
+                (body.conversation_id,),
+            ).fetchone()
+            if conv_row is None:
+                return JSONResponse(
+                    status_code=404,
+                    content=error_response("Conversation not found"),
+                )
+
     try:
         agent = repo.create(
             display_name=body.display_name,
@@ -136,17 +150,6 @@ def create_agent(body: NewAgentBody) -> Any:
     if body.conversation_id is not None:
         db = get_db()
         with db.connection() as conn:
-            conv_row = conn.execute(
-                "SELECT id FROM conversation WHERE id = ? AND deleted_at IS NULL",
-                (body.conversation_id,),
-            ).fetchone()
-            if conv_row is None:
-                # Roll back the agent creation
-                repo.delete(agent.id)
-                return JSONResponse(
-                    status_code=404,
-                    content=error_response("Conversation not found"),
-                )
 
             max_row = conn.execute(
                 "SELECT COALESCE(MAX(turn_order), 0) FROM conversation_agent "
