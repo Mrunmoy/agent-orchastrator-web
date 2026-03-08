@@ -71,13 +71,79 @@ class GateStatus(str, Enum):
 
 
 class TaskStatus(str, Enum):
-    """Status of a task within a conversation."""
+    """Status of a task within a conversation.
+
+    Full lifecycle: todo -> design -> tdd -> implementing -> testing ->
+    pr_raised -> in_review -> fixing_comments -> merging -> done.
+    Any non-terminal status can transition to blocked.
+    """
 
     TODO = "todo"
-    IN_PROGRESS = "in_progress"
-    BLOCKED = "blocked"
+    DESIGN = "design"
+    TDD = "tdd"
+    IMPLEMENTING = "implementing"
+    TESTING = "testing"
+    PR_RAISED = "pr_raised"
+    IN_REVIEW = "in_review"
+    FIXING_COMMENTS = "fixing_comments"
+    MERGING = "merging"
     DONE = "done"
+    BLOCKED = "blocked"
+
+
+# Allowed status transitions for TaskStatus.
+# Any non-terminal status (except DONE/BLOCKED) can also go to BLOCKED.
+VALID_TRANSITIONS: dict[TaskStatus, frozenset[TaskStatus]] = {
+    TaskStatus.TODO: frozenset({TaskStatus.DESIGN, TaskStatus.BLOCKED}),
+    TaskStatus.DESIGN: frozenset({TaskStatus.TDD, TaskStatus.BLOCKED}),
+    TaskStatus.TDD: frozenset({TaskStatus.IMPLEMENTING, TaskStatus.BLOCKED}),
+    TaskStatus.IMPLEMENTING: frozenset({TaskStatus.TESTING, TaskStatus.BLOCKED}),
+    TaskStatus.TESTING: frozenset({TaskStatus.PR_RAISED, TaskStatus.BLOCKED}),
+    TaskStatus.PR_RAISED: frozenset({TaskStatus.IN_REVIEW, TaskStatus.BLOCKED}),
+    TaskStatus.IN_REVIEW: frozenset(
+        {TaskStatus.FIXING_COMMENTS, TaskStatus.MERGING, TaskStatus.BLOCKED}
+    ),
+    TaskStatus.FIXING_COMMENTS: frozenset({TaskStatus.IN_REVIEW, TaskStatus.BLOCKED}),
+    TaskStatus.MERGING: frozenset({TaskStatus.DONE, TaskStatus.BLOCKED}),
+    TaskStatus.DONE: frozenset(),
+    TaskStatus.BLOCKED: frozenset(
+        {
+            TaskStatus.TODO,
+            TaskStatus.DESIGN,
+            TaskStatus.TDD,
+            TaskStatus.IMPLEMENTING,
+            TaskStatus.TESTING,
+            TaskStatus.PR_RAISED,
+            TaskStatus.IN_REVIEW,
+            TaskStatus.FIXING_COMMENTS,
+            TaskStatus.MERGING,
+        }
+    ),
+}
+
+
+class MergeQueueStatus(str, Enum):
+    """Status of an item in the merge queue pipeline."""
+
+    QUEUED = "queued"
+    REBASING = "rebasing"
+    TESTING = "testing"
+    MERGING = "merging"
+    MERGED = "merged"
     FAILED = "failed"
+    BLOCKED = "blocked"
+
+
+class EventType(str, Enum):
+    """Type of event in the conversation stream."""
+
+    CHAT_MESSAGE = "chat_message"
+    DEBATE_TURN = "debate_turn"
+    PHASE_CHANGE = "phase_change"
+    GATE_APPROVAL = "gate_approval"
+    STEER = "steer"
+    TASK_UPDATE = "task_update"
+    SYSTEM_NOTICE = "system_notice"
 
 
 class RunStatus(str, Enum):

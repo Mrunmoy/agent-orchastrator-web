@@ -6,6 +6,7 @@ from agent_orchestrator.orchestrator.batch_runner import (
     TurnRecord,
 )
 from agent_orchestrator.orchestrator.models import (
+    VALID_TRANSITIONS,
     Agent,
     AgentRole,
     AgentStatus,
@@ -14,7 +15,9 @@ from agent_orchestrator.orchestrator.models import (
     Conversation,
     ConversationAgent,
     ConversationState,
+    EventType,
     GateStatus,
+    MergeQueueStatus,
     MessageEvent,
     Phase,
     Provider,
@@ -45,7 +48,9 @@ __all__ = [
     "Conversation",
     "ConversationAgent",
     "ConversationState",
+    "EventType",
     "GateStatus",
+    "MergeQueueStatus",
     "MessageEvent",
     "Phase",
     "Provider",
@@ -56,4 +61,5 @@ __all__ = [
     "Task",
     "TaskStatus",
     "TurnRecord",
+    "VALID_TRANSITIONS",
 ]

@@ -6,17 +6,24 @@ maintaining their own module-level DatabaseManager instances.
 
 from __future__ import annotations
 
+import os
+
+from agent_orchestrator.config import get_config
 from agent_orchestrator.storage import DatabaseManager
 
 _db: DatabaseManager | None = None
 
 
 def _init_db() -> None:
-    """(Re)initialise the shared in-memory database."""
+    """(Re)initialise the shared database from config."""
     global _db  # noqa: PLW0603
     if _db is not None:
         _db.close()
-    _db = DatabaseManager(":memory:", check_same_thread=False)
+    cfg = get_config()
+    db_dir = os.path.dirname(cfg.db_path)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
+    _db = DatabaseManager(cfg.db_path, check_same_thread=False)
     _db.initialize()
 
 

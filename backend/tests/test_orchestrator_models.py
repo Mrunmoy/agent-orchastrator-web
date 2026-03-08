@@ -138,18 +138,30 @@ class TestTaskStatusEnum:
     def test_members(self):
         assert set(TaskStatus) == {
             TaskStatus.TODO,
-            TaskStatus.IN_PROGRESS,
-            TaskStatus.BLOCKED,
+            TaskStatus.DESIGN,
+            TaskStatus.TDD,
+            TaskStatus.IMPLEMENTING,
+            TaskStatus.TESTING,
+            TaskStatus.PR_RAISED,
+            TaskStatus.IN_REVIEW,
+            TaskStatus.FIXING_COMMENTS,
+            TaskStatus.MERGING,
             TaskStatus.DONE,
-            TaskStatus.FAILED,
+            TaskStatus.BLOCKED,
         }
 
     def test_values(self):
         assert TaskStatus.TODO.value == "todo"
-        assert TaskStatus.IN_PROGRESS.value == "in_progress"
-        assert TaskStatus.BLOCKED.value == "blocked"
+        assert TaskStatus.DESIGN.value == "design"
+        assert TaskStatus.TDD.value == "tdd"
+        assert TaskStatus.IMPLEMENTING.value == "implementing"
+        assert TaskStatus.TESTING.value == "testing"
+        assert TaskStatus.PR_RAISED.value == "pr_raised"
+        assert TaskStatus.IN_REVIEW.value == "in_review"
+        assert TaskStatus.FIXING_COMMENTS.value == "fixing_comments"
+        assert TaskStatus.MERGING.value == "merging"
         assert TaskStatus.DONE.value == "done"
-        assert TaskStatus.FAILED.value == "failed"
+        assert TaskStatus.BLOCKED.value == "blocked"
 
 
 class TestRunStatusEnum:
@@ -464,6 +476,7 @@ class TestResourceSnapshot:
 class TestReExport:
     def test_all_models_importable_from_orchestrator(self):
         from agent_orchestrator.orchestrator import (  # noqa: F401
+            VALID_TRANSITIONS,
             Agent,
             AgentRole,
             AgentStatus,
@@ -472,7 +485,9 @@ class TestReExport:
             Conversation,
             ConversationAgent,
             ConversationState,
+            EventType,
             GateStatus,
+            MergeQueueStatus,
             MessageEvent,
             Phase,
             Provider,

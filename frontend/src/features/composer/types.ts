@@ -1,6 +1,11 @@
+export interface ComposerAgent {
+  id: string;
+  display_name: string;
+}
+
 export interface ComposerProps {
-  agents: { id: string; display_name: string }[];
-  onSend: (message: string) => void;
+  agents: ComposerAgent[];
+  onSend: (message: string, targetAgentId?: string) => void;
   disabled?: boolean;
 }
 

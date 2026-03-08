@@ -1,9 +1,11 @@
-"""Conversation CRUD endpoints (API-002)."""
+"""Conversation CRUD endpoints (API-002).
+
+Refactored to use SQLiteConversationRepository (T-104).
+"""
 
 from __future__ import annotations
 
-import uuid
-from datetime import UTC, datetime
+from dataclasses import asdict
 from typing import Any
 
 from fastapi import APIRouter
@@ -12,6 +14,9 @@ from pydantic import BaseModel
 
 from agent_orchestrator.api.db_provider import get_db
 from agent_orchestrator.api.responses import error_response, ok_response
+from agent_orchestrator.storage.repositories.sqlite_conversation import (
+    SQLiteConversationRepository,
+)
 
 # ---------------------------------------------------------------------------
 # Request bodies
@@ -32,23 +37,23 @@ class ConversationIdBody(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def _row_to_dict(row: tuple[Any, ...]) -> dict[str, Any]:
-    keys = [
-        "id",
-        "title",
-        "project_path",
-        "state",
-        "phase",
-        "gate_status",
-        "priority",
-        "active",
-        "summary_snapshot",
-        "latest_artifact_id",
-        "created_at",
-        "updated_at",
-        "deleted_at",
-    ]
-    return dict(zip(keys, row))
+def _get_repo() -> SQLiteConversationRepository:
+    return SQLiteConversationRepository(get_db())
+
+
+def _conv_to_dict(conv: Any) -> dict[str, Any]:
+    """Convert a Conversation dataclass to a JSON-friendly dict.
+
+    Enum values are serialised as their string value so the API response
+    stays backward-compatible with the original inline-SQL implementation.
+    """
+    d = asdict(conv)
+    # Enum fields need .value for JSON serialisation
+    for key in ("state", "phase", "gate_status"):
+        val = d.get(key)
+        if val is not None and hasattr(val, "value"):
+            d[key] = val.value
+    return d
 
 
 # ---------------------------------------------------------------------------
@@ -61,114 +66,48 @@ router = APIRouter()
 @router.get("/conversations")
 def list_conversations() -> dict[str, Any]:
     """List all non-deleted conversations ordered by updated_at DESC."""
-    db = get_db()
-    with db.connection() as conn:
-        rows = conn.execute(
-            "SELECT * FROM conversation " "WHERE deleted_at IS NULL " "ORDER BY updated_at DESC"
-        ).fetchall()
-    conversations = [_row_to_dict(r) for r in rows]
+    repo = _get_repo()
+    conversations = [_conv_to_dict(c) for c in repo.list_active()]
     return ok_response({"conversations": conversations})
 
 
 @router.post("/conversations/new")
 def create_conversation(body: NewConversationBody) -> dict[str, Any]:
     """Create a new conversation with sensible defaults."""
-    now = datetime.now(UTC).isoformat()
-    conv_id = str(uuid.uuid4())
-    db = get_db()
-    with db.connection() as conn:
-        conn.execute(
-            "INSERT INTO conversation "
-            "(id, title, project_path, state, phase, gate_status, "
-            " priority, active, created_at, updated_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                conv_id,
-                body.title,
-                body.project_path,
-                "debate",
-                "design_debate",
-                "open",
-                100,
-                0,
-                now,
-                now,
-            ),
-        )
-        conn.commit()
-        row = conn.execute("SELECT * FROM conversation WHERE id = ?", (conv_id,)).fetchone()
-    return ok_response({"conversation": _row_to_dict(row)})
+    repo = _get_repo()
+    conv = repo.create(body.title, body.project_path)
+    return ok_response({"conversation": _conv_to_dict(conv)})
 
 
 @router.post("/conversations/select")
 def select_conversation(body: ConversationIdBody) -> Any:
     """Set one conversation as active, deactivating all others."""
-    db = get_db()
-    with db.connection() as conn:
-        row = conn.execute(
-            "SELECT id FROM conversation WHERE id = ? AND deleted_at IS NULL",
-            (body.conversation_id,),
-        ).fetchone()
-        if row is None:
-            return JSONResponse(
-                status_code=404,
-                content=error_response("Conversation not found"),
-            )
-        now = datetime.now(UTC).isoformat()
-        conn.execute(
-            "UPDATE conversation " "SET active = 0 " "WHERE deleted_at IS NULL AND id != ?",
-            (body.conversation_id,),
+    repo = _get_repo()
+    conv = repo.select(body.conversation_id)
+    if conv is None:
+        return JSONResponse(
+            status_code=404,
+            content=error_response("Conversation not found"),
         )
-        conn.execute(
-            "UPDATE conversation "
-            "SET active = 1, updated_at = ? "
-            "WHERE id = ? AND deleted_at IS NULL",
-            (now, body.conversation_id),
-        )
-        conn.commit()
-        updated = conn.execute(
-            "SELECT * FROM conversation WHERE id = ?",
-            (body.conversation_id,),
-        ).fetchone()
-    return ok_response({"conversation": _row_to_dict(updated)})
+    return ok_response({"conversation": _conv_to_dict(conv)})
 
 
 @router.post("/conversations/delete")
 def delete_conversation(body: ConversationIdBody) -> Any:
     """Soft-delete a conversation by setting deleted_at."""
-    db = get_db()
-    with db.connection() as conn:
-        row = conn.execute(
-            "SELECT id FROM conversation WHERE id = ? AND deleted_at IS NULL",
-            (body.conversation_id,),
-        ).fetchone()
-        if row is None:
-            return JSONResponse(
-                status_code=404,
-                content=error_response("Conversation not found"),
-            )
-        now = datetime.now(UTC).isoformat()
-        conn.execute(
-            "UPDATE conversation SET deleted_at = ?, updated_at = ? WHERE id = ?",
-            (now, now, body.conversation_id),
+    repo = _get_repo()
+    conv = repo.soft_delete(body.conversation_id)
+    if conv is None:
+        return JSONResponse(
+            status_code=404,
+            content=error_response("Conversation not found"),
         )
-        conn.commit()
-        updated = conn.execute(
-            "SELECT * FROM conversation WHERE id = ?",
-            (body.conversation_id,),
-        ).fetchone()
-    return ok_response({"conversation": _row_to_dict(updated)})
+    return ok_response({"conversation": _conv_to_dict(conv)})
 
 
 @router.post("/conversations/clear-all")
 def clear_all_conversations() -> dict[str, Any]:
     """Soft-delete all non-deleted conversations. Return count."""
-    db = get_db()
-    with db.connection() as conn:
-        now = datetime.now(UTC).isoformat()
-        cur = conn.execute(
-            "UPDATE conversation SET deleted_at = ?, updated_at = ? " "WHERE deleted_at IS NULL",
-            (now, now),
-        )
-        conn.commit()
-    return ok_response({"deleted_count": cur.rowcount})
+    repo = _get_repo()
+    count = repo.clear_all()
+    return ok_response({"deleted_count": count})

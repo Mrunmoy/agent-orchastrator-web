@@ -14,7 +14,7 @@ from pathlib import Path
 _SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 
 # Schema version embedded by this loader.  Bump when schema.sql changes.
-_SCHEMA_VERSION = 3
+_SCHEMA_VERSION = 4
 
 # Migrations keyed by target version.  Each entry is a list of SQL statements
 # that bring the schema from (version - 1) to version.
@@ -37,6 +37,27 @@ _MIGRATIONS: dict[int, list[str]] = {
             created_at TEXT NOT NULL DEFAULT '',
             UNIQUE (conversation_id, agent_id)
         )""",
+    ],
+    4: [
+        """CREATE TABLE IF NOT EXISTS merge_queue (
+            id TEXT PRIMARY KEY,
+            conversation_id TEXT NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
+            task_id TEXT NOT NULL REFERENCES task(id) ON DELETE CASCADE,
+            pr_number INTEGER,
+            pr_url TEXT,
+            pr_branch TEXT,
+            author_agent_id TEXT NOT NULL REFERENCES agent(id) ON DELETE CASCADE,
+            reviewer_agent_id TEXT,
+            position INTEGER,
+            status TEXT NOT NULL,
+            queued_at TEXT,
+            merged_at TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )""",
+        """CREATE INDEX IF NOT EXISTS idx_merge_queue_conversation
+            ON merge_queue(conversation_id, status)""",
+        """CREATE INDEX IF NOT EXISTS idx_merge_queue_status_position
+            ON merge_queue(status, position)""",
     ],
 }
 

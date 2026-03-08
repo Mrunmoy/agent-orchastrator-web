@@ -35,17 +35,26 @@
   align-items: flex-end;
 }
 
-.composer__input {
+.composer__input-wrapper {
   flex: 1;
+  position: relative;
+}
+
+.composer__input {
+  width: 100%;
+  box-sizing: border-box;
   padding: 9px 12px;
   border-radius: 6px;
   border: 1px solid var(--line);
   background: var(--surface-2);
   color: var(--ink);
   font-size: 13px;
-  resize: vertical;
+  resize: none;
   font-family: inherit;
   line-height: 1.4;
+  min-height: 36px;
+  max-height: 120px;
+  overflow-y: auto;
   transition:
     border-color 200ms ease,
     box-shadow 200ms ease;
@@ -88,4 +97,38 @@
 .composer__send-button:hover:not(:disabled) {
   background: var(--brand-light);
   box-shadow: 0 2px 8px var(--brand-glow-strong);
+}
+
+/* @mention dropdown */
+.composer__mention-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  background: var(--surface-2, #1e293b);
+  border: 1px solid var(--border, #1e293b);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.composer__mention-option {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text, #e2e8f0);
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 0 4px;
+  transition: background 100ms ease;
+}
+
+.composer__mention-option:hover,
+.composer__mention-option--active {
+  background: var(--accent, #818cf8);
+  color: #fff;
 }
