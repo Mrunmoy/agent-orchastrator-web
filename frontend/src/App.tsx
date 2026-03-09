@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MotionConfig } from "framer-motion";
 import { MainApp } from "@/components/MainApp";
 import { Dashboard } from "@/components/Dashboard";
 import { listConversations, listConversationAgents } from "@/api/client";
@@ -55,18 +56,22 @@ function App() {
 
   if (currentView === "dashboard" && selectedConversationId) {
     return (
-      <Dashboard
-        conversationTitle={dashboardTitle}
-        agents={dashboardAgents}
-        onNavigateBack={handleNavigateBack}
-      />
+      <MotionConfig reducedMotion="user">
+        <Dashboard
+          conversationTitle={dashboardTitle}
+          agents={dashboardAgents}
+          onNavigateBack={handleNavigateBack}
+        />
+      </MotionConfig>
     );
   }
 
   return (
-    <MainApp
-      onNavigateToDashboard={(id) => void handleNavigateToDashboard(id)}
-    />
+    <MotionConfig reducedMotion="user">
+      <MainApp
+        onNavigateToDashboard={(id) => void handleNavigateToDashboard(id)}
+      />
+    </MotionConfig>
   );
 }
 

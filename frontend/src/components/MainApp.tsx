@@ -138,7 +138,7 @@ export function MainApp({ onNavigateToDashboard }: MainAppProps) {
   const [newAgentProvider, setNewAgentProvider] = useState("claude");
   const [newAgentModel, setNewAgentModel] = useState("claude-opus-4-5");
   const [newAgentPersonality, setNewAgentPersonality] = useState("Software Developer");
-  const [availableModels, setAvailableModels] = useState<string[]>(providerModels.claude);
+  const [availableModels, setAvailableModels] = useState<string[]>(providerModels.claude ?? []);
 
   // Chat
   const [messageInput, setMessageInput] = useState("");
@@ -373,6 +373,7 @@ export function MainApp({ onNavigateToDashboard }: MainAppProps) {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/10"
+              aria-label="Settings"
             >
               <Gear size={18} />
             </Button>
@@ -732,13 +733,13 @@ export function MainApp({ onNavigateToDashboard }: MainAppProps) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Search">
               <MagnifyingGlass size={18} />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Mentions">
               <At size={18} />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 relative">
+            <Button variant="ghost" size="icon" className="h-9 w-9 relative" aria-label="Notifications">
               <Bell size={18} />
             </Button>
           </div>
