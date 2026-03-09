@@ -1,8 +1,10 @@
 import React from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { motion } from "framer-motion";
 import type { ChatMessageData } from "./types";
 import { agentColor } from "./agentColor";
+import { fadeInUp } from "../../utils/animations";
 import "./ChatMessage.css";
 
 export interface ChatMessageProps {
@@ -52,9 +54,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
       : undefined;
 
   return (
-    <div
+    <motion.div
       className={`chat-message ${variantClass}`}
       data-testid="chat-message"
+      {...fadeInUp}
     >
       <div
         className="chat-avatar"
@@ -92,6 +95,6 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

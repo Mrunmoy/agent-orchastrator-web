@@ -1,4 +1,5 @@
 import { FormEvent, useMemo, useState } from "react";
+import { StatusBadge, type BadgeStatus } from "../components/StatusBadge";
 import "./TopBar.css";
 
 const WORKING_DIR_KEY = "ao_working_dir";
@@ -18,6 +19,19 @@ function writeStorage(key: string, value: string): void {
     window.localStorage.setItem(key, value);
   } catch {
     // Ignore storage failures in restricted environments.
+  }
+}
+
+function mapRunStatus(runStatus: string): BadgeStatus {
+  switch (runStatus) {
+    case "Running":
+      return "running";
+    case "Idle":
+      return "idle";
+    case "Paused":
+      return "paused";
+    default:
+      return "idle";
   }
 }
 
@@ -97,7 +111,7 @@ export function TopBar({
         </div>
       </form>
       <div className="top-bar__status" data-testid="run-status">
-        {runStatus}
+        <StatusBadge status={mapRunStatus(runStatus)} />
       </div>
       <button className="btn btn--primary" onClick={onRunNewBatch}>
         Run New Batch (20)

@@ -31,6 +31,31 @@ describe("TopBar", () => {
     expect(screen.getByTestId("run-status")).toBeInTheDocument();
   });
 
+  it("renders StatusBadge with 'idle' when runStatus is 'Idle'", () => {
+    render(<TopBar runStatus="Idle" />);
+    const badge = screen.getByTestId("status-badge");
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveAttribute("data-status", "idle");
+  });
+
+  it("renders StatusBadge with 'running' when runStatus is 'Running'", () => {
+    render(<TopBar runStatus="Running" />);
+    const badge = screen.getByTestId("status-badge");
+    expect(badge).toHaveAttribute("data-status", "running");
+  });
+
+  it("renders StatusBadge with 'paused' when runStatus is 'Paused'", () => {
+    render(<TopBar runStatus="Paused" />);
+    const badge = screen.getByTestId("status-badge");
+    expect(badge).toHaveAttribute("data-status", "paused");
+  });
+
+  it("renders StatusBadge with 'idle' for unknown runStatus values", () => {
+    render(<TopBar runStatus="SomethingElse" />);
+    const badge = screen.getByTestId("status-badge");
+    expect(badge).toHaveAttribute("data-status", "idle");
+  });
+
   it("renders run batch button", () => {
     render(<TopBar />);
     expect(screen.getByRole("button", { name: /run.*batch/i })).toBeInTheDocument();

@@ -1,6 +1,8 @@
+import { motion } from "framer-motion";
 import "./HistoryPane.css";
 import { AgentRoster } from "../features/agents";
 import type { AgentData } from "../features/agents/types";
+import { staggerContainer, slideInLeft } from "../utils/animations";
 
 export type ConversationSummary = {
   id: string;
@@ -50,7 +52,13 @@ export function HistoryPane({
         </div>
 
         <p className="section-title">Recent</p>
-        <div className="conversation-list" data-testid="conversation-list">
+        <motion.div
+          className="conversation-list"
+          data-testid="conversation-list"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
           {conversations.length === 0 ? (
             <div className="conv-row">
               <div className="conv-head">
@@ -59,20 +67,21 @@ export function HistoryPane({
             </div>
           ) : (
             conversations.map((conversation) => (
-              <button
+              <motion.button
                 key={conversation.id}
                 className="conv-row"
                 data-selected={conversation.id === selectedConversationId}
                 onClick={() => onSelectConversation?.(conversation.id)}
+                variants={slideInLeft}
               >
                 <div className="conv-head">
                   <span>{conversation.title}</span>
                 </div>
                 <small>{new Date(conversation.updatedAt).toLocaleTimeString()}</small>
-              </button>
+              </motion.button>
             ))
           )}
-        </div>
+        </motion.div>
 
         <AgentRoster
           agents={agents}
