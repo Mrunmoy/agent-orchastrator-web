@@ -74,3 +74,9 @@
     opacity: 0.3;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .status-badge[data-status="running"] .status-badge__icon {
+    animation: none;
+  }
+}

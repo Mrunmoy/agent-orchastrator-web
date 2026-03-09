@@ -75,8 +75,8 @@ function PayloadContent({
   if (items && items.length > 0) {
     return (
       <ul className="intel-card__list">
-        {items.map((item, i) => (
-          <li key={i}>{String(item)}</li>
+        {items.map((item) => (
+          <li key={String(item)}>{String(item)}</li>
         ))}
       </ul>
     );

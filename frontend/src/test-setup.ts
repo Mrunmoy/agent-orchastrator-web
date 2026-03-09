@@ -17,10 +17,10 @@ vi.mock("framer-motion", async () => {
         // Return a forwardRef component that renders the plain HTML element
         // with all non-motion props passed through.
         if (typeof prop === "string" && /^[a-z]/.test(prop)) {
-          const Component = (target as Record<string, unknown>)[prop];
+          const Component = (target as unknown as Record<string, unknown>)[prop];
           return Component;
         }
-        return (target as Record<string, unknown>)[prop as string];
+        return (target as unknown as Record<string, unknown>)[prop as string];
       },
     }),
   };

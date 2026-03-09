@@ -166,8 +166,8 @@ describe("IntelligencePane", () => {
     // Check avatars render first letter
     const avatars = section.querySelectorAll(".agent-avatar");
     expect(avatars).toHaveLength(2);
-    expect(avatars[0].textContent).toBe("A");
-    expect(avatars[1].textContent).toBe("B");
+    expect(avatars[0]?.textContent).toBe("A");
+    expect(avatars[1]?.textContent).toBe("B");
   });
 
   it("renders intelligence cards with colored borders", () => {

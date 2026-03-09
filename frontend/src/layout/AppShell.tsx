@@ -425,7 +425,7 @@ export function AppShell() {
       mode: "create",
       displayName: "",
       provider: "claude",
-      model: PROVIDER_MODELS.claude[0],
+      model: PROVIDER_MODELS.claude[0] ?? "",
       role: "worker",
       personality_key: "",
     });
@@ -662,7 +662,7 @@ export function AppShell() {
                     return {
                       ...prev,
                       provider: newProvider,
-                      model: PROVIDER_MODELS[newProvider][0],
+                      model: PROVIDER_MODELS[newProvider]?.[0] ?? "",
                     };
                   })
                 }
