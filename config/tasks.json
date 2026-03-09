@@ -396,7 +396,8 @@
       "default_owner": "unassigned"
     },
     {
-      "id": "UI-009 agent-editor-ux",
+      "id": "UI-009",
+      "slug": "agent-editor-ux",
       "title": "Agent editor UX improvements",
       "scope": "frontend/src/layout/AppShell.tsx,frontend/src/features/agents/*",
       "epic": "UI",
@@ -646,11 +647,143 @@
       "scope": "frontend/src/layout/*.css,frontend/src/features/history/*.css,frontend/src/features/agents/*.css",
       "epic": "UI",
       "priority": "P1",
-      "status": "In Progress",
+      "status": "Done",
       "depends_on": [
         "UI-012"
       ],
       "default_owner": "copilot"
+    },
+    {
+      "id": "WIRE-001",
+      "slug": "wire-batch-executor",
+      "title": "Batch executor service — atomic claim, adapter dispatch",
+      "scope": "backend/src/agent_orchestrator/runtime/executor.py",
+      "epic": "WIRE",
+      "priority": "P0",
+      "status": "Done",
+      "depends_on": ["ORCH-004", "ADPT-001"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "WIRE-002",
+      "slug": "wire-api-orchestration",
+      "title": "Orchestration API wiring — json_extract, computed frontend fields",
+      "scope": "backend/src/agent_orchestrator/api/routes/orchestration.py",
+      "epic": "WIRE",
+      "priority": "P0",
+      "status": "Done",
+      "depends_on": ["WIRE-001", "API-003"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "WIRE-003",
+      "slug": "wire-use-run-status",
+      "title": "useRunStatus hook — poll status, optimistic override",
+      "scope": "frontend/src/hooks/useRunStatus.ts",
+      "epic": "WIRE",
+      "priority": "P0",
+      "status": "Done",
+      "depends_on": ["API-003"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "WIRE-004",
+      "slug": "wire-use-event-stream",
+      "title": "useEventStream hook — poll events, agent roster transform",
+      "scope": "frontend/src/hooks/useEventStream.ts",
+      "epic": "WIRE",
+      "priority": "P0",
+      "status": "Done",
+      "depends_on": ["API-005"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "WIRE-005",
+      "slug": "wire-appshell-integration",
+      "title": "AppShell integration — hooks wired to layout, AnimatePresence",
+      "scope": "frontend/src/layout/AppShell.tsx",
+      "epic": "WIRE",
+      "priority": "P0",
+      "status": "Done",
+      "depends_on": ["WIRE-003", "WIRE-004"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "WIRE-006",
+      "slug": "wire-build-verification",
+      "title": "Build verification — tsc strict, full test suite, lint green",
+      "scope": "frontend/,backend/",
+      "epic": "WIRE",
+      "priority": "P0",
+      "status": "Done",
+      "depends_on": ["WIRE-005"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "SPARK-001",
+      "slug": "spark-design-tokens",
+      "title": "Design tokens — OKLch palette, spacing, radius, shadow, font, transition",
+      "scope": "frontend/src/styles/tokens.css",
+      "epic": "SPARK",
+      "priority": "P1",
+      "status": "Done",
+      "depends_on": ["UI-012"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "SPARK-002",
+      "slug": "spark-status-badge",
+      "title": "StatusBadge — colored pill, Phosphor icon, 8 variants, reduced-motion",
+      "scope": "frontend/src/components/StatusBadge.*",
+      "epic": "SPARK",
+      "priority": "P1",
+      "status": "Done",
+      "depends_on": ["SPARK-001"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "SPARK-003",
+      "slug": "spark-agent-card-revamp",
+      "title": "AgentCard revamp — provider avatar, status dot, personality tag",
+      "scope": "frontend/src/features/agents/AgentCard.*",
+      "epic": "SPARK",
+      "priority": "P1",
+      "status": "Done",
+      "depends_on": ["SPARK-001"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "SPARK-004",
+      "slug": "spark-dashboard-view",
+      "title": "DashboardView — StatsCards + responsive agent grid",
+      "scope": "frontend/src/features/dashboard/*",
+      "epic": "SPARK",
+      "priority": "P1",
+      "status": "Done",
+      "depends_on": ["SPARK-001"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "SPARK-005",
+      "slug": "spark-intelligence-pane",
+      "title": "IntelligencePane upgrade — overview, agent avatars, batch cards",
+      "scope": "frontend/src/layout/IntelligencePane.*",
+      "epic": "SPARK",
+      "priority": "P1",
+      "status": "Done",
+      "depends_on": ["SPARK-001"],
+      "default_owner": "claude-agent"
+    },
+    {
+      "id": "SPARK-006",
+      "slug": "spark-animations",
+      "title": "Framer Motion animations — fadeInUp, stagger, slideIn, useReducedMotion",
+      "scope": "frontend/src/utils/animations.ts",
+      "epic": "SPARK",
+      "priority": "P1",
+      "status": "Done",
+      "depends_on": ["SPARK-001"],
+      "default_owner": "claude-agent"
     }
   ]
 }

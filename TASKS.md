@@ -3,8 +3,8 @@
 This is the source-of-truth backlog for current known scope.
 
 ## Current State Snapshot
-- Done: docs baseline, UI mock (`src/mockup.html`), Nix shell, parallel/handoff scripts, backend package layout, frontend app shell layout, SQLite schema v1, Claude/Codex/Ollama adapter baselines, shared dev commands, FastAPI app + health/state endpoints, DatabaseManager bootstrap loader, capacity telemetry snapshot, domain models (enums + dataclasses), conversation CRUD endpoints, JSONL event log writer/reader, conversation state machine, round-robin scheduler, 20-turn batch runner, adapter output normalization, checkpoint pack builder, agent config endpoints, events stream endpoint, conversation history pane, chat timeline, agent roster editor, orchestration control endpoints, steering note injection, capacity-aware throttle, intelligence pane, merge coordinator queue, branch/task lock policy, notification pipeline, auth, LAN profile, remaining test/doc tasks, new conversation form (title + working directory), agent editor UX improvements (model dropdown, personality field, save fix, status tooltip).
-- Not done: no open items from current tracked scope snapshot.
+- Done: All epics complete. Waves 1–5 merged. 370 frontend tests, 276 backend tests passing. End-to-end wiring (batch executor, run status, event stream) and Spark UI port (design tokens, StatusBadge, DashboardView, animations, prefers-reduced-motion) shipped.
+- Not done: no open items from current tracked scope.
 
 ## Definition of Done (per task)
 - Design/spec links are updated if behavior changed.
@@ -55,6 +55,25 @@ This is the source-of-truth backlog for current known scope.
 - [x] `UI-008` Implement new conversation form (title + working directory, inline creator, focus shift on creation)
 - [x] `UI-009` Agent editor UX improvements (model dropdown per provider, personality field, save fix, status tooltip)
 - [x] `UI-010` Fix API connectivity: Vite proxy, /api prefix, CORS wildcard, sort_order column
+- [x] `UI-011` Agent drag-to-reorder (sort_order column, PATCH endpoint, order badge, drag handles, remove Target First dropdown)
+- [x] `UI-012` UI modernisation — engineering cockpit theme (deep navy/violet tokens, Inter font, 200ms transitions, ThemeSmoke tests)
+- [x] `UI-015` Slack-like retheme — aubergine sidebar + light content area (OKLch design tokens, Spark UI port)
+
+## Epic SPARK - Spark UI Port (Wave 5)
+- [x] `SPARK-001` Design tokens — OKLch color palette, spacing scale, radius/shadow/font/transition tokens (`tokens.css`)
+- [x] `SPARK-002` StatusBadge component — colored pill with Phosphor icon for 8 status variants, pulse animation, prefers-reduced-motion
+- [x] `SPARK-003` AgentCard revamp — provider-colored avatar, status dot, personality tag, role badge
+- [x] `SPARK-004` DashboardView — StatsCards row + responsive agent grid, replaces KanbanBoard
+- [x] `SPARK-005` IntelligencePane upgrade — quick overview card, active agents with avatars, batch intelligence cards
+- [x] `SPARK-006` Framer Motion animations — fadeInUp, staggerContainer, hoverScale, slideInLeft, viewTransition, useReducedMotion support
+
+## Epic WIRE - End-to-End Wiring (Wave 4)
+- [x] `WIRE-001` Batch executor service — atomic UPDATE…WHERE(SELECT…LIMIT 1) claim, adapter dispatch loop
+- [x] `WIRE-002` Orchestration API wiring — _run_row_to_dict with json_extract for turns_completed, computed frontend fields
+- [x] `WIRE-003` useRunStatus hook — poll /api/orchestration/status, optimistic override cleared on server catch-up
+- [x] `WIRE-004` useEventStream hook — poll /api/events, eventsToChatMessages transform with agent roster
+- [x] `WIRE-005` AppShell integration — AnimatePresence view toggle, hooks wired to layout, error boundary
+- [x] `WIRE-006` Build verification — tsc strict, vitest full suite, prettier, eslint green
 
 ## Epic COORD - Parallel Delivery and Merge Safety
 - [x] `COORD-001` Implement merge-coordinator queue model and serialized integration flow
@@ -76,5 +95,3 @@ This is the source-of-truth backlog for current known scope.
 - [x] `DOC-001` Add ADR entries for orchestration algorithm and resume strategy
 - [x] `DOC-002` Add playbook templates for debugging and recovery drills
 - [x] `DOC-003` Start project saga log with incremental milestone updates
-- [x] `UI-011` Agent drag-to-reorder (sort_order column, PATCH endpoint, order badge, drag handles, remove Target First dropdown)
-- [x] `UI-012` UI modernisation — engineering cockpit theme (deep navy/violet tokens, Inter font, 200ms transitions, ThemeSmoke tests)
