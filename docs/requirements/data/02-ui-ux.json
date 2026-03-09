@@ -14,7 +14,7 @@
               "priority": "P0",
               "area": "Layout",
               "text": "The application shall have two primary views within a conversation: Chat View (Slack-like group conversation) and Dashboard View (project management board). The user shall be able to switch between them.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-315"
@@ -48,7 +48,7 @@
               "priority": "P1",
               "area": "Layout",
               "text": "The layout for switching between Chat and Dashboard is TBD (tabs, split pane, sidebar, etc.) and shall be determined during design phase.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-315"
@@ -82,7 +82,7 @@
               "priority": "P0",
               "area": "Layout",
               "text": "The application shall be responsive and usable on desktop browsers. LAN access from phone/tablet is a secondary use case.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-324"
@@ -126,7 +126,7 @@
               "priority": "P0",
               "area": "Chat",
               "text": "The chat view shall resemble a Slack channel. Each message shows: agent name (or \"You\" for the customer), avatar/icon, timestamp, and message body.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-301",
@@ -189,7 +189,7 @@
               "priority": "P0",
               "area": "Chat",
               "text": "Messages from different agents shall be visually distinguishable (unique colors, icons, or badges per agent).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-301"
@@ -230,7 +230,7 @@
               "priority": "P0",
               "area": "Chat",
               "text": "The chat shall support markdown rendering in messages (code blocks, lists, bold, links, etc.).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-301"
@@ -271,7 +271,7 @@
               "priority": "P0",
               "area": "Chat",
               "text": "The chat shall auto-scroll to the latest message. The user shall be able to scroll back through history.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-302",
@@ -332,7 +332,7 @@
               "priority": "P0",
               "area": "Composer",
               "text": "The message composer shall support @ mentions. Typing @ shall show an autocomplete dropdown of agent names. Addressing a specific agent sends the message directly to that agent.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-303"
@@ -373,7 +373,7 @@
               "priority": "P0",
               "area": "Composer",
               "text": "A message without an @ mention shall be broadcast to the group (all agents see it).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-303"
@@ -414,7 +414,7 @@
               "priority": "P1",
               "area": "Composer",
               "text": "The composer shall support multi-line input (Shift+Enter for newline, Enter to send).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-303"
@@ -460,7 +460,7 @@
               "priority": "P0",
               "area": "Debate UI",
               "text": "During debate, the chat shall show: current round number (e.g., \"Round 5/20\"), which agent is currently \"speaking\" (thinking indicator), and the current phase label.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-304"
@@ -494,7 +494,7 @@
               "priority": "P1",
               "area": "Debate UI",
               "text": "When an agent @ mentions the customer for clarification, the system shall show a prominent notification/banner: \"Agent X needs your input\" with the chat scrolled to the question.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-305",
@@ -550,7 +550,7 @@
               "priority": "P0",
               "area": "Debate UI",
               "text": "The customer shall have controls to: approve and advance to next phase, steer the debate (send a message), or end the debate and decide.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-306"
@@ -601,7 +601,7 @@
               "priority": "P0",
               "area": "Activity",
               "text": "The system shall provide a per-agent activity viewer that shows the agent's real-time stream: thinking, file reads/writes, shell commands, tool calls, and their outputs.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-314",
@@ -693,7 +693,7 @@
               "priority": "P0",
               "area": "Activity",
               "text": "The activity viewer shall be show/hide toggleable. Clicking an agent in the roster opens their activity stream. Closing it returns to the clean chat view.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-314",
@@ -756,7 +756,7 @@
               "priority": "P1",
               "area": "Activity",
               "text": "The activity viewer shall resemble a terminal/log view \u2014 monospace font, streaming output, auto-scroll to bottom with ability to scroll back.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-314",
@@ -819,7 +819,7 @@
               "priority": "P1",
               "area": "Activity",
               "text": "Internal agent activity (tool calls, thinking) shall NEVER appear in the main chat. Only deliberate messages (debate turns, status updates, final outputs) appear in chat.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-314"
@@ -870,7 +870,7 @@
               "priority": "P0",
               "area": "Dashboard",
               "text": "The dashboard shall show a task board with columns representing task status: Todo, Design, TDD, Implementing, Testing, PR Raised, In Review, Fixing Comments, Merging, Done.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-307",
@@ -933,7 +933,7 @@
               "priority": "P0",
               "area": "Dashboard",
               "text": "Each task card on the board shall show: task title, assigned agent (with icon/color), PR link (if exists), and reviewer (if assigned).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-308"
@@ -974,7 +974,7 @@
               "priority": "P0",
               "area": "Dashboard",
               "text": "The dashboard shall show each agent's current status: what task they are working on, or if they are idle/waiting.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-310",
@@ -1037,7 +1037,7 @@
               "priority": "P1",
               "area": "Dashboard",
               "text": "The dashboard shall show the merge queue: ordered list of PRs waiting to merge, which one is currently merging.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-311",
@@ -1093,7 +1093,7 @@
               "priority": "P1",
               "area": "Dashboard",
               "text": "Clicking on a task card shall show task details: description, scope, dependencies, agent activity log, PR status.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-309"
@@ -1144,7 +1144,7 @@
               "priority": "P0",
               "area": "Roster",
               "text": "The agent roster shall show all agents in the current conversation with: name, role (Analyst/Team Lead/Developer), provider (Claude/Codex/Ollama), status indicator (idle/working/reviewing/waiting), and current task (if any).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-312"
@@ -1178,7 +1178,7 @@
               "priority": "P0",
               "area": "Roster",
               "text": "Clicking an agent in the roster shall open their activity viewer.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-312",
@@ -1234,7 +1234,7 @@
               "priority": "P1",
               "area": "Roster",
               "text": "The roster shall support adding/removing agents from a conversation. Adding requires: name, role, provider, model selection.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-313"
@@ -1278,7 +1278,7 @@
               "priority": "P0",
               "area": "Conversations",
               "text": "The user shall be able to create a new conversation by specifying: title and project directory path.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-316"
@@ -1319,7 +1319,7 @@
               "priority": "P0",
               "area": "Conversations",
               "text": "The user shall be able to switch between conversations. A conversation list (sidebar) shows all conversations with title, last activity time, and current phase.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-316"
@@ -1360,7 +1360,7 @@
               "priority": "P1",
               "area": "Conversations",
               "text": "Conversations shall be resumable \u2014 the user can close the browser and return later. State is persisted.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-316"
@@ -1411,7 +1411,7 @@
               "priority": "P0",
               "area": "Notifications",
               "text": "The system shall notify the customer when: an agent @ mentions them, debate reaches max rounds without agreement, a PR is ready for the customer's attention, or an agent is blocked/needs input.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-317",
@@ -1474,7 +1474,7 @@
               "priority": "P2",
               "area": "Notifications",
               "text": "Notifications shall be visible in the UI (banner, badge, or toast). Browser notifications (optional, P2).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-03",
               "tasks": [
                 "T-317"

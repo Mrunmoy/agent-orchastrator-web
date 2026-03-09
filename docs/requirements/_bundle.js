@@ -26,7 +26,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate",
                 "text": "The system shall support a group debate where the customer poses a requirement and agents discuss it in round-robin turns. Each agent gets one turn per round. The debate runs for up to N rounds (default 20) or until agreement is reached.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-401",
@@ -111,7 +111,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate",
                 "text": "The customer is a participant in the debate. Agents shall be able to @ the customer for clarifications. The system shall notify the customer and pause the debate until they respond.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-402",
@@ -167,7 +167,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate",
                 "text": "The customer shall be able to direct a message to a specific agent by name (e.g., \"rick, what do you think about option 2?\"). The addressed agent responds next, regardless of round-robin order.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-403"
@@ -201,7 +201,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate",
                 "text": "If agents agree on an option, they shall present it to the customer for final approval. The customer's decision is always final \u2014 agreement alone does not advance the phase.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-405"
@@ -242,7 +242,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Debate",
                 "text": "If agents do not agree after N rounds, they shall summarize each position with pros/cons and ask the customer to decide or steer the discussion.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-406"
@@ -281,7 +281,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Planning",
                 "text": "Once the customer approves a direction, they shall @ a specific agent (typically the Analyst or Team Lead) to break the agreed design into a task list, identifying which tasks can run in parallel.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-503",
@@ -344,7 +344,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Planning",
                 "text": "The task list shall include for each task: title, description, scope (files/modules), dependencies on other tasks, and estimated complexity.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-506"
@@ -390,7 +390,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Execution",
                 "text": "Each Developer agent shall work on its assigned task independently, following the work order: design doc \u2192 TDD \u2192 implement \u2192 test \u2192 debug/fix \u2192 update docs \u2192 raise PR.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-506"
@@ -431,7 +431,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Execution",
                 "text": "Each agent shall work in its own isolated git worktree to prevent file conflicts with other agents.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-606"
@@ -465,7 +465,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Execution",
                 "text": "The customer shall be able to steer a specific agent mid-task if they observe it going off-track.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-505"
@@ -511,7 +511,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Review",
                 "text": "When a PR is raised, the system shall assign a reviewer \u2014 any Developer agent that did not author the PR.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-705"
@@ -545,7 +545,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Review",
                 "text": "The PR author shall automatically fix review comments and push updates. The reviewer shall re-review until satisfied, then approve.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-507",
@@ -620,7 +620,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Merge",
                 "text": "Merges to main shall be serialized \u2014 one PR at a time. The system shall maintain a merge queue and handle rebases automatically.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-701"
@@ -661,7 +661,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Merge",
                 "text": "Other agents shall wait while one agent is merging. The merge coordinator (Team Lead / Ollama) shall manage this queue at zero token cost to paid agents.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-702",
@@ -736,7 +736,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Post-Task",
                 "text": "After raising a PR, an agent shall follow this priority loop: 1) Check if any of its own PRs have review comments \u2192 fix them. 2) Check if its PR got approved \u2192 merge it (if merge queue allows). 3) Check if it has been tagged to review another agent's PR \u2192 review it. 4) Otherwise \u2192 wait for next assignment or pick up next task from queue.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-507"
@@ -787,7 +787,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "UI",
                 "text": "The system shall provide a real-time activity viewer for each agent \u2014 showing its thinking, file edits, commands, and tool use. This viewer shall be show/hide toggleable and separate from the main chat.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-314",
@@ -901,7 +901,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "UI",
                 "text": "The main chat window shall remain clean \u2014 only deliberate messages, turn outputs, and status updates appear there. Internal agent activity (thinking, tool calls) shall only appear in the activity viewer.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-301",
@@ -974,7 +974,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "UI",
                 "text": "The system shall provide a dashboard view showing: which agent is working on which task, task status (design, TDD, implementing, testing, PR raised, in review, fixing comments, merging, done), PR links, and merge queue order.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-307",
@@ -1066,7 +1066,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "UI",
                 "text": "The dashboard shall be accessible from within a conversation \u2014 the user shall be able to switch between chat view and dashboard view (layout TBD).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-315"
@@ -1110,7 +1110,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Infra",
                 "text": "The system shall run locally on the user's machine. No cloud hosting required. LAN-accessible for multi-device use (phone, tablet, laptop).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-201",
@@ -1420,7 +1420,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Infra",
                 "text": "The Team Lead role (Ollama) shall be free \u2014 no paid API calls for coordination, queue management, or status polling.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-604",
@@ -1490,7 +1490,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Infra",
                 "text": "Paid agent tokens shall only be spent on productive work: reasoning, code generation, code review, debate. Never on polling, queue checking, or coordination overhead.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-504",
@@ -1577,7 +1577,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Layout",
                 "text": "The application shall have two primary views within a conversation: Chat View (Slack-like group conversation) and Dashboard View (project management board). The user shall be able to switch between them.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-315"
@@ -1611,7 +1611,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Layout",
                 "text": "The layout for switching between Chat and Dashboard is TBD (tabs, split pane, sidebar, etc.) and shall be determined during design phase.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-315"
@@ -1645,7 +1645,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Layout",
                 "text": "The application shall be responsive and usable on desktop browsers. LAN access from phone/tablet is a secondary use case.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-324"
@@ -1689,7 +1689,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Chat",
                 "text": "The chat view shall resemble a Slack channel. Each message shows: agent name (or \"You\" for the customer), avatar/icon, timestamp, and message body.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-301",
@@ -1752,7 +1752,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Chat",
                 "text": "Messages from different agents shall be visually distinguishable (unique colors, icons, or badges per agent).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-301"
@@ -1793,7 +1793,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Chat",
                 "text": "The chat shall support markdown rendering in messages (code blocks, lists, bold, links, etc.).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-301"
@@ -1834,7 +1834,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Chat",
                 "text": "The chat shall auto-scroll to the latest message. The user shall be able to scroll back through history.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-302",
@@ -1895,7 +1895,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Composer",
                 "text": "The message composer shall support @ mentions. Typing @ shall show an autocomplete dropdown of agent names. Addressing a specific agent sends the message directly to that agent.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-303"
@@ -1936,7 +1936,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Composer",
                 "text": "A message without an @ mention shall be broadcast to the group (all agents see it).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-303"
@@ -1977,7 +1977,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Composer",
                 "text": "The composer shall support multi-line input (Shift+Enter for newline, Enter to send).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-303"
@@ -2023,7 +2023,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate UI",
                 "text": "During debate, the chat shall show: current round number (e.g., \"Round 5/20\"), which agent is currently \"speaking\" (thinking indicator), and the current phase label.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-304"
@@ -2057,7 +2057,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Debate UI",
                 "text": "When an agent @ mentions the customer for clarification, the system shall show a prominent notification/banner: \"Agent X needs your input\" with the chat scrolled to the question.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-305",
@@ -2113,7 +2113,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate UI",
                 "text": "The customer shall have controls to: approve and advance to next phase, steer the debate (send a message), or end the debate and decide.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-306"
@@ -2164,7 +2164,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Activity",
                 "text": "The system shall provide a per-agent activity viewer that shows the agent's real-time stream: thinking, file reads/writes, shell commands, tool calls, and their outputs.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-314",
@@ -2256,7 +2256,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Activity",
                 "text": "The activity viewer shall be show/hide toggleable. Clicking an agent in the roster opens their activity stream. Closing it returns to the clean chat view.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-314",
@@ -2319,7 +2319,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Activity",
                 "text": "The activity viewer shall resemble a terminal/log view \u2014 monospace font, streaming output, auto-scroll to bottom with ability to scroll back.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-314",
@@ -2382,7 +2382,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Activity",
                 "text": "Internal agent activity (tool calls, thinking) shall NEVER appear in the main chat. Only deliberate messages (debate turns, status updates, final outputs) appear in chat.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-314"
@@ -2433,7 +2433,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Dashboard",
                 "text": "The dashboard shall show a task board with columns representing task status: Todo, Design, TDD, Implementing, Testing, PR Raised, In Review, Fixing Comments, Merging, Done.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-307",
@@ -2496,7 +2496,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Dashboard",
                 "text": "Each task card on the board shall show: task title, assigned agent (with icon/color), PR link (if exists), and reviewer (if assigned).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-308"
@@ -2537,7 +2537,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Dashboard",
                 "text": "The dashboard shall show each agent's current status: what task they are working on, or if they are idle/waiting.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-310",
@@ -2600,7 +2600,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Dashboard",
                 "text": "The dashboard shall show the merge queue: ordered list of PRs waiting to merge, which one is currently merging.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-311",
@@ -2656,7 +2656,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Dashboard",
                 "text": "Clicking on a task card shall show task details: description, scope, dependencies, agent activity log, PR status.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-04",
                 "tasks": [
                   "T-309"
@@ -2707,7 +2707,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Roster",
                 "text": "The agent roster shall show all agents in the current conversation with: name, role (Analyst/Team Lead/Developer), provider (Claude/Codex/Ollama), status indicator (idle/working/reviewing/waiting), and current task (if any).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-312"
@@ -2741,7 +2741,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Roster",
                 "text": "Clicking an agent in the roster shall open their activity viewer.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-312",
@@ -2797,7 +2797,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Roster",
                 "text": "The roster shall support adding/removing agents from a conversation. Adding requires: name, role, provider, model selection.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-313"
@@ -2841,7 +2841,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Conversations",
                 "text": "The user shall be able to create a new conversation by specifying: title and project directory path.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-316"
@@ -2882,7 +2882,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Conversations",
                 "text": "The user shall be able to switch between conversations. A conversation list (sidebar) shows all conversations with title, last activity time, and current phase.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-316"
@@ -2923,7 +2923,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Conversations",
                 "text": "Conversations shall be resumable \u2014 the user can close the browser and return later. State is persisted.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-316"
@@ -2974,7 +2974,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Notifications",
                 "text": "The system shall notify the customer when: an agent @ mentions them, debate reaches max rounds without agreement, a PR is ready for the customer's attention, or an agent is blocked/needs input.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-317",
@@ -3037,7 +3037,7 @@ window.__REQ_DATA__ = {
                 "priority": "P2",
                 "area": "Notifications",
                 "text": "Notifications shall be visible in the UI (banner, badge, or toast). Browser notifications (optional, P2).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-03",
                 "tasks": [
                   "T-317"
@@ -3095,7 +3095,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data Model",
                 "text": "A conversation shall be the top-level entity, tied to a project directory path. It shall track: title, project_path, current phase, gate status, and active flag.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-102",
@@ -3216,7 +3216,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data Model",
                 "text": "Conversations shall support soft deletion (via deleted_at timestamp). Listing endpoints shall exclude soft-deleted conversations by default.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-104"
@@ -3257,7 +3257,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data Model",
                 "text": "Only one conversation shall be active at a time. Selecting a conversation shall deactivate all others.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-104"
@@ -3303,7 +3303,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data Model",
                 "text": "Each agent shall have a globally unique ID, display name, provider (claude, codex, ollama, gemini), model identifier, role (analyst, team_lead, developer), personality key, and status (idle, running, blocked, offline).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-103",
@@ -3395,7 +3395,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data Model",
                 "text": "Agents shall be scoped to conversations via a join table (conversation_agent). Each join record shall include: turn_order (for round-robin sequencing), enabled flag, and permission_profile.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-106",
@@ -3458,7 +3458,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data Model",
                 "text": "When an agent is added to a conversation, the system shall auto-assign the next turn_order value (max existing + 1, starting from 1).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-106",
@@ -3521,7 +3521,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Data Model",
                 "text": "An agent marked as is_merge_coordinator in a conversation shall be designated to manage the merge queue. Typically this is the Ollama Team Lead.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-106",
@@ -3589,7 +3589,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data Model",
                 "text": "A task shall belong to a conversation and track: title, specification (JSON), status, priority, owner agent, dependencies (as JSON array of task IDs), timestamps, result summary, and evidence artifacts.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-102",
@@ -3710,7 +3710,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data Model",
                 "text": "Task statuses shall be: todo, design, tdd, implementing, testing, pr_raised, in_review, fixing_comments, merging, done, blocked.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-107",
@@ -3809,7 +3809,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Data Model",
                 "text": "Tasks shall support dependency tracking. A task shall not transition to implementing until all its dependencies are done.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-107",
@@ -3906,7 +3906,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data Model",
                 "text": "All conversation events (chat messages, system events, phase transitions, steering inputs) shall be stored in a message_event table with: conversation_id, source type (customer, agent, system), source ID, text, event type, and metadata JSON.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-102",
@@ -4078,7 +4078,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data Model",
                 "text": "Event types shall include: chat_message, debate_turn, phase_change, gate_approval, steer, task_update, system_notice.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-108",
@@ -4221,7 +4221,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Data Model",
                 "text": "Each event shall have a unique event_id (UUID). Events shall be append-only \u2014 no updates or deletes.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-108",
@@ -4325,7 +4325,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Data Model",
                 "text": "The system shall store artifacts (design docs, task plans, summaries) linked to conversations and optionally to batch runs. Artifact types shall include: design_doc, task_plan, summary, checkpoint.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-102",
@@ -4449,7 +4449,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Persistence",
                 "text": "The system shall use SQLite with WAL mode for persistence. The database file shall reside in a configurable local path (default: ~/.agent-orchestrator/orchestrator.db).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-103",
@@ -4679,7 +4679,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Persistence",
                 "text": "The database schema shall support forward migrations via a schema_version pragma. Each migration shall be idempotent.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-101",
@@ -4742,7 +4742,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Persistence",
                 "text": "The system shall maintain a JSONL event log as a secondary append-only store for debugging and replay. This is supplementary to the SQLite store.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02",
                 "tasks": [
                   "T-111"
@@ -4793,7 +4793,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "API",
                 "text": "The backend shall expose a REST API via FastAPI, served by uvicorn. All endpoints shall return a standard envelope: { \"ok\": bool, \"data\": T, \"error\"?: string }.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-201",
@@ -5103,7 +5103,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "API",
                 "text": "The API shall be prefixed under /api. The frontend dev server shall proxy /api/* to the backend.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-215"
@@ -5137,7 +5137,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "API",
                 "text": "CORS shall be configured for local development (localhost + LAN IPs). In production mode, the frontend is served as static files from the backend and CORS is not needed.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-113"
@@ -5183,7 +5183,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "API",
                 "text": "GET /api/conversations \u2014 List all non-deleted conversations. POST /api/conversations/new \u2014 Create conversation. POST /api/conversations/select \u2014 Set active. POST /api/conversations/delete \u2014 Soft-delete. POST /api/conversations/clear-all \u2014 Soft-delete all.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-201"
@@ -5224,7 +5224,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "API",
                 "text": "GET /api/conversations/{id} \u2014 Full details with phase, gate status, agent count. PATCH /api/conversations/{id} \u2014 Update metadata.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": null,
                 "tasks": [
                   "T-201"
@@ -5270,7 +5270,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "API",
                 "text": "POST /api/agents \u2014 Create agent, optionally assign to conversation. POST /api/agents/update \u2014 Update properties. POST /api/agents/delete \u2014 Delete and cascade-remove from conversations.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-212",
@@ -5333,7 +5333,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "API",
                 "text": "GET /api/conversations/{id}/agents \u2014 List by turn_order. DELETE /api/conversations/{id}/agents/{aid} \u2014 Remove from conversation. PATCH /api/conversations/{id}/agents/reorder \u2014 Bulk reorder.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-213"
@@ -5372,7 +5372,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "API",
                 "text": "GET /api/conversations/{id}/messages \u2014 Paginated, supports ?after=event_id. POST /api/conversations/{id}/messages \u2014 Send customer message with optional target_agent_id for directed messages.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-202"
@@ -5413,7 +5413,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "API",
                 "text": "GET /api/conversations/{id}/events \u2014 All events filterable by event_type.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-203"
@@ -5452,7 +5452,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "API",
                 "text": "GET /api/conversations/{id}/tasks \u2014 List tasks. POST /api/conversations/{id}/tasks \u2014 Create task. PATCH /api/tasks/{task_id} \u2014 Update status, owner, result.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-204"
@@ -5498,7 +5498,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "API",
                 "text": "POST /api/orchestration/{id}/run \u2014 Start batch. POST /api/orchestration/{id}/continue \u2014 Continue batch. POST /api/orchestration/{id}/stop \u2014 Stop batch. POST /api/orchestration/{id}/steer \u2014 Inject steering note.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-505"
@@ -5544,7 +5544,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Streaming",
                 "text": "The system shall provide a real-time event stream via Server-Sent Events (SSE) at GET /api/conversations/{id}/stream. Events include: new messages, phase changes, task updates, agent status changes.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-208",
@@ -5614,7 +5614,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Streaming",
                 "text": "The system shall provide a per-agent activity stream via SSE at GET /api/agents/{id}/activity. Events include: thinking output, tool calls, file reads/writes, shell commands, and their results.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-209",
@@ -5677,7 +5677,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Streaming",
                 "text": "SSE streams shall support Last-Event-ID for reconnection. Missed events shall be replayed from the event store.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-208",
@@ -5750,7 +5750,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Lifecycle",
                 "text": "Creating an agent record does NOT start a process. Agent processes are started by the orchestration engine when a batch run begins or a task is assigned.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-601",
@@ -5864,7 +5864,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Lifecycle",
                 "text": "The system shall track agent status transitions: idle \u2192 running (task assigned / debate turn) \u2192 idle (turn complete) or blocked (waiting for input/merge).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-212"
@@ -5905,7 +5905,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Lifecycle",
                 "text": "Agent processes shall run in isolated working directories (git worktrees). The backend shall manage worktree creation and cleanup.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-606"
@@ -5939,7 +5939,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Lifecycle",
                 "text": "Agent sessions shall support checkpoint-based resume. On resume, the system shall load a compact context pack rather than replaying the full transcript.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-112"
@@ -5990,7 +5990,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Config",
                 "text": "The system shall load configuration from environment variables with sensible defaults. Key config: DB_PATH, HOST, PORT, DEV_MODE, OLLAMA_URL.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-113"
@@ -6031,7 +6031,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Config",
                 "text": "Agent personality profiles shall be loaded from config/personalities.json. Each profile defines system prompt fragments, temperature, and behavioral constraints.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-114"
@@ -6065,7 +6065,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Config",
                 "text": "Provider-specific configuration (API keys, base URLs, model lists) shall be stored in environment variables, never in the database.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-113"
@@ -6116,7 +6116,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Errors",
                 "text": "All API errors shall return the standard envelope with ok: false and a human-readable error message. HTTP status codes shall be appropriate (400, 404, 409, 500).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-205",
@@ -6179,7 +6179,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Errors",
                 "text": "Agent process failures (crash, timeout, rate limit) shall be captured and surfaced as system events in the conversation, not silently swallowed.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-01",
                 "tasks": [
                   "T-214"
@@ -6230,7 +6230,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate",
                 "text": "The debate engine shall cycle through agents in turn_order sequence. Each agent gets exactly one turn per round. A round is complete when all enabled agents have spoken.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-401"
@@ -6271,7 +6271,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate",
                 "text": "The debate shall run for up to max_rounds (configurable, default 20). After max_rounds, the system shall trigger an auto-summary and ask the customer to decide.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-401",
@@ -6334,7 +6334,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate",
                 "text": "The customer shall be a first-class participant. When the customer sends a message during debate, it shall be injected into the conversation context visible to all agents on their next turn.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-402"
@@ -6373,7 +6373,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate",
                 "text": "When the customer addresses a specific agent (via @ mention or name), the system shall give that agent the next turn regardless of round-robin order. The round-robin resumes from where it left off after.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-403"
@@ -6407,7 +6407,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate",
                 "text": "When an agent @ mentions the customer, the debate engine shall pause and emit a clarification_needed event. The debate resumes when the customer responds.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-404"
@@ -6446,7 +6446,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Debate",
                 "text": "The system shall detect when agents express agreement (e.g., explicit markers like \"I agree with option X\" or structured JSON output). Agreement shall be presented to the customer but does NOT auto-advance the phase.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-405"
@@ -6487,7 +6487,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Debate",
                 "text": "After max_rounds without agreement, the system shall instruct agents to each produce a structured summary of their position with pros/cons, then present all positions to the customer.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-406"
@@ -6526,7 +6526,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Debate",
                 "text": "Each agent's debate turn shall receive: the full conversation history (or a summarized version if too long), the current round number, and any customer steering messages since the agent's last turn.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-407"
@@ -6560,7 +6560,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Debate",
                 "text": "When the conversation history exceeds a configurable token threshold, the system shall create a rolling summary (checkpoint) and truncate older messages. Agents shall receive the summary + recent messages.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-05",
                 "tasks": [
                   "T-408"
@@ -6604,7 +6604,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Phase/Gate",
                 "text": "The conversation shall progress through ordered phases: debate \u2192 task_planning \u2192 execution \u2192 review \u2192 merge \u2192 done.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-501"
@@ -6645,7 +6645,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Phase/Gate",
                 "text": "Each phase transition shall require an explicit gate approval from the customer. The system shall never auto-advance phases.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-501"
@@ -6686,7 +6686,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Phase/Gate",
                 "text": "Gate statuses shall be: open (in progress), pending_approval (awaiting customer), approved (customer approved, transitioning), rejected (customer sent back, re-entering current phase).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-501"
@@ -6727,7 +6727,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Phase/Gate",
                 "text": "The customer shall be able to move the conversation back to a previous phase (e.g., from execution back to debate) if they change direction.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-502"
@@ -6771,7 +6771,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Execution",
                 "text": "During the execution phase, the system shall assign tasks to available Developer agents. Assignment logic: pick highest-priority unblocked task, assign to idle Developer with matching capabilities.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-503",
@@ -6834,7 +6834,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Execution",
                 "text": "Each Developer agent shall work on exactly one task at a time. The agent's status shall be running while working and idle when between tasks.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-504"
@@ -6875,7 +6875,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Execution",
                 "text": "The Team Lead (Ollama) shall handle task assignment decisions at zero paid-token cost. The backend shall format the task queue and agent statuses for the Team Lead to consume.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-504"
@@ -6921,7 +6921,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Execution",
                 "text": "Agent execution shall operate in batches. A batch is a bounded set of turns (default 20). After a batch completes, the system pauses for the customer to review and steer.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-505"
@@ -6962,7 +6962,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Execution",
                 "text": "The customer shall have controls to: continue (run another batch), stop (pause execution), or steer (inject a note visible to agents on their next turn).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-505"
@@ -7003,7 +7003,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Execution",
                 "text": "Batch runs shall be tracked in a scheduler_run table with: status (running, completed, stopped, failed), batch size, timestamps.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-505"
@@ -7049,7 +7049,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Execution",
                 "text": "Each task shall follow a fixed work order: design \u2192 tdd \u2192 implementing \u2192 testing \u2192 pr_raised. The system shall enforce this ordering via task status transitions.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-506"
@@ -7090,7 +7090,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Execution",
                 "text": "The work order shall be configurable per conversation (e.g., skip TDD phase for documentation tasks). Default is the full order.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-506"
@@ -7141,7 +7141,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Post-Task",
                 "text": "After an agent raises a PR, it shall enter the priority loop: 1) Check own PRs for review comments \u2192 fix them. 2) Check if PR approved \u2192 merge if queue allows. 3) Check if tagged to review another PR \u2192 review it. 4) Otherwise \u2192 pick next task or wait.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-507"
@@ -7182,7 +7182,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Post-Task",
                 "text": "The priority loop shall be evaluated by the Team Lead (Ollama) to avoid spending paid tokens on status polling.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-507"
@@ -7233,7 +7233,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Resources",
                 "text": "The system shall monitor local resource usage: CPU load, RAM, GPU (if applicable). Resource snapshots shall be stored periodically for the dashboard.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-508"
@@ -7267,7 +7267,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Resources",
                 "text": "The system shall enforce a configurable concurrency limit (max simultaneous agent processes). Tasks beyond the limit shall queue.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-06",
                 "tasks": [
                   "T-508"
@@ -7301,7 +7301,7 @@ window.__REQ_DATA__ = {
                 "priority": "P2",
                 "area": "Resources",
                 "text": "The system shall track per-agent token usage and cost estimates across conversations for billing visibility.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": null,
                 "tasks": [],
                 "tests": []
@@ -7328,7 +7328,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Adapters",
                 "text": "The system shall define a BaseAdapter interface for all agent types. The interface shall support: send_prompt(prompt, context) \u2192 stream, resume_session(session_id, context) \u2192 stream, and is_available() \u2192 bool.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-601"
@@ -7362,7 +7362,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Adapters",
                 "text": "Adapter output shall be a stream of events, not a single response. Event types: thinking, text, tool_call, tool_result, file_edit, shell_command, error, done.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-601"
@@ -7396,7 +7396,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Adapters",
                 "text": "Each adapter shall manage its own subprocess lifecycle: start, stream output, detect completion/error, and clean up resources.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-601"
@@ -7435,7 +7435,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Adapters",
                 "text": "The Claude adapter shall invoke claude CLI in a specified working directory. It shall support session resume via --session-id and prompt injection via --prompt or stdin.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-602"
@@ -7476,7 +7476,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Adapters",
                 "text": "The Claude adapter shall parse streaming JSON output from the CLI to extract thinking, tool calls, and text responses as typed events.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-602"
@@ -7517,7 +7517,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Adapters",
                 "text": "The Claude adapter shall support configurable model selection, max tokens, and permission profiles (e.g., --dangerously-skip-permissions for automated runs).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-602"
@@ -7563,7 +7563,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Adapters",
                 "text": "The Codex adapter shall invoke codex CLI with --approval-mode full-auto for autonomous execution. It shall work in a specified directory.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-603"
@@ -7597,7 +7597,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Adapters",
                 "text": "The Codex adapter shall parse Codex CLI output format and normalize it into the standard adapter event stream.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-603"
@@ -7636,7 +7636,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Adapters",
                 "text": "The Ollama adapter shall communicate with a locally running Ollama instance via its HTTP API (http://localhost:11434 by default). No CLI subprocess needed.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-604"
@@ -7677,7 +7677,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Adapters",
                 "text": "The Ollama adapter shall be used exclusively for the Team Lead role: lightweight coordination, task assignment, PR review assignment, merge queue management. It shall NOT be used for code generation.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-604"
@@ -7718,7 +7718,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Adapters",
                 "text": "The Ollama adapter shall support model selection (e.g., llama3, mistral, codellama). The model shall be configurable per agent.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-604"
@@ -7764,7 +7764,7 @@ window.__REQ_DATA__ = {
                 "priority": "P2",
                 "area": "Adapters",
                 "text": "The adapter architecture shall support adding new agent types (e.g., Gemini CLI, Copilot CLI, custom MCP servers) by implementing the BaseAdapter interface. No changes to the orchestration engine shall be required.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-605"
@@ -7808,7 +7808,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "MCP",
                 "text": "The system shall evaluate MCP as an alternative or complement to direct CLI adapters. If MCP provides a standardized way to communicate with agent CLIs, the adapter layer shall be refactored to use MCP transport where beneficial.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [],
                 "tests": []
@@ -7818,7 +7818,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "MCP",
                 "text": "The backend shall be capable of acting as an MCP client \u2014 connecting to MCP-compatible agent servers to send prompts and receive structured responses.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [],
                 "tests": []
@@ -7828,7 +7828,7 @@ window.__REQ_DATA__ = {
                 "priority": "P2",
                 "area": "MCP",
                 "text": "The backend shall be capable of exposing an MCP server \u2014 allowing external MCP clients to interact with the orchestrator's tools (conversation management, task assignment, steering).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [],
                 "tests": []
@@ -7838,7 +7838,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "MCP",
                 "text": "MCP integration shall not be a hard dependency. The system shall work with pure CLI adapters. MCP shall be an opt-in enhancement for providers that support it.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [],
                 "tests": []
@@ -7858,7 +7858,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "GitHub",
                 "text": "The system shall detect when an agent raises a PR (via monitoring git state or parsing agent output). PR metadata (number, URL, branch, title) shall be stored with the task.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-607"
@@ -7892,7 +7892,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "GitHub",
                 "text": "The system shall use the GitHub CLI (gh) or GitHub API to: list PRs, read review comments, check CI status, and post review comments. These operations shall be performed by the Team Lead (Ollama) or system process, not paid agents.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-608"
@@ -7938,7 +7938,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "GitHub",
                 "text": "When the Team Lead assigns a reviewer, the system shall: notify the reviewing agent, provide the PR diff and context, and start the agent's review turn.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-703",
@@ -8001,7 +8001,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "GitHub",
                 "text": "Review comments from agents shall be posted as GitHub PR review comments, making them visible in the standard GitHub review workflow.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-608"
@@ -8047,7 +8047,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "GitHub",
                 "text": "The system shall poll or receive webhooks for CI status on PRs. CI failures shall be surfaced as task events and the owning agent shall be notified to fix.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-609"
@@ -8091,7 +8091,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Git",
                 "text": "Each agent working on a task shall operate in an isolated git worktree. The system shall create worktrees at task start and clean them up after merge.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-606"
@@ -8125,7 +8125,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Git",
                 "text": "Worktree paths shall follow a convention: {worktree_base}/{task-slug}/. The worktree base directory shall be configurable (default: ../agent-orchestrator-worktrees/).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-606"
@@ -8159,7 +8159,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Git",
                 "text": "Each worktree shall be on its own branch, following the naming convention: {agent-provider}/{task-slug} (e.g., claude/ui-add-roster).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-606"
@@ -8198,7 +8198,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Git",
                 "text": "The system shall perform git merge operations: rebase branch onto main, resolve simple conflicts (or flag for human), push, and trigger merge via GitHub.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-702"
@@ -8239,7 +8239,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Git",
                 "text": "Merge conflicts that cannot be auto-resolved shall be flagged as a blocked event on the task. The customer shall be notified.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-706"
@@ -8290,7 +8290,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Filesystem",
                 "text": "The system shall only access files within the conversation's project_path and the designated worktree directories. No access to files outside these boundaries.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-610"
@@ -8324,7 +8324,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Filesystem",
                 "text": "Agent activity logs shall capture all file reads/writes performed by agents, enabling the activity viewer to show what files an agent touched.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-07",
                 "tasks": [
                   "T-610"
@@ -8375,7 +8375,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Queue",
                 "text": "The system shall maintain a merge queue per conversation \u2014 an ordered list of PRs approved and waiting to merge into main.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-701"
@@ -8416,7 +8416,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Queue",
                 "text": "Merges shall be serialized \u2014 only one PR shall be actively merging at any time. All other approved PRs shall wait in the queue.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-701"
@@ -8457,7 +8457,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Queue",
                 "text": "Queue ordering shall be: first-approved-first-merged (FIFO), with an option for the customer to re-prioritize.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-701"
@@ -8498,7 +8498,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Queue",
                 "text": "The merge queue shall be visible on the dashboard with: PR title, author agent, position in queue, current status (waiting / rebasing / merging / merged / failed).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-708"
@@ -8542,7 +8542,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Process",
                 "text": "When a PR reaches the front of the queue, the merge process shall: 1) Rebase the PR branch onto latest main. 2) Run tests (if CI is configured). 3) If tests pass, merge (squash or regular, configurable). 4) If tests fail, move PR to fixing_comments and notify the author agent.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-702"
@@ -8583,7 +8583,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Process",
                 "text": "While one PR is merging, all other agents shall be blocked from pushing to main. They may continue working on their branches but shall not attempt to merge.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-702"
@@ -8624,7 +8624,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Process",
                 "text": "After a successful merge, the system shall: 1) Notify the next PR in queue to begin its rebase. 2) Notify all other agents with open PRs that main has changed. 3) Update the task status to done. 4) Clean up the merged worktree and branch.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-707"
@@ -8675,7 +8675,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Coordinator",
                 "text": "The Ollama Team Lead shall serve as the merge coordinator. It shall manage the queue, decide when to trigger rebase/merge, and notify agents. This happens at zero paid-token cost.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-703"
@@ -8716,7 +8716,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Coordinator",
                 "text": "The merge coordinator shall poll for merge readiness at a configurable interval (default: 30 seconds). Polling shall check: is anything currently merging? Is the next PR in queue ready? Are CI checks passing?",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-703"
@@ -8757,7 +8757,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Coordinator",
                 "text": "The merge coordinator shall handle: Rebase conflict (mark PR as blocked, notify author + customer), CI failure after rebase (mark as fixing_comments, notify author), Merge timeout (if > configurable timeout, alert customer).",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-703"
@@ -8808,7 +8808,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Review Flow",
                 "text": "The full review-to-merge flow: 1) Agent raises PR (pr_raised). 2) Team Lead assigns reviewer (in_review). 3) Reviewer posts comments or approves. 4) If comments: author fixes (fixing_comments), re-review loop. 5) If approved: PR enters merge queue (merging). 6) Merge coordinator processes queue. 7) On success: done.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-704"
@@ -8849,7 +8849,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Review Flow",
                 "text": "The Team Lead shall assign PR reviewers using the rule: pick a Developer agent that did NOT author the PR and is currently idle or has the lightest workload.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-705"
@@ -8883,7 +8883,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Review Flow",
                 "text": "If no reviewer is available (e.g., single-developer conversation), the PR shall be flagged for customer review. The customer shall be able to approve or request changes.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-705"
@@ -8927,7 +8927,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Conflicts",
                 "text": "When a rebase results in merge conflicts, the system shall: 1) Identify the conflicting files. 2) Notify the author agent with conflict details. 3) Author resolves in worktree and force-pushes. 4) Merge process restarts from rebase step.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-706"
@@ -8968,7 +8968,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Conflicts",
                 "text": "If conflict resolution fails after a configurable number of attempts (default: 3), the system shall escalate to the customer with full conflict context.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-706"
@@ -9019,7 +9019,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Notifications",
                 "text": "After each merge to main, the system shall broadcast a main_updated event to all agents in the conversation. Agents with open branches shall be advised to rebase.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-707"
@@ -9060,7 +9060,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Notifications",
                 "text": "The merge coordinator shall trigger automatic rebase of the next PR in queue immediately after a successful merge, without waiting for the polling interval.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-08",
                 "tasks": [
                   "T-707"
@@ -9111,7 +9111,7 @@ window.__REQ_DATA__ = {
                 "priority": "P0",
                 "area": "Data",
                 "text": "The merge queue shall be stored in a merge_queue table (or equivalent) with: conversation_id, task_id, pr_number, pr_url, author_agent_id, reviewer_agent_id, position, status (queued, rebasing, testing, merging, merged, failed, blocked), queued_at, merged_at.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02, DES-08",
                 "tasks": [
                   "T-101",
@@ -9232,7 +9232,7 @@ window.__REQ_DATA__ = {
                 "priority": "P1",
                 "area": "Data",
                 "text": "Merge events (queued, rebase started, tests passed/failed, merged, conflict) shall be logged as message_event entries for audit trail and activity viewer display.",
-                "status": "todo",
+                "status": "done",
                 "design_ref": "DES-02, DES-08",
                 "tasks": [
                   "T-101",

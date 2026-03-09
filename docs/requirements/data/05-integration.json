@@ -14,7 +14,7 @@
               "priority": "P0",
               "area": "Adapters",
               "text": "The system shall define a BaseAdapter interface for all agent types. The interface shall support: send_prompt(prompt, context) \u2192 stream, resume_session(session_id, context) \u2192 stream, and is_available() \u2192 bool.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-601"
@@ -48,7 +48,7 @@
               "priority": "P0",
               "area": "Adapters",
               "text": "Adapter output shall be a stream of events, not a single response. Event types: thinking, text, tool_call, tool_result, file_edit, shell_command, error, done.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-601"
@@ -82,7 +82,7 @@
               "priority": "P0",
               "area": "Adapters",
               "text": "Each adapter shall manage its own subprocess lifecycle: start, stream output, detect completion/error, and clean up resources.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-601"
@@ -121,7 +121,7 @@
               "priority": "P0",
               "area": "Adapters",
               "text": "The Claude adapter shall invoke claude CLI in a specified working directory. It shall support session resume via --session-id and prompt injection via --prompt or stdin.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-602"
@@ -162,7 +162,7 @@
               "priority": "P1",
               "area": "Adapters",
               "text": "The Claude adapter shall parse streaming JSON output from the CLI to extract thinking, tool calls, and text responses as typed events.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-602"
@@ -203,7 +203,7 @@
               "priority": "P1",
               "area": "Adapters",
               "text": "The Claude adapter shall support configurable model selection, max tokens, and permission profiles (e.g., --dangerously-skip-permissions for automated runs).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-602"
@@ -249,7 +249,7 @@
               "priority": "P0",
               "area": "Adapters",
               "text": "The Codex adapter shall invoke codex CLI with --approval-mode full-auto for autonomous execution. It shall work in a specified directory.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-603"
@@ -283,7 +283,7 @@
               "priority": "P1",
               "area": "Adapters",
               "text": "The Codex adapter shall parse Codex CLI output format and normalize it into the standard adapter event stream.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-603"
@@ -322,7 +322,7 @@
               "priority": "P0",
               "area": "Adapters",
               "text": "The Ollama adapter shall communicate with a locally running Ollama instance via its HTTP API (http://localhost:11434 by default). No CLI subprocess needed.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-604"
@@ -363,7 +363,7 @@
               "priority": "P0",
               "area": "Adapters",
               "text": "The Ollama adapter shall be used exclusively for the Team Lead role: lightweight coordination, task assignment, PR review assignment, merge queue management. It shall NOT be used for code generation.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-604"
@@ -404,7 +404,7 @@
               "priority": "P1",
               "area": "Adapters",
               "text": "The Ollama adapter shall support model selection (e.g., llama3, mistral, codellama). The model shall be configurable per agent.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-604"
@@ -450,7 +450,7 @@
               "priority": "P2",
               "area": "Adapters",
               "text": "The adapter architecture shall support adding new agent types (e.g., Gemini CLI, Copilot CLI, custom MCP servers) by implementing the BaseAdapter interface. No changes to the orchestration engine shall be required.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-605"
@@ -494,7 +494,7 @@
               "priority": "P1",
               "area": "MCP",
               "text": "The system shall evaluate MCP as an alternative or complement to direct CLI adapters. If MCP provides a standardized way to communicate with agent CLIs, the adapter layer shall be refactored to use MCP transport where beneficial.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [],
               "tests": []
@@ -504,7 +504,7 @@
               "priority": "P1",
               "area": "MCP",
               "text": "The backend shall be capable of acting as an MCP client \u2014 connecting to MCP-compatible agent servers to send prompts and receive structured responses.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [],
               "tests": []
@@ -514,7 +514,7 @@
               "priority": "P2",
               "area": "MCP",
               "text": "The backend shall be capable of exposing an MCP server \u2014 allowing external MCP clients to interact with the orchestrator's tools (conversation management, task assignment, steering).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [],
               "tests": []
@@ -524,7 +524,7 @@
               "priority": "P1",
               "area": "MCP",
               "text": "MCP integration shall not be a hard dependency. The system shall work with pure CLI adapters. MCP shall be an opt-in enhancement for providers that support it.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [],
               "tests": []
@@ -544,7 +544,7 @@
               "priority": "P0",
               "area": "GitHub",
               "text": "The system shall detect when an agent raises a PR (via monitoring git state or parsing agent output). PR metadata (number, URL, branch, title) shall be stored with the task.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-607"
@@ -578,7 +578,7 @@
               "priority": "P1",
               "area": "GitHub",
               "text": "The system shall use the GitHub CLI (gh) or GitHub API to: list PRs, read review comments, check CI status, and post review comments. These operations shall be performed by the Team Lead (Ollama) or system process, not paid agents.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-608"
@@ -624,7 +624,7 @@
               "priority": "P0",
               "area": "GitHub",
               "text": "When the Team Lead assigns a reviewer, the system shall: notify the reviewing agent, provide the PR diff and context, and start the agent's review turn.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-703",
@@ -687,7 +687,7 @@
               "priority": "P1",
               "area": "GitHub",
               "text": "Review comments from agents shall be posted as GitHub PR review comments, making them visible in the standard GitHub review workflow.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-608"
@@ -733,7 +733,7 @@
               "priority": "P1",
               "area": "GitHub",
               "text": "The system shall poll or receive webhooks for CI status on PRs. CI failures shall be surfaced as task events and the owning agent shall be notified to fix.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-609"
@@ -777,7 +777,7 @@
               "priority": "P0",
               "area": "Git",
               "text": "Each agent working on a task shall operate in an isolated git worktree. The system shall create worktrees at task start and clean them up after merge.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-606"
@@ -811,7 +811,7 @@
               "priority": "P0",
               "area": "Git",
               "text": "Worktree paths shall follow a convention: {worktree_base}/{task-slug}/. The worktree base directory shall be configurable (default: ../agent-orchestrator-worktrees/).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-606"
@@ -845,7 +845,7 @@
               "priority": "P0",
               "area": "Git",
               "text": "Each worktree shall be on its own branch, following the naming convention: {agent-provider}/{task-slug} (e.g., claude/ui-add-roster).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-606"
@@ -884,7 +884,7 @@
               "priority": "P0",
               "area": "Git",
               "text": "The system shall perform git merge operations: rebase branch onto main, resolve simple conflicts (or flag for human), push, and trigger merge via GitHub.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-702"
@@ -925,7 +925,7 @@
               "priority": "P1",
               "area": "Git",
               "text": "Merge conflicts that cannot be auto-resolved shall be flagged as a blocked event on the task. The customer shall be notified.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-706"
@@ -976,7 +976,7 @@
               "priority": "P0",
               "area": "Filesystem",
               "text": "The system shall only access files within the conversation's project_path and the designated worktree directories. No access to files outside these boundaries.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-610"
@@ -1010,7 +1010,7 @@
               "priority": "P1",
               "area": "Filesystem",
               "text": "Agent activity logs shall capture all file reads/writes performed by agents, enabling the activity viewer to show what files an agent touched.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-07",
               "tasks": [
                 "T-610"
