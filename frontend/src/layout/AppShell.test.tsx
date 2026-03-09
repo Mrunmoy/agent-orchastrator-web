@@ -181,7 +181,7 @@ describe("AppShell", () => {
     fireEvent.click(within(editor).getByRole("button", { name: /save agent/i }));
 
     await waitFor(() => expect(api.createAgent).toHaveBeenCalledOnce());
-    expect(screen.getByText("Codex Worker")).toBeInTheDocument();
+    expect(screen.getAllByText("Codex Worker").length).toBeGreaterThanOrEqual(1);
   });
 
   it("model dropdown resets to first model when provider changes", async () => {
@@ -379,7 +379,7 @@ describe("T-404: Dashboard view toggle", () => {
 
     expect(screen.queryByTestId("chat-pane")).not.toBeInTheDocument();
     expect(screen.getByTestId("dashboard-view")).toBeInTheDocument();
-    expect(screen.getByTestId("kanban-board")).toBeInTheDocument();
+    expect(screen.getByTestId("stats-row")).toBeInTheDocument();
   });
 
   it("switches back to chat view when Chat button is clicked", async () => {
@@ -415,11 +415,14 @@ describe("T-404: Dashboard view toggle", () => {
     fireEvent.click(screen.getByTestId("view-toggle-dashboard"));
 
     await waitFor(() => expect(api.fetchTasks).toHaveBeenCalledWith("conv-1"));
-    expect(screen.getByTestId("kanban-card-UI-001")).toBeInTheDocument();
-    expect(screen.getByTestId("kanban-card-UI-002")).toBeInTheDocument();
+    // DashboardView renders stats cards with task counts
+    const completedCard = screen.getByTestId("stats-card-completed-tasks");
+    expect(completedCard).toHaveTextContent("1");
+    const runningCard = screen.getByTestId("stats-card-running-tasks");
+    expect(runningCard).toHaveTextContent("1");
   });
 
-  it("displays tasks in correct kanban columns", async () => {
+  it("displays task stats in dashboard view", async () => {
     api.listConversations.mockResolvedValue([
       {
         id: "conv-1",
@@ -441,10 +444,10 @@ describe("T-404: Dashboard view toggle", () => {
 
     await waitFor(() => expect(api.fetchTasks).toHaveBeenCalledWith("conv-1"));
 
-    const todoCol = screen.getByTestId("kanban-column-todo");
-    expect(todoCol).toContainElement(screen.getByTestId("kanban-card-T-1"));
+    const totalCard = screen.getByTestId("stats-card-total-tasks");
+    expect(totalCard).toHaveTextContent("2");
 
-    const doneCol = screen.getByTestId("kanban-column-done");
-    expect(doneCol).toContainElement(screen.getByTestId("kanban-card-T-2"));
+    const completedCard = screen.getByTestId("stats-card-completed-tasks");
+    expect(completedCard).toHaveTextContent("1");
   });
 });

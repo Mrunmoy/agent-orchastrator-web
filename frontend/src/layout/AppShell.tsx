@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { viewTransition } from "../utils/animations";
 import personalitiesJson from "../config/personalities.json";
 import type { AgentData, AgentRole, Provider } from "../features/agents";
 import { useEventStream } from "../hooks/useEventStream";
 import { eventsToChatMessages, mergeWithLocal } from "../features/chat/eventTransform";
 import { useArtifacts } from "../hooks/useArtifacts";
 import { useRunStatus } from "../hooks/useRunStatus";
-import type { KanbanTask } from "../features/dashboard/types";
-import { KanbanBoard } from "../features/dashboard/KanbanBoard";
+import { DashboardView } from "../features/dashboard/DashboardView";
 import {
   clearConversations as clearConversationsApi,
   createAgent as createAgentApi,
   createConversation as createConversationApi,
   deleteAgent as deleteAgentApi,
   deleteConversation as deleteConversationApi,
-  fetchTasks,
   listConversationAgents,
   listConversations,
   removeAgentFromConversation as removeAgentFromConversationApi,
@@ -147,30 +147,6 @@ export function AppShell() {
   const { agreementMap, conflictMap, neutralMemo } = useArtifacts(selectedConversationId);
 
   const [activeView, setActiveView] = useState<"chat" | "dashboard">("chat");
-  const [dashboardTasks, setDashboardTasks] = useState<KanbanTask[]>([]);
-
-  const loadDashboardTasks = useCallback(async (conversationId: string) => {
-    try {
-      const tasks = await fetchTasks(conversationId);
-      setDashboardTasks(
-        tasks.map((t) => ({
-          id: t.id,
-          title: t.title,
-          status: t.status as KanbanTask["status"],
-          assignee: t.assignee,
-          priority: t.priority,
-        })),
-      );
-    } catch {
-      setDashboardTasks([]);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (activeView === "dashboard" && selectedConversationId) {
-      void loadDashboardTasks(selectedConversationId);
-    }
-  }, [activeView, selectedConversationId, loadDashboardTasks]);
 
   const selectedConversation = useMemo(
     () => conversations.find((c) => c.id === selectedConversationId) ?? null,
@@ -449,7 +425,7 @@ export function AppShell() {
       mode: "create",
       displayName: "",
       provider: "claude",
-      model: PROVIDER_MODELS.claude[0],
+      model: PROVIDER_MODELS.claude[0] ?? "",
       role: "worker",
       personality_key: "",
     });
@@ -585,17 +561,21 @@ export function AppShell() {
               : undefined
           }
         />
-        {activeView === "chat" ? (
-          <ChatPane
-            activeConversationTitle={selectedConversation?.title ?? null}
-            messages={selectedMessages}
-            onSend={(text) => void sendMessage(text, null)}
-          />
-        ) : (
-          <div className="dashboard-view" data-testid="dashboard-view">
-            <KanbanBoard tasks={dashboardTasks} />
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {activeView === "chat" ? (
+            <motion.div key="chat" {...viewTransition} style={{ display: "contents" }}>
+              <ChatPane
+                activeConversationTitle={selectedConversation?.title ?? null}
+                messages={selectedMessages}
+                onSend={(text) => void sendMessage(text, null)}
+              />
+            </motion.div>
+          ) : (
+            <motion.div key="dashboard" {...viewTransition} style={{ display: "contents" }}>
+              <DashboardView conversationId={selectedConversationId} agents={agents} />
+            </motion.div>
+          )}
+        </AnimatePresence>
         <IntelligencePane
           agreementSummary={
             selectedMessages.length > 0
@@ -606,6 +586,7 @@ export function AppShell() {
           conflictArtifact={conflictMap}
           memoArtifact={neutralMemo}
           memoSummary={memoSummary}
+          agents={agents}
         />
       </section>
       <BottomControls
@@ -681,7 +662,7 @@ export function AppShell() {
                     return {
                       ...prev,
                       provider: newProvider,
-                      model: PROVIDER_MODELS[newProvider][0],
+                      model: PROVIDER_MODELS[newProvider]?.[0] ?? "",
                     };
                   })
                 }

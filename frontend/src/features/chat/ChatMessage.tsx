@@ -1,8 +1,10 @@
 import React from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { motion, useReducedMotion } from "framer-motion";
 import type { ChatMessageData } from "./types";
 import { agentColor } from "./agentColor";
+import { fadeInUp } from "../../utils/animations";
 import "./ChatMessage.css";
 
 export interface ChatMessageProps {
@@ -10,6 +12,8 @@ export interface ChatMessageProps {
 }
 
 export function ChatMessage({ message }: ChatMessageProps) {
+  const prefersReducedMotion = useReducedMotion();
+
   const {
     agentName,
     agentId,
@@ -46,21 +50,15 @@ export function ChatMessage({ message }: ChatMessageProps) {
   const displayName = type === "steer" ? "You" : agentName;
 
   // Avatar background: hash-based for agents, default for user
-  const avatarStyle =
-    !isUser && agentId
-      ? { backgroundColor: agentColor(agentId) }
-      : undefined;
+  const avatarStyle = !isUser && agentId ? { backgroundColor: agentColor(agentId) } : undefined;
 
   return (
-    <div
+    <motion.div
       className={`chat-message ${variantClass}`}
       data-testid="chat-message"
+      {...(prefersReducedMotion ? {} : fadeInUp)}
     >
-      <div
-        className="chat-avatar"
-        data-testid="chat-avatar"
-        style={avatarStyle}
-      >
+      <div className="chat-avatar" data-testid="chat-avatar" style={avatarStyle}>
         {displayName.charAt(0).toUpperCase()}
       </div>
       <div className="chat-bubble" data-testid="chat-bubble">
@@ -76,9 +74,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
               Round {round}/{totalRounds}
             </span>
           )}
-          <span className="chat-bubble__time">
-            {new Date(timestamp).toLocaleTimeString()}
-          </span>
+          <span className="chat-bubble__time">{new Date(timestamp).toLocaleTimeString()}</span>
         </div>
         {isThinking ? (
           <div className="thinking-indicator" data-testid="thinking-indicator">
@@ -92,6 +88,6 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
