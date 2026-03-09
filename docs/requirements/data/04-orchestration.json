@@ -14,7 +14,7 @@
               "priority": "P0",
               "area": "Debate",
               "text": "The debate engine shall cycle through agents in turn_order sequence. Each agent gets exactly one turn per round. A round is complete when all enabled agents have spoken.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-401"
@@ -55,7 +55,7 @@
               "priority": "P0",
               "area": "Debate",
               "text": "The debate shall run for up to max_rounds (configurable, default 20). After max_rounds, the system shall trigger an auto-summary and ask the customer to decide.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-401",
@@ -118,7 +118,7 @@
               "priority": "P0",
               "area": "Debate",
               "text": "The customer shall be a first-class participant. When the customer sends a message during debate, it shall be injected into the conversation context visible to all agents on their next turn.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-402"
@@ -157,7 +157,7 @@
               "priority": "P0",
               "area": "Debate",
               "text": "When the customer addresses a specific agent (via @ mention or name), the system shall give that agent the next turn regardless of round-robin order. The round-robin resumes from where it left off after.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-403"
@@ -191,7 +191,7 @@
               "priority": "P0",
               "area": "Debate",
               "text": "When an agent @ mentions the customer, the debate engine shall pause and emit a clarification_needed event. The debate resumes when the customer responds.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-404"
@@ -230,7 +230,7 @@
               "priority": "P1",
               "area": "Debate",
               "text": "The system shall detect when agents express agreement (e.g., explicit markers like \"I agree with option X\" or structured JSON output). Agreement shall be presented to the customer but does NOT auto-advance the phase.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-405"
@@ -271,7 +271,7 @@
               "priority": "P1",
               "area": "Debate",
               "text": "After max_rounds without agreement, the system shall instruct agents to each produce a structured summary of their position with pros/cons, then present all positions to the customer.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-406"
@@ -310,7 +310,7 @@
               "priority": "P0",
               "area": "Debate",
               "text": "Each agent's debate turn shall receive: the full conversation history (or a summarized version if too long), the current round number, and any customer steering messages since the agent's last turn.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-407"
@@ -344,7 +344,7 @@
               "priority": "P1",
               "area": "Debate",
               "text": "When the conversation history exceeds a configurable token threshold, the system shall create a rolling summary (checkpoint) and truncate older messages. Agents shall receive the summary + recent messages.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-408"
@@ -388,7 +388,7 @@
               "priority": "P0",
               "area": "Phase/Gate",
               "text": "The conversation shall progress through ordered phases: debate \u2192 task_planning \u2192 execution \u2192 review \u2192 merge \u2192 done.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-501"
@@ -429,7 +429,7 @@
               "priority": "P0",
               "area": "Phase/Gate",
               "text": "Each phase transition shall require an explicit gate approval from the customer. The system shall never auto-advance phases.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-501"
@@ -470,7 +470,7 @@
               "priority": "P0",
               "area": "Phase/Gate",
               "text": "Gate statuses shall be: open (in progress), pending_approval (awaiting customer), approved (customer approved, transitioning), rejected (customer sent back, re-entering current phase).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-501"
@@ -511,7 +511,7 @@
               "priority": "P1",
               "area": "Phase/Gate",
               "text": "The customer shall be able to move the conversation back to a previous phase (e.g., from execution back to debate) if they change direction.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-502"
@@ -555,7 +555,7 @@
               "priority": "P0",
               "area": "Execution",
               "text": "During the execution phase, the system shall assign tasks to available Developer agents. Assignment logic: pick highest-priority unblocked task, assign to idle Developer with matching capabilities.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-503",
@@ -618,7 +618,7 @@
               "priority": "P0",
               "area": "Execution",
               "text": "Each Developer agent shall work on exactly one task at a time. The agent's status shall be running while working and idle when between tasks.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-504"
@@ -659,7 +659,7 @@
               "priority": "P1",
               "area": "Execution",
               "text": "The Team Lead (Ollama) shall handle task assignment decisions at zero paid-token cost. The backend shall format the task queue and agent statuses for the Team Lead to consume.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-504"
@@ -705,7 +705,7 @@
               "priority": "P0",
               "area": "Execution",
               "text": "Agent execution shall operate in batches. A batch is a bounded set of turns (default 20). After a batch completes, the system pauses for the customer to review and steer.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-505"
@@ -746,7 +746,7 @@
               "priority": "P0",
               "area": "Execution",
               "text": "The customer shall have controls to: continue (run another batch), stop (pause execution), or steer (inject a note visible to agents on their next turn).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-505"
@@ -787,7 +787,7 @@
               "priority": "P1",
               "area": "Execution",
               "text": "Batch runs shall be tracked in a scheduler_run table with: status (running, completed, stopped, failed), batch size, timestamps.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-505"
@@ -833,7 +833,7 @@
               "priority": "P0",
               "area": "Execution",
               "text": "Each task shall follow a fixed work order: design \u2192 tdd \u2192 implementing \u2192 testing \u2192 pr_raised. The system shall enforce this ordering via task status transitions.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-506"
@@ -874,7 +874,7 @@
               "priority": "P1",
               "area": "Execution",
               "text": "The work order shall be configurable per conversation (e.g., skip TDD phase for documentation tasks). Default is the full order.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-506"
@@ -925,7 +925,7 @@
               "priority": "P0",
               "area": "Post-Task",
               "text": "After an agent raises a PR, it shall enter the priority loop: 1) Check own PRs for review comments \u2192 fix them. 2) Check if PR approved \u2192 merge if queue allows. 3) Check if tagged to review another PR \u2192 review it. 4) Otherwise \u2192 pick next task or wait.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-507"
@@ -966,7 +966,7 @@
               "priority": "P1",
               "area": "Post-Task",
               "text": "The priority loop shall be evaluated by the Team Lead (Ollama) to avoid spending paid tokens on status polling.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-507"
@@ -1017,7 +1017,7 @@
               "priority": "P1",
               "area": "Resources",
               "text": "The system shall monitor local resource usage: CPU load, RAM, GPU (if applicable). Resource snapshots shall be stored periodically for the dashboard.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-508"
@@ -1051,7 +1051,7 @@
               "priority": "P1",
               "area": "Resources",
               "text": "The system shall enforce a configurable concurrency limit (max simultaneous agent processes). Tasks beyond the limit shall queue.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-508"
@@ -1085,7 +1085,7 @@
               "priority": "P2",
               "area": "Resources",
               "text": "The system shall track per-agent token usage and cost estimates across conversations for billing visibility.",
-              "status": "todo",
+              "status": "done",
               "design_ref": null,
               "tasks": [],
               "tests": []

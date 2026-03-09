@@ -14,7 +14,7 @@
               "priority": "P0",
               "area": "Data Model",
               "text": "A conversation shall be the top-level entity, tied to a project directory path. It shall track: title, project_path, current phase, gate status, and active flag.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-102",
@@ -135,7 +135,7 @@
               "priority": "P0",
               "area": "Data Model",
               "text": "Conversations shall support soft deletion (via deleted_at timestamp). Listing endpoints shall exclude soft-deleted conversations by default.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-104"
@@ -176,7 +176,7 @@
               "priority": "P0",
               "area": "Data Model",
               "text": "Only one conversation shall be active at a time. Selecting a conversation shall deactivate all others.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-104"
@@ -222,7 +222,7 @@
               "priority": "P0",
               "area": "Data Model",
               "text": "Each agent shall have a globally unique ID, display name, provider (claude, codex, ollama, gemini), model identifier, role (analyst, team_lead, developer), personality key, and status (idle, running, blocked, offline).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-103",
@@ -314,7 +314,7 @@
               "priority": "P0",
               "area": "Data Model",
               "text": "Agents shall be scoped to conversations via a join table (conversation_agent). Each join record shall include: turn_order (for round-robin sequencing), enabled flag, and permission_profile.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-106",
@@ -377,7 +377,7 @@
               "priority": "P0",
               "area": "Data Model",
               "text": "When an agent is added to a conversation, the system shall auto-assign the next turn_order value (max existing + 1, starting from 1).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-106",
@@ -440,7 +440,7 @@
               "priority": "P1",
               "area": "Data Model",
               "text": "An agent marked as is_merge_coordinator in a conversation shall be designated to manage the merge queue. Typically this is the Ollama Team Lead.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-106",
@@ -508,7 +508,7 @@
               "priority": "P0",
               "area": "Data Model",
               "text": "A task shall belong to a conversation and track: title, specification (JSON), status, priority, owner agent, dependencies (as JSON array of task IDs), timestamps, result summary, and evidence artifacts.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-102",
@@ -629,7 +629,7 @@
               "priority": "P0",
               "area": "Data Model",
               "text": "Task statuses shall be: todo, design, tdd, implementing, testing, pr_raised, in_review, fixing_comments, merging, done, blocked.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-107",
@@ -728,7 +728,7 @@
               "priority": "P1",
               "area": "Data Model",
               "text": "Tasks shall support dependency tracking. A task shall not transition to implementing until all its dependencies are done.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-107",
@@ -825,7 +825,7 @@
               "priority": "P0",
               "area": "Data Model",
               "text": "All conversation events (chat messages, system events, phase transitions, steering inputs) shall be stored in a message_event table with: conversation_id, source type (customer, agent, system), source ID, text, event type, and metadata JSON.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-102",
@@ -997,7 +997,7 @@
               "priority": "P0",
               "area": "Data Model",
               "text": "Event types shall include: chat_message, debate_turn, phase_change, gate_approval, steer, task_update, system_notice.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-108",
@@ -1140,7 +1140,7 @@
               "priority": "P1",
               "area": "Data Model",
               "text": "Each event shall have a unique event_id (UUID). Events shall be append-only \u2014 no updates or deletes.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-108",
@@ -1244,7 +1244,7 @@
               "priority": "P1",
               "area": "Data Model",
               "text": "The system shall store artifacts (design docs, task plans, summaries) linked to conversations and optionally to batch runs. Artifact types shall include: design_doc, task_plan, summary, checkpoint.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-102",
@@ -1368,7 +1368,7 @@
               "priority": "P0",
               "area": "Persistence",
               "text": "The system shall use SQLite with WAL mode for persistence. The database file shall reside in a configurable local path (default: ~/.agent-orchestrator/orchestrator.db).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-103",
@@ -1598,7 +1598,7 @@
               "priority": "P0",
               "area": "Persistence",
               "text": "The database schema shall support forward migrations via a schema_version pragma. Each migration shall be idempotent.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-101",
@@ -1661,7 +1661,7 @@
               "priority": "P1",
               "area": "Persistence",
               "text": "The system shall maintain a JSONL event log as a secondary append-only store for debugging and replay. This is supplementary to the SQLite store.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-02",
               "tasks": [
                 "T-111"
@@ -1712,7 +1712,7 @@
               "priority": "P0",
               "area": "API",
               "text": "The backend shall expose a REST API via FastAPI, served by uvicorn. All endpoints shall return a standard envelope: { \"ok\": bool, \"data\": T, \"error\"?: string }.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-201",
@@ -2022,7 +2022,7 @@
               "priority": "P0",
               "area": "API",
               "text": "The API shall be prefixed under /api. The frontend dev server shall proxy /api/* to the backend.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-215"
@@ -2056,7 +2056,7 @@
               "priority": "P0",
               "area": "API",
               "text": "CORS shall be configured for local development (localhost + LAN IPs). In production mode, the frontend is served as static files from the backend and CORS is not needed.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-113"
@@ -2102,7 +2102,7 @@
               "priority": "P0",
               "area": "API",
               "text": "GET /api/conversations \u2014 List all non-deleted conversations. POST /api/conversations/new \u2014 Create conversation. POST /api/conversations/select \u2014 Set active. POST /api/conversations/delete \u2014 Soft-delete. POST /api/conversations/clear-all \u2014 Soft-delete all.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-201"
@@ -2143,7 +2143,7 @@
               "priority": "P1",
               "area": "API",
               "text": "GET /api/conversations/{id} \u2014 Full details with phase, gate status, agent count. PATCH /api/conversations/{id} \u2014 Update metadata.",
-              "status": "todo",
+              "status": "done",
               "design_ref": null,
               "tasks": [
                 "T-201"
@@ -2189,7 +2189,7 @@
               "priority": "P0",
               "area": "API",
               "text": "POST /api/agents \u2014 Create agent, optionally assign to conversation. POST /api/agents/update \u2014 Update properties. POST /api/agents/delete \u2014 Delete and cascade-remove from conversations.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-212",
@@ -2252,7 +2252,7 @@
               "priority": "P0",
               "area": "API",
               "text": "GET /api/conversations/{id}/agents \u2014 List by turn_order. DELETE /api/conversations/{id}/agents/{aid} \u2014 Remove from conversation. PATCH /api/conversations/{id}/agents/reorder \u2014 Bulk reorder.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-213"
@@ -2291,7 +2291,7 @@
               "priority": "P0",
               "area": "API",
               "text": "GET /api/conversations/{id}/messages \u2014 Paginated, supports ?after=event_id. POST /api/conversations/{id}/messages \u2014 Send customer message with optional target_agent_id for directed messages.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-202"
@@ -2332,7 +2332,7 @@
               "priority": "P1",
               "area": "API",
               "text": "GET /api/conversations/{id}/events \u2014 All events filterable by event_type.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-203"
@@ -2371,7 +2371,7 @@
               "priority": "P0",
               "area": "API",
               "text": "GET /api/conversations/{id}/tasks \u2014 List tasks. POST /api/conversations/{id}/tasks \u2014 Create task. PATCH /api/tasks/{task_id} \u2014 Update status, owner, result.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-204"
@@ -2417,7 +2417,7 @@
               "priority": "P0",
               "area": "API",
               "text": "POST /api/orchestration/{id}/run \u2014 Start batch. POST /api/orchestration/{id}/continue \u2014 Continue batch. POST /api/orchestration/{id}/stop \u2014 Stop batch. POST /api/orchestration/{id}/steer \u2014 Inject steering note.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-505"
@@ -2463,7 +2463,7 @@
               "priority": "P0",
               "area": "Streaming",
               "text": "The system shall provide a real-time event stream via Server-Sent Events (SSE) at GET /api/conversations/{id}/stream. Events include: new messages, phase changes, task updates, agent status changes.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-208",
@@ -2533,7 +2533,7 @@
               "priority": "P0",
               "area": "Streaming",
               "text": "The system shall provide a per-agent activity stream via SSE at GET /api/agents/{id}/activity. Events include: thinking output, tool calls, file reads/writes, shell commands, and their results.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-209",
@@ -2596,7 +2596,7 @@
               "priority": "P1",
               "area": "Streaming",
               "text": "SSE streams shall support Last-Event-ID for reconnection. Missed events shall be replayed from the event store.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-208",
@@ -2669,7 +2669,7 @@
               "priority": "P0",
               "area": "Lifecycle",
               "text": "Creating an agent record does NOT start a process. Agent processes are started by the orchestration engine when a batch run begins or a task is assigned.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-601",
@@ -2783,7 +2783,7 @@
               "priority": "P0",
               "area": "Lifecycle",
               "text": "The system shall track agent status transitions: idle \u2192 running (task assigned / debate turn) \u2192 idle (turn complete) or blocked (waiting for input/merge).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-212"
@@ -2824,7 +2824,7 @@
               "priority": "P1",
               "area": "Lifecycle",
               "text": "Agent processes shall run in isolated working directories (git worktrees). The backend shall manage worktree creation and cleanup.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-606"
@@ -2858,7 +2858,7 @@
               "priority": "P1",
               "area": "Lifecycle",
               "text": "Agent sessions shall support checkpoint-based resume. On resume, the system shall load a compact context pack rather than replaying the full transcript.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-112"
@@ -2909,7 +2909,7 @@
               "priority": "P0",
               "area": "Config",
               "text": "The system shall load configuration from environment variables with sensible defaults. Key config: DB_PATH, HOST, PORT, DEV_MODE, OLLAMA_URL.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-113"
@@ -2950,7 +2950,7 @@
               "priority": "P1",
               "area": "Config",
               "text": "Agent personality profiles shall be loaded from config/personalities.json. Each profile defines system prompt fragments, temperature, and behavioral constraints.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-114"
@@ -2984,7 +2984,7 @@
               "priority": "P1",
               "area": "Config",
               "text": "Provider-specific configuration (API keys, base URLs, model lists) shall be stored in environment variables, never in the database.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-113"
@@ -3035,7 +3035,7 @@
               "priority": "P0",
               "area": "Errors",
               "text": "All API errors shall return the standard envelope with ok: false and a human-readable error message. HTTP status codes shall be appropriate (400, 404, 409, 500).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-205",
@@ -3098,7 +3098,7 @@
               "priority": "P1",
               "area": "Errors",
               "text": "Agent process failures (crash, timeout, rate limit) shall be captured and surfaced as system events in the conversation, not silently swallowed.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-214"

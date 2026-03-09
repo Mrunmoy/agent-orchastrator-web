@@ -24,7 +24,7 @@
               "priority": "P0",
               "area": "Debate",
               "text": "The system shall support a group debate where the customer poses a requirement and agents discuss it in round-robin turns. Each agent gets one turn per round. The debate runs for up to N rounds (default 20) or until agreement is reached.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-401",
@@ -109,7 +109,7 @@
               "priority": "P0",
               "area": "Debate",
               "text": "The customer is a participant in the debate. Agents shall be able to @ the customer for clarifications. The system shall notify the customer and pause the debate until they respond.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-402",
@@ -165,7 +165,7 @@
               "priority": "P0",
               "area": "Debate",
               "text": "The customer shall be able to direct a message to a specific agent by name (e.g., \"rick, what do you think about option 2?\"). The addressed agent responds next, regardless of round-robin order.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-403"
@@ -199,7 +199,7 @@
               "priority": "P0",
               "area": "Debate",
               "text": "If agents agree on an option, they shall present it to the customer for final approval. The customer's decision is always final \u2014 agreement alone does not advance the phase.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-405"
@@ -240,7 +240,7 @@
               "priority": "P1",
               "area": "Debate",
               "text": "If agents do not agree after N rounds, they shall summarize each position with pros/cons and ask the customer to decide or steer the discussion.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-05",
               "tasks": [
                 "T-406"
@@ -279,7 +279,7 @@
               "priority": "P0",
               "area": "Planning",
               "text": "Once the customer approves a direction, they shall @ a specific agent (typically the Analyst or Team Lead) to break the agreed design into a task list, identifying which tasks can run in parallel.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-503",
@@ -342,7 +342,7 @@
               "priority": "P1",
               "area": "Planning",
               "text": "The task list shall include for each task: title, description, scope (files/modules), dependencies on other tasks, and estimated complexity.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-506"
@@ -388,7 +388,7 @@
               "priority": "P0",
               "area": "Execution",
               "text": "Each Developer agent shall work on its assigned task independently, following the work order: design doc \u2192 TDD \u2192 implement \u2192 test \u2192 debug/fix \u2192 update docs \u2192 raise PR.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-506"
@@ -429,7 +429,7 @@
               "priority": "P0",
               "area": "Execution",
               "text": "Each agent shall work in its own isolated git worktree to prevent file conflicts with other agents.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-606"
@@ -463,7 +463,7 @@
               "priority": "P1",
               "area": "Execution",
               "text": "The customer shall be able to steer a specific agent mid-task if they observe it going off-track.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-505"
@@ -509,7 +509,7 @@
               "priority": "P0",
               "area": "Review",
               "text": "When a PR is raised, the system shall assign a reviewer \u2014 any Developer agent that did not author the PR.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-08",
               "tasks": [
                 "T-705"
@@ -543,7 +543,7 @@
               "priority": "P0",
               "area": "Review",
               "text": "The PR author shall automatically fix review comments and push updates. The reviewer shall re-review until satisfied, then approve.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-08",
               "tasks": [
                 "T-507",
@@ -618,7 +618,7 @@
               "priority": "P0",
               "area": "Merge",
               "text": "Merges to main shall be serialized \u2014 one PR at a time. The system shall maintain a merge queue and handle rebases automatically.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-08",
               "tasks": [
                 "T-701"
@@ -659,7 +659,7 @@
               "priority": "P1",
               "area": "Merge",
               "text": "Other agents shall wait while one agent is merging. The merge coordinator (Team Lead / Ollama) shall manage this queue at zero token cost to paid agents.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-08",
               "tasks": [
                 "T-702",
@@ -734,7 +734,7 @@
               "priority": "P0",
               "area": "Post-Task",
               "text": "After raising a PR, an agent shall follow this priority loop: 1) Check if any of its own PRs have review comments \u2192 fix them. 2) Check if its PR got approved \u2192 merge it (if merge queue allows). 3) Check if it has been tagged to review another agent's PR \u2192 review it. 4) Otherwise \u2192 wait for next assignment or pick up next task from queue.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-06",
               "tasks": [
                 "T-507"
@@ -785,7 +785,7 @@
               "priority": "P0",
               "area": "UI",
               "text": "The system shall provide a real-time activity viewer for each agent \u2014 showing its thinking, file edits, commands, and tool use. This viewer shall be show/hide toggleable and separate from the main chat.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-314",
@@ -899,7 +899,7 @@
               "priority": "P1",
               "area": "UI",
               "text": "The main chat window shall remain clean \u2014 only deliberate messages, turn outputs, and status updates appear there. Internal agent activity (thinking, tool calls) shall only appear in the activity viewer.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-301",
@@ -972,7 +972,7 @@
               "priority": "P0",
               "area": "UI",
               "text": "The system shall provide a dashboard view showing: which agent is working on which task, task status (design, TDD, implementing, testing, PR raised, in review, fixing comments, merging, done), PR links, and merge queue order.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-307",
@@ -1064,7 +1064,7 @@
               "priority": "P1",
               "area": "UI",
               "text": "The dashboard shall be accessible from within a conversation \u2014 the user shall be able to switch between chat view and dashboard view (layout TBD).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-04",
               "tasks": [
                 "T-315"
@@ -1108,7 +1108,7 @@
               "priority": "P0",
               "area": "Infra",
               "text": "The system shall run locally on the user's machine. No cloud hosting required. LAN-accessible for multi-device use (phone, tablet, laptop).",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-201",
@@ -1418,7 +1418,7 @@
               "priority": "P0",
               "area": "Infra",
               "text": "The Team Lead role (Ollama) shall be free \u2014 no paid API calls for coordination, queue management, or status polling.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-604",
@@ -1488,7 +1488,7 @@
               "priority": "P1",
               "area": "Infra",
               "text": "Paid agent tokens shall only be spent on productive work: reasoning, code generation, code review, debate. Never on polling, queue checking, or coordination overhead.",
-              "status": "todo",
+              "status": "done",
               "design_ref": "DES-01",
               "tasks": [
                 "T-504",
