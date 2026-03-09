@@ -53,6 +53,8 @@ Execution board for active parallel slices.
 | UI-009 | Agent editor UX improvements | `frontend/src/layout/AppShell.tsx,frontend/src/features/agents/*` | P1 | copilot | Done | UI-005,API-004 | copilot/fix-add-agent-functionality |
 | UI-010 | Fix API connectivity (proxy + /api prefix + CORS) | `frontend/vite.config.ts,backend/api/__init__.py,frontend/src/api/client.ts` | P0 | claude-agent | Done | UI-009,API-001 | claude/fix-api-connectivity |
 | UI-011 | Agent drag-to-reorder & composer cleanup | `backend/src/agent_orchestrator/api/routes/agents.py,frontend/src/features/agents/*,frontend/src/features/composer/*` | P1 | copilot | Done | UI-009,API-004 | codex/ui-011-agent-reorder |
+| UI-012 | UI modernisation — cockpit theme | `frontend/src/**/*.css,frontend/src/layout/ThemeSmoke.test.tsx` | P1 | copilot | Done | UI-010 | codex/ui-011-modernise-ui |
+| UI-015 | Slack-like retheme | `frontend/src/styles/tokens.css,frontend/src/layout/*.css` | P1 | claude-agent | Done | UI-012 | feat/wave5-spark-ui-port |
 | COORD-001 | Merge coordinator queue model | `backend/orchestrator/merge_queue.py` | P1 | claude-agent | Done | ORCH-004 | claude/coord-001-merge-queue |
 | COORD-002 | Task/branch lock policy | `backend/orchestrator/locks.py` | P1 | claude-agent | Done | COORD-001 | claude/coord-002-task-locks |
 | COORD-003 | Notification pipeline | `backend/runtime/notifications.py` | P1 | claude-agent | Done | ORCH-006 | claude/coord-003-notifications |
@@ -66,6 +68,18 @@ Execution board for active parallel slices.
 | DOC-001 | ADR entries | `docs/decisions/*` | P2 | claude-agent | Done | ORCH-004 | claude/doc-001-adr-entries |
 | DOC-002 | Playbook recovery | `docs/playbook/*` | P2 | claude-agent | Done | TEST-001 | claude/doc-002-playbooks |
 | DOC-003 | Project saga milestones | `docs/saga/*` | P2 | claude-agent | Done | SETUP-002 | claude/doc-003-saga-log |
+| WIRE-001 | Batch executor service | `backend/runtime/executor.py` | P0 | claude-agent | Done | ORCH-004,ADPT-001 | feat/wave4-e2e-wiring |
+| WIRE-002 | Orchestration API wiring | `backend/api/routes/orchestration.py` | P0 | claude-agent | Done | WIRE-001,API-003 | feat/wave4-e2e-wiring |
+| WIRE-003 | useRunStatus hook | `frontend/src/hooks/useRunStatus.ts` | P0 | claude-agent | Done | API-003 | feat/wave4-e2e-wiring |
+| WIRE-004 | useEventStream hook | `frontend/src/hooks/useEventStream.ts` | P0 | claude-agent | Done | API-005 | feat/wave4-e2e-wiring |
+| WIRE-005 | AppShell integration | `frontend/src/layout/AppShell.tsx` | P0 | claude-agent | Done | WIRE-003,WIRE-004 | feat/wave4-e2e-wiring |
+| WIRE-006 | Build verification | `frontend/,backend/` | P0 | claude-agent | Done | WIRE-005 | feat/wave4-e2e-wiring |
+| SPARK-001 | Design tokens | `frontend/src/styles/tokens.css` | P1 | claude-agent | Done | UI-012 | feat/wave5-spark-ui-port |
+| SPARK-002 | StatusBadge component | `frontend/src/components/StatusBadge.*` | P1 | claude-agent | Done | SPARK-001 | feat/wave5-spark-ui-port |
+| SPARK-003 | AgentCard revamp | `frontend/src/features/agents/AgentCard.*` | P1 | claude-agent | Done | SPARK-001 | feat/wave5-spark-ui-port |
+| SPARK-004 | DashboardView | `frontend/src/features/dashboard/*` | P1 | claude-agent | Done | SPARK-001 | feat/wave5-spark-ui-port |
+| SPARK-005 | IntelligencePane upgrade | `frontend/src/layout/IntelligencePane.*` | P1 | claude-agent | Done | SPARK-001 | feat/wave5-spark-ui-port |
+| SPARK-006 | Framer Motion animations | `frontend/src/utils/animations.ts` | P1 | claude-agent | Done | SPARK-001 | feat/wave5-spark-ui-port |
 
 ## Merge Queue
 
@@ -94,5 +108,7 @@ Execution board for active parallel slices.
 | 21 | PR #14 UI-006 | UI-006 | merged |
 | 22 | PR #15 API-003 | API-003 | merged |
 | 23 | copilot/fix-new-conversation-button | UI-008 | merged |
-| 24 | copilot/fix-add-agent-functionality | UI-009 | in review |
-| 25 | codex/ui-011-modernise-ui | UI-012 | in review |
+| 24 | copilot/fix-add-agent-functionality | UI-009 | merged |
+| 25 | codex/ui-011-modernise-ui | UI-012 | merged |
+| 26 | PR #57 feat/wave4-e2e-wiring | WIRE-001..006 | merged |
+| 27 | PR #58 feat/wave5-spark-ui-port | SPARK-001..006 | merged |
