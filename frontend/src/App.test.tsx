@@ -3,17 +3,18 @@ import { describe, it, expect } from "vitest";
 import App from "./App";
 
 describe("App", () => {
-  it("renders the app shell layout", () => {
+  it("renders the agent workspace heading", () => {
     render(<App />);
-    expect(screen.getByTestId("app-shell")).toBeInTheDocument();
+    expect(screen.getByText("Agent Workspace")).toBeInTheDocument();
   });
 
-  it("renders all four layout zones", () => {
+  it("renders the sidebar with conversations section", () => {
     render(<App />);
-    expect(screen.getByTestId("top-bar")).toBeInTheDocument();
-    expect(screen.getByTestId("history-pane")).toBeInTheDocument();
-    expect(screen.getByTestId("chat-pane")).toBeInTheDocument();
-    expect(screen.getByTestId("intelligence-pane")).toBeInTheDocument();
-    expect(screen.getByTestId("bottom-controls")).toBeInTheDocument();
+    expect(screen.getByText("Conversations")).toBeInTheDocument();
+  });
+
+  it("renders the direct messages section", () => {
+    render(<App />);
+    expect(screen.getByText("Direct Messages")).toBeInTheDocument();
   });
 });
